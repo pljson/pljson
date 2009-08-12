@@ -1,6 +1,6 @@
 This software has been released under the MIT license:
 
-  Copyright (c) 2009 Lewis R Cunningham
+  Copyright (c) 2009 Jonas Krogsboell and Lewis R Cunningham
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +25,11 @@ Installation:
 1.  To install, extract the files to a directory
 2.  change to the directory where the files exist
 3.  run the install.sql file 
-4.  To Test:
-     4a) to test creating JSON mamnually, run the call_json.sql file
-     4b) to test creating JSON from text input, run sqlplus_run.sql
+4.  To Test the implementation, run the /testsuite/testall.sql file
+5.  To learn the API, look at the files in /examples
 
 Documentation can be found at  http://oracleoss.com or at http://database-geek.com
-
+Generel information about JSON is available at http://www.json.org
 
 
 

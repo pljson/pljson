@@ -1,7 +1,6 @@
 CREATE OR REPLACE TYPE json AS OBJECT (
-
   /*
-  Copyright (c) 2009 Lewis R Cunningham
+  Copyright (c) 2009 Jonas Krogsboell, based on code from Lewis R Cunningham
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -22,226 +21,43 @@ CREATE OR REPLACE TYPE json AS OBJECT (
   THE SOFTWARE.
   */
 
+  /* Variables */
   json_data json_member_array,
+  num_elements number,
   
-  num_elements NUMBER,
+  /* Constructors */
+  constructor function json return self as result,
+  constructor function json(pair_data in json_member_array) return self as result,
+  constructor function json(str varchar2) return self as result,
+    
+  /* Member setter methods */  
+  member procedure remove(pair_name varchar2),
+  member procedure put(pair_name varchar2, pair_value anydata, position pls_integer default null),
+  member procedure put(pair_name varchar2, pair_value varchar2, position pls_integer default null),
+  member procedure put(pair_name varchar2, pair_value number, position pls_integer default null),
+  member procedure put(pair_name varchar2, pair_value json_bool, position pls_integer default null),
+  member procedure put(pair_name varchar2, pair_value json_null, position pls_integer default null),
+  member procedure put(pair_name varchar2, pair_value json_list, position pls_integer default null),
+  member procedure put(pair_name varchar2, pair_value json, position pls_integer default null),
   
-  CONSTRUCTOR FUNCTION json
-    RETURN SELF AS RESULT,
-    
-  CONSTRUCTOR FUNCTION json(
-    p_name IN VARCHAR2, 
-    p_value IN VARCHAR2)
-    RETURN SELF AS RESULT,
-    
-  CONSTRUCTOR FUNCTION json(p_data IN XMLType)
-    RETURN SELF AS RESULT,
+  /* Member getter methods */ 
+  member function count return number,
+  member function get(pair_name varchar2) return anydata, 
+  member function exist(pair_name varchar2) return boolean,
+  member function to_char return varchar2,
+  member procedure print,
+  member function to_anydata return anydata,
   
- CONSTRUCTOR FUNCTION json(p_data IN json_member_array)
-    RETURN SELF AS RESULT,
+  /* Static conversion methods */  
+  static function to_json(v anydata) return json,
+  static function to_number(v anydata) return number,
+  static function to_varchar2(v anydata) return varchar2,
+  static function to_json_list(v anydata) return json_list,
+  static function to_json_bool(v anydata) return json_bool,
+  static function to_json_null(v anydata) return json_null
   
-  CONSTRUCTOR FUNCTION json(p_data IN CLOB)
-    RETURN SELF AS RESULT,
-  
-  CONSTRUCTOR FUNCTION json(p_data IN VARCHAR2)
-    RETURN SELF AS RESULT,
-  
-  MEMBER FUNCTION getString(p_indent IN NUMBER DEFAULT 0)
-    RETURN VARCHAR2,
+);
+/
+sho err
 
-  MEMBER FUNCTION getCLOB(p_indent IN NUMBER DEFAULT 0)
-    RETURN CLOB,
-
-  MEMBER FUNCTION getXML(p_indent IN NUMBER DEFAULT 0)
-    RETURN XMLType,
-  
-  MEMBER FUNCTION print(p_indent IN NUMBER DEFAULT 0)
-    RETURN NUMBER,  
-
-  MEMBER PROCEDURE print(p_indent IN NUMBER DEFAULT 0),  
-
-  MEMBER FUNCTION writer(p_indent IN NUMBER DEFAULT 0)
-    RETURN NUMBER,
-   
-  MEMBER PROCEDURE  add_member(
-    p_name IN VARCHAR2, 
-    p_value IN VARCHAR2),
-
-  MEMBER FUNCTION  add_member(
-    SELF IN OUT json,
-    p_name IN VARCHAR2, 
-    p_value IN VARCHAR2)
-    RETURN NUMBER,
-    
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN VARCHAR2,
-    p_member_id OUT NUMBER)    ,
-    
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN NUMBER),
-
-  MEMBER FUNCTION  add_member(
-    SELF IN OUT json,
-    p_name IN VARCHAR2, 
-    p_value IN NUMBER)  
-    RETURN NUMBER   ,
-
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN NUMBER,
-    p_member_id OUT NUMBER)    ,
-    
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN BOOLEAN),
-    
-  MEMBER FUNCTION  add_member(
-    SELF IN OUT json,
-    p_name IN VARCHAR2, 
-    p_value IN BOOLEAN)  
-    RETURN NUMBER   ,
-
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN BOOLEAN,
-    p_member_id OUT NUMBER)    ,
-    
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN json_null),
-    
-  MEMBER FUNCTION  add_member(
-    SELF IN OUT json,
-    p_name IN VARCHAR2, 
-    p_value IN json_null)  
-    RETURN NUMBER   ,
-
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN json_null,
-    p_member_id OUT NUMBER)    ,
-    
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN json_member),
- 
-  MEMBER FUNCTION  add_member(
-    SELF IN OUT json,
-    p_name IN VARCHAR2, 
-    p_value IN json_member)  
-    RETURN NUMBER   ,
-    
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN json_member,
-    p_member_id OUT NUMBER)    ,
-    
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN json),
-    
-  MEMBER FUNCTION add_member(
-    SELF IN OUT json,
-    p_name IN VARCHAR2, 
-    p_value IN json)  
-    RETURN NUMBER   ,
-
-  MEMBER PROCEDURE add_member(
-    p_name IN VARCHAR2, 
-    p_value IN json,
-    p_member_id OUT NUMBER)    ,
-   
-  MEMBER PROCEDURE add_array(
-    p_name IN VARCHAR2,
-    p_array_id OUT NUMBER),   
-
-  MEMBER FUNCTION add_array(
-    SELF IN OUT json,
-    p_name IN VARCHAR2 )
-    RETURN NUMBER,   
-    
-  MEMBER FUNCTION add_array_element(
-    SELF IN OUT json,
-    p_array_id IN NUMBER,
-    p_value IN VARCHAR2)
-    RETURN PLS_INTEGER ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN VARCHAR2,
-    p_element_id OUT NUMBER)   ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN VARCHAR2)   ,
-    
-  MEMBER FUNCTION add_array_element(
-    SELF IN OUT json,
-    p_array_id IN NUMBER,
-    p_value IN NUMBER)
-    RETURN PLS_INTEGER ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN NUMBER,
-    p_element_id OUT NUMBER)   ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN NUMBER)   ,
-    
-  MEMBER FUNCTION add_array_element(
-    SELF IN OUT json,
-    p_array_id IN NUMBER,
-    p_value IN BOOLEAN)
-    RETURN PLS_INTEGER ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN BOOLEAN,
-    p_element_id OUT NUMBER)   ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN BOOLEAN)   ,
-    
-  MEMBER FUNCTION add_array_element(
-    SELF IN OUT json,
-    p_array_id IN NUMBER,
-    p_value IN json)
-    RETURN PLS_INTEGER ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN json,
-    p_element_id OUT NUMBER)   ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN json)   ,
-    
-  MEMBER FUNCTION add_array_element(
-    SELF IN OUT json,
-    p_array_id IN NUMBER,
-    p_value IN json_null)
-    RETURN PLS_INTEGER ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN json_null,
-    p_element_id OUT NUMBER)   ,
-    
-  MEMBER PROCEDURE add_array_element(
-    p_array_id IN NUMBER,
-    p_value IN json_null)  
-      
- );
- /
- sho err
- 
- exit
- 
- 
  
