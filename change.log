@@ -20,6 +20,15 @@ This software has been released under the MIT license:
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 
+      Version: 0.8	
+        API is entirely rewritten
+	Memory Issue is solved
+	Parser is replaced (empty and nested arrays are now supported)
+	New pretty-printer
+	Exception handling is better now
+        A testsuite has been added
+        Many examples is available
+        An extension makes date-values possible
 
       Version: 0.6
         Added support for creating JSON from text input

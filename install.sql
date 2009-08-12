@@ -1,7 +1,7 @@
 /*
 This software has been released under the MIT license:
 
-  Copyright (c) 2009 Lewis R Cunningham
+  Copyright (c) 2009 Lewis R Cunningham, Jonas Krogsboell
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,12 @@ This software has been released under the MIT license:
 
 Prompt Compiling objects for PL/JSON
 
-@json_member.typ
+@uninstall.sql
+@simpletypes.typ
+@json_list.typ
 @json.typ
-@json_helper.pks
-@parse_json.pks
+@json_parser.sql
+@json_printer.sql
+@json_list_body.typ
 @json_body.typ
-@json_helper.pkb
-@parse_json.pkb
-
+@json_ext.sql --extra method to lookup types and add dates in json
