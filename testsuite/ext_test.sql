@@ -124,6 +124,21 @@ begin
       json_ext.format_string := old_format_string;
   end;
 
+  str := 'Null date insert into json'; --apparently null dates work fine
+  declare
+    obj json := json();
+    v_when date := null;
+  begin
+    obj.put('X', json_ext.to_anydata(v_when));
+    v_when := json_ext.to_date2(obj.get('X'));
+    assertTrue(v_when is null);
+    assertTrue(json_ext.is_date(obj.get('X')));
+    pass(str);
+  exception 
+    when others then fail(str);
+  end;
+
+
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
     'JSON_Ext testing', pass_count,fail_count,total_count,'ext_test.sql';

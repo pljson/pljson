@@ -20,6 +20,10 @@ This software has been released under the MIT license:
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 
+      Version: 0.8.1
+        Documentation is added
+        Bug fix in API: Inserting null as value (JSON and JSON_LIST).
+
       Version: 0.8	
         API is entirely rewritten
 	Memory Issue is solved
@@ -28,7 +32,7 @@ This software has been released under the MIT license:
 	Exception handling is better now
         A testsuite has been added
         Many examples is available
-        An extension makes date-values possible
+        An extension-package makes date-values possible
 
       Version: 0.6
         Added support for creating JSON from text input
