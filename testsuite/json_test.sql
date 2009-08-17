@@ -183,6 +183,101 @@ begin
   exception
     when others then fail(str);
   end;
+  
+  str := 'Number null insert test';
+  declare
+    obj json := json();
+    x number := null;
+    n json_null;
+  begin
+    obj.put('X', x);
+    n := json.to_json_null(obj.get('X'));
+    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'Varchar2 null insert test';
+  declare
+    obj json := json();
+    x1 varchar2(20) := null;
+    x2 varchar2(20) := '';
+  begin
+    obj.put('X1', x1);
+    obj.put('X2', x2);
+    x1 := json.to_varchar2(obj.get('X1'));
+    x2 := json.to_varchar2(obj.get('X2'));
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'Bool null insert test';
+  declare
+    obj json := json();
+    x json_bool := null;
+    n json_null;
+  begin
+    obj.put('X', x);
+    n := json.to_json_null(obj.get('X'));
+    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'Null null insert test';
+  declare
+    obj json := json();
+    x json_null := null;
+    n json_null;
+  begin
+    obj.put('X', x);
+    n := json.to_json_null(obj.get('X'));
+    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'json null insert test';
+  declare
+    obj json := json();
+    x json := null;
+    n json_null;
+  begin
+    obj.put('X', x);
+    n := json.to_json_null(obj.get('X'));
+    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'json_list null insert test';
+  declare
+    obj json := json();
+    x json_list := null;
+    n json_null;
+  begin
+    obj.put('X', x);
+    n := json.to_json_null(obj.get('X'));
+    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'json null pair_name insert test';
+  declare
+    obj json := json();
+  begin
+    obj.put(null, 'test');
+    fail(str);
+  exception
+    when others then pass(str);
+  end;
 
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using

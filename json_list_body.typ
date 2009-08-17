@@ -77,22 +77,38 @@ create or replace type body json_list as
   
   member procedure add_elem(elem number, position pls_integer default null) as
   begin
-    add_elem(anydata.convertnumber(elem), position);
+    if(elem is null) then
+      add_elem(json_null(), position);
+    else
+      add_elem(anydata.convertnumber(elem), position);
+    end if;
   end;
   
   member procedure add_elem(elem json_bool, position pls_integer default null) as
   begin
-    add_elem(anydata.convertobject(elem), position);
+    if(elem is null) then
+      add_elem(json_null(), position);
+    else
+      add_elem(anydata.convertobject(elem), position);
+    end if;
   end;
   
   member procedure add_elem(elem json_null, position pls_integer default null) as
   begin
-    add_elem(anydata.convertobject(elem), position);
+    if(elem is null) then
+      add_elem(json_null(), position);
+    else
+      add_elem(anydata.convertobject(elem), position);
+    end if;
   end;
   
   member procedure add_elem(elem json_list, position pls_integer default null) as
   begin
-    add_elem(anydata.convertobject(elem), position);
+    if(elem is null) then
+      add_elem(json_null(), position);
+    else
+      add_elem(anydata.convertobject(elem), position);
+    end if;
   end;
   
   member function count return number as

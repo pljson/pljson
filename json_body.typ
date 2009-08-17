@@ -88,6 +88,9 @@ create or replace type body json as
       return null;
     end;
   begin
+    if(pair_name is null) then 
+      raise_application_error(-20102, 'JSON put-method type error: name cannot be null');
+    end if;
     case pair_value.gettypename
       when 'SYS.VARCHAR2' then null;
       when 'SYS.NUMBER' then null;
@@ -148,27 +151,47 @@ create or replace type body json as
   
   member procedure put(pair_name varchar2, pair_value number, position pls_integer default null) as
   begin
-    put(pair_name, anydata.convertnumber(pair_value), position);
+    if(pair_value is null) then
+      put(pair_name, json_null(), position);
+    else 
+      put(pair_name, anydata.convertnumber(pair_value), position);
+    end if;
   end;
   
   member procedure put(pair_name varchar2, pair_value json_bool, position pls_integer default null) as
   begin
-    put(pair_name, anydata.convertobject(pair_value), position);
+    if(pair_value is null) then
+      put(pair_name, json_null(), position);
+    else 
+      put(pair_name, anydata.convertobject(pair_value), position);
+    end if;
   end;
 
   member procedure put(pair_name varchar2, pair_value json_null, position pls_integer default null) as
   begin
-    put(pair_name, anydata.convertobject(pair_value), position);
+    if(pair_value is null) then
+      put(pair_name, json_null(), position);
+    else 
+      put(pair_name, anydata.convertobject(pair_value), position);
+    end if;
   end;
   
   member procedure put(pair_name varchar2, pair_value json_list, position pls_integer default null) as
   begin
-    put(pair_name, anydata.convertobject(pair_value), position);
+    if(pair_value is null) then
+      put(pair_name, json_null(), position);
+    else 
+      put(pair_name, anydata.convertobject(pair_value), position);
+    end if;
   end;
 
   member procedure put(pair_name varchar2, pair_value json, position pls_integer default null) as
   begin
-    put(pair_name, anydata.convertobject(pair_value), position);
+    if(pair_value is null) then
+      put(pair_name, json_null(), position);
+    else 
+      put(pair_name, anydata.convertobject(pair_value), position);
+    end if;
   end;
 
  

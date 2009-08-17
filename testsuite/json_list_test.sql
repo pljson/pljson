@@ -265,6 +265,77 @@ begin
     when others then fail(str);
   end;
 
+  str := 'Number null insert test';
+  declare
+    obj json_list := json_list();
+    x number := null;
+    n json_null;
+  begin
+    obj.add_elem(x);
+    n := json.to_json_null(obj.get_first);
+    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'Varchar2 null insert test';
+  declare
+    obj json_list := json_list();
+    x1 varchar2(20) := null;
+    x2 varchar2(20) := '';
+  begin
+    obj.add_elem(x1);
+    obj.add_elem(x2);
+    x1 := json.to_varchar2(obj.get_first);
+    x2 := json.to_varchar2(obj.get_last);
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'Bool null insert test';
+  declare
+    obj json_list := json_list();
+    x json_bool := null;
+    n json_null;
+  begin
+    obj.add_elem(x);
+    n := json.to_json_null(obj.get_first);
+    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'Null null insert test';
+  declare
+    obj json_list := json_list();
+    x json_null := null;
+    n json_null;
+  begin
+    obj.add_elem(x);
+    n := json.to_json_null(obj.get_first);
+    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'json_list null insert test';
+  declare
+    obj json_list := json_list();
+    x json_list := null;
+    n json_null;
+  begin
+    obj.add_elem(x);
+    n := json.to_json_null(obj.get_first);
+    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
     'List testing', pass_count,fail_count,total_count,'json_list_test.sql';

@@ -53,7 +53,7 @@
 \columnsep 0.4in
 \footskip 0.4in 
 
-\title{PL/JSON Reference Guide (version 0.8.0)}
+\title{PL/JSON Reference Guide (version 0.8.1)}
 \subtitle{For Oracle 10g and 11g}
 \author{Jonas Krogsbøll}
 \date{}
@@ -197,7 +197,7 @@ Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
   & put(varchar2, json\_list, position)\\
   & put(varchar2, json, position)\\
 \hline
-  \multicolumn{2}{|p{15cm}|}{Adds a pair to the JSON-object. If the pair-name is allready present, then the value is replaced. If position is null (default) or larger than the number of pairs, the pair is inserted as a new last pair. If position < 2, the pair is inserted as a new first pair. Otherwise the pair is inserted at the specified position (list is 1-indexed).} \\
+  \multicolumn{2}{|p{15cm}|}{Adds a pair to the JSON-object. If the pair-name is allready present, then the value is replaced. If position is null (default) or larger than the number of pairs, the pair is inserted as a new last pair. If position < 2, the pair is inserted as a new first pair. Otherwise the pair is inserted at the specified position (list is 1-indexed). If the insertion value is null, a json\_null will be inserted (except for varchar2s).} \\
 \hline
 
 \hline
@@ -304,7 +304,7 @@ Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
 & add\_elem(json\_list, position)\\
 & add\_elem(json, position)\\
 \hline
-  \multicolumn{2}{|p{15cm}|}{Adds a value to the JSON\_LIST-object. If position is null (default) or larger than the length of the list, the value is inserted as a new last. If position < 2, the value is inserted as a new first. Otherwise the value is inserted at the specified position (note the the list is 1-indexed).} \\
+  \multicolumn{2}{|p{15cm}|}{Adds a value to the JSON\_LIST-object. If position is null (default) or larger than the length of the list, the value is inserted as a new last. If position < 2, the value is inserted as a new first. Otherwise the value is inserted at the specified position (note the the list is 1-indexed). If the insertion value is null, a json\_null will be inserted (except for varchar2s).} \\
 \hline
 
 \hline
