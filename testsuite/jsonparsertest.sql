@@ -86,6 +86,8 @@ begin
   assertPass('{ "a": null }','null test B');
   --unexpected char line 226
   assertFail('{ "a": NULL }','unexpected char l.226');
+  --unicode char test
+  assertPass('{"æåø": "ÅÆØ"}','Unicode char test - on UTF8 databases');
   
   dbms_output.put_line('');
   dbms_output.put_line('Parser testing:');
@@ -112,7 +114,7 @@ begin
   --start parser
   assertFail(' "a" ','{ missing');
   assertFail('{','} missing');
-     
+ 
   dbms_output.put_line('');
   dbms_output.put_line('Passed '||pass_count||' of '||total_count||' tests.');
   dbms_output.put_line('Failed '||fail_count||' of '||total_count||' tests.');

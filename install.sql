@@ -21,15 +21,15 @@ This software has been released under the MIT license:
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-
-Prompt Compiling objects for PL/JSON
-
-@uninstall.sql
-@simpletypes.typ
-@json_list.typ
-@json.typ
-@json_parser.sql
-@json_printer.sql
-@json_list_body.typ
-@json_body.typ
-@json_ext.sql --extra method to lookup types and add dates in json
+PROMPT -----------------------------------;
+PROMPT -- Compiling objects for PL/JSON --;
+PROMPT -----------------------------------;
+@@uninstall.sql
+@@simpletypes.typ
+@@json_list.typ
+@@json.typ
+@@json_parser.sql
+@@json_printer.sql
+@@json_list_body.typ
+@@json_body.typ
+@@json_ext.sql --extra method to lookup types and add dates in json

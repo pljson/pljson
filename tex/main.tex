@@ -53,7 +53,7 @@
 \columnsep 0.4in
 \footskip 0.4in 
 
-\title{PL/JSON Reference Guide (version 0.8.1)}
+\title{PL/JSON Reference Guide (version 0.8.2)}
 \subtitle{For Oracle 10g and 11g}
 \author{Jonas Krogsbøll}
 \date{}
@@ -62,7 +62,7 @@
 \maketitle
 
 \section*{PURPOSE}
-The goal of PL/JSON is to create a correct implementation of JSON to use in a PL/SQL environments. The oracle object syntax is used because we want to be able to store JSON-objects in tables, without using character lobs. Parsing JSON-text and manual construction of JSON-objects should be easy as well as fetching data from the constructed objects should be. PL/JSON is delivered AS IS and we make no garantee for anything (although we think that the product is safe to use).
+The goal of PL/JSON is to create a correct implementation of JSON to use in a PL/SQL environment. The oracle object syntax is used because we want to be able to store JSON-objects in tables, without using character lobs. Parsing JSON-text and manual construction of JSON-objects should be easy. So should the process of retrieving date from the constructed objects. PL/JSON is delivered AS IS and we cannot make any guarantee or be held responsible to any unwanted effects that may arise from using this software. Although we would like to stress that we have tested and used this software and would like to think that is is a safe product to use.
 
 \section*{DESCRIPTION}
 The parser and pretty-printer is implemented in two packages, but you'll never need to access these directly. The essential objects are linked to the relevant functions in the packages (in constructors and output methods). The two objects you should use are JSON and JSON\_LIST. You can consider the JSON object to be a mapping of strings to values and JSON\_LIST to be a list of values. The values that can be stored are the four primitives: JSON\_BOOL, JSON\_NULL, VARCHAR2 and NUMBER, plus JSON\_LIST and JSON as nested structures (see figure \ref{howjsonwork}).
@@ -81,7 +81,7 @@ The parser and pretty-printer is implemented in two packages, but you'll never n
 \item Uninstall script.
 \item 8 new oracle types ready to use in your database.
 \item 3 packages (parser, printer and extension)
-\item A few examples files - does not modify the database.
+\item A few examples files - *Note* examples do not modify the database.
 \item Some testing script - creates and delete a table (JSON\_TESTSUITE)
 \end{itemize}
 
@@ -131,7 +131,7 @@ end;
 Now the limitation will be the size of the dbms\_output buffer.
 
 \section*{GETTING STARTED}
-To get started on using this product, you should first install the product with the install script and then take a look at the examples in the \em examples \em folder. The content of each example file is:
+To get started using this product, you should first install the product with the install script and then take a look at the examples in the \em examples \em folder. The content of each example file are:
 \begin{itemize}
 \item \textbf{ex1.sql}: Simple creation of a JSON object. 
 \item \textbf{ex2.sql}: Simple creation of a JSON list. 
@@ -148,7 +148,7 @@ The extension package makes it easier to work with the values in a JSON object o
 The core implementation strictly follows the specification (RFC 4627 - http://www.ietf.org/rfc/rfc4627.txt?number=4627) on JSON. Furthermore the design goals with JSON were to, quote: ''be minimal, portable, textual and a subset of JavaScript. The less we need to agree on in order to interoperate, the more easily we can interoperate'' - D.Crockford. I, for instance, like dates/timestamp to be represented as milliseconds since 1st of January 1970 at 00:00:00 UTC. That is compact, but in a oracle context that isn't exactly the ideal choice. 
 
 \section*{TESTSUITE}
-Any proper product is tested for correctness. So should PL/JSON be with a testsuite that can be executed without installing any additional software on your database. You properly don't need the testsuite, but if you modify the implementation, adds more features, tests will be needed. Also if you discover a bug, you could report the bug by writing a relevant testcase.
+Any proper product is tested for correctness. So should PL/JSON be with a testsuite that can be executed without installing any additional software on your database. You probaly don't need the testsuite, but if you modify the implementation or add more features, tests will be needed. Also if you discover a bug, you could report the bug by writing a relevant testcase.
 
 \section*{CONTRIBUTING}
 Write to us in the forums of sourceforge.net. We will be happy to hear from you. \\\\
@@ -161,9 +161,9 @@ Possible errors might get detected and corrected and new features may arrise fro
 
 \section*{FUTURE PLANS}
 Maybe an XPATH way of accessing and storing values will be implemented.\\
-Additional json-list or json operations such at concat, substract, join, union, etc.\\
-Enhancing the parser and printer to handle larger strings than 32K.\\
-Test/example of storing json in a table.\\
+Additional json-list or json operations such as concat, substract, join, union, etc.\\
+Enhancing the parser and printer to handle strings larger than 32K.\\
+Test's and examples of storing JSON in a table.\\
 
 
 \onecolumn
@@ -453,7 +453,8 @@ Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
 
 \section*{Test environments}
 Tested on Oracle Database 10g Express Edition 10.2.0.1.0 @ Ubuntu 9.04 (x86)\\
-Tested on Oracle Database 10gR2 Enterprise Edition 10.2.0.2.0 @ Windows Server 2003 (x64)
+Tested on Oracle Database 10gR2 Enterprise Edition 10.2.0.2.0 @ Windows Server 2003 (x64)\\
+Thanks to Wayne IV Mike for correcting this document.
 
 \end{document}
 
