@@ -98,7 +98,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
 
   function lexNumber(str varchar2, tok in out rToken, indx in out pls_integer) return pls_integer as
     numbuf varchar2(4000) := '';
-    buf varchar2(1);
+    buf varchar2(4);
     checkLoop boolean;
   begin
     buf := substr(str, indx, 1); 
@@ -156,7 +156,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
 
   function lexString(str varchar2, tok in out rToken, indx in out pls_integer) return pls_integer as
     varbuf varchar2(4000) := '';
-    buf varchar(1);
+    buf varchar(4);
     wrong boolean;
   begin
     indx := indx +1;
@@ -214,7 +214,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     tokens lTokens;
     indx pls_integer := 1;
     tok_indx pls_integer := 1;
-    buf varchar2(1);
+    buf varchar2(4);
     lin_no number := 1;
     col_no number := 0;
   begin

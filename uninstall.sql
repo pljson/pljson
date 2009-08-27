@@ -22,7 +22,8 @@
   */
 
 declare begin
-  begin execute immediate 'drop package body json_ext'; exception when others then null; end;
+  begin execute immediate 'drop package json_parser'; exception when others then null; end;
+  begin execute immediate 'drop package json_printer'; exception when others then null; end;
   begin execute immediate 'drop package json_ext'; exception when others then null; end;
   begin execute immediate 'drop type json force'; exception when others then null; end;
   begin execute immediate 'drop type json_member_array force'; exception when others then null; end;
@@ -32,9 +33,5 @@ declare begin
   begin execute immediate 'drop type json_element force'; exception when others then null; end;
   begin execute immediate 'drop type json_bool force'; exception when others then null; end;
   begin execute immediate 'drop type json_null force'; exception when others then null; end;
-  begin execute immediate 'drop package body json_parser'; exception when others then null; end;
-  begin execute immediate 'drop package body json_printer'; exception when others then null; end;
-  begin execute immediate 'drop package json_parser'; exception when others then null; end;
-  begin execute immediate 'drop package json_printer'; exception when others then null; end;
 end;
 
