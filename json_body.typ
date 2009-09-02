@@ -218,14 +218,18 @@ create or replace type body json as
     return (self.get(pair_name) is not null);
   end;
   
-  member function to_char return varchar2 as
+  member function to_char(spaces boolean default true) return varchar2 as
   begin
-    return json_printer.pretty_print(self);
+    if(spaces is null) then	
+      return json_printer.pretty_print(self);
+    else 
+      return json_printer.pretty_print(self, spaces);
+    end if;
   end;
   
-  member procedure print as
+  member procedure print(spaces boolean default true) as
   begin
-    dbms_output.put_line(self.to_char);
+    dbms_output.put_line(self.to_char(spaces));
   end;
   
   member function to_anydata return anydata as

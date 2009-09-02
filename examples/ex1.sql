@@ -47,4 +47,5 @@ begin
   }
 }');
   obj.print;
+  obj.print(false); --compact way
 end;

@@ -53,6 +53,7 @@ begin
   str := 'Put method JSON test';
   declare
     obj json; tester varchar2(4000);
+    temp varchar2(10); --indent
   begin
     obj := json();
     obj.put('A', 1);
@@ -63,7 +64,10 @@ begin
     assertTrue(obj.count = 3);
     obj.put('A', 'AAA');
     assertTrue(obj.count = 3);
+    temp := json_printer.indent_string;
+    json_printer.indent_string := '  ';
     tester := obj.to_char;
+    json_printer.indent_string := temp;
     tester := substr(tester, 5,3);
     assertTrue(tester = '"A"');
     pass(str);

@@ -202,6 +202,11 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       end if;
     end loop;
     
+    if (buf is null) then 
+      s_error('string ending not found', tok);
+      --debug('Premature string ending');
+    end if;
+
     --debug(varbuf);
     tok.data := varbuf;
     return indx;
@@ -305,6 +310,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     tok rToken;
   begin
     --value, value, value ]
+    if(indx > tokens.count) then p_error('more elements in array was excepted', tok); end if;
     tok := tokens(indx);
     while(tok.type_name != ']') loop
       e_arr.extend;
@@ -337,9 +343,11 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
           p_error('Expected a value', tok);
       end case;
       indx := indx + 1;
+      if(indx > tokens.count) then p_error('] not found', tok); end if;
       tok := tokens(indx);
       if(tok.type_name = ',') then --advance
         indx := indx + 1;
+        if(indx > tokens.count) then p_error('more elements in array was excepted', tok); end if;
         tok := tokens(indx);
         if(tok.type_name = ']') then --premature exit
           p_error('Premature exit in array', tok);
