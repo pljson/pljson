@@ -168,14 +168,18 @@ create or replace type body json_list as
     return null; -- do not throw error, just return null
   end;
 
-  member function to_char return varchar2 as
+  member function to_char(spaces boolean default true) return varchar2 as
   begin
-    return json_printer.pretty_print_list(self);
+    if(spaces is null) then
+      return json_printer.pretty_print_list(self);
+    else 
+      return json_printer.pretty_print_list(self, spaces);
+    end if;
   end;
 
-  member procedure print as
+  member procedure print(spaces boolean default true) as
   begin
-    dbms_output.put_line(self.to_char);
+    dbms_output.put_line(self.to_char(spaces));
   end;
   
 end;

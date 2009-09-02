@@ -44,8 +44,8 @@ CREATE OR REPLACE TYPE json AS OBJECT (
   member function count return number,
   member function get(pair_name varchar2) return anydata, 
   member function exist(pair_name varchar2) return boolean,
-  member function to_char return varchar2,
-  member procedure print,
+  member function to_char(spaces boolean default true) return varchar2,
+  member procedure print(spaces boolean default true),
   member function to_anydata return anydata,
   
   /* Static conversion methods */  

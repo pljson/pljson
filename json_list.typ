@@ -37,8 +37,8 @@ create or replace type json_list as object (
   member function get_elem(position pls_integer) return anydata,
   member function get_first return anydata,
   member function get_last return anydata,
-  member function to_char return varchar2,
-  member procedure print
+  member function to_char(spaces boolean default true) return varchar2,
+  member procedure print(spaces boolean default true)
 );
 /
 

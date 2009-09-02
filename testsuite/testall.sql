@@ -32,7 +32,8 @@ CREATE TABLE "JSON_TESTSUITE" (
 @json_test.sql
 @json_list_test.sql
 @simple_test.sql
-@ext_test.sql --uncomment this if you're not happy with the extension package
+@ext_test.sql
+@jsonpath.sql
 
 PROMPT Unit-testing of PLJSON implementation:
 select * from json_testsuite;

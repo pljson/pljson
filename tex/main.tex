@@ -53,7 +53,7 @@
 \columnsep 0.4in
 \footskip 0.4in 
 
-\title{PL/JSON Reference Guide (version 0.8.2)}
+\title{PL/JSON Reference Guide (version 0.8.3)}
 \subtitle{For Oracle 10g and 11g}
 \author{Jonas Krogsbøll}
 \date{}
@@ -140,15 +140,68 @@ To get started using this product, you should first install the product with the
 \item \textbf{ex5.sql}: Building a list with the API.
 \item \textbf{ex6.sql}: Working with variables as copies.
 \item \textbf{ex7.sql}: Using the extension package.
+\item \textbf{ex8.sql}: Using JSON Path getters.
+\item \textbf{ex9.sql}: Using JSON Path putters.
+\item \textbf{ex10.sql}: Using JSON Path remove.
 \item \textbf{sqlplus\_run.sql}: Displaying examples from www.json.org/example.html
 \end{itemize}
 
 \section*{EXTENSION PACKAGE}
 The extension package makes it easier to work with the values in a JSON object or a JSON\_LIST. The values are all stored as ANYDATA, but can be converted back to a useful type with the static functions in the JSON object type. To know what conversion function you should use, you can test the value with the type testing functions in the JSON\_EXT package. The extension package also delivers a way of using dates in JSON, but you might ask why that functionality isn't a part of the object types. \\
-The core implementation strictly follows the specification (RFC 4627 - http://www.ietf.org/rfc/rfc4627.txt?number=4627) on JSON. Furthermore the design goals with JSON were to, quote: ''be minimal, portable, textual and a subset of JavaScript. The less we need to agree on in order to interoperate, the more easily we can interoperate'' - D.Crockford. I, for instance, like dates/timestamp to be represented as milliseconds since 1st of January 1970 at 00:00:00 UTC. That is compact, but in a oracle context that isn't exactly the ideal choice. 
+The core implementation strictly follows the specification (RFC 4627 - http://www.ietf.org/rfc/rfc4627.txt?number=4627) on JSON. Furthermore the design goals with JSON were to, quote: ''be minimal, portable, textual and a subset of JavaScript. The less we need to agree on in order to interoperate, the more easily we can interoperate'' - D.Crockford. I, for instance, like dates/timestamp to be represented as milliseconds since 1st of January 1970 at 00:00:00 UTC. That is compact, but in a oracle context that isn't exactly the ideal choice. \\Since version 0.8.3, JSON Path is implemented in this package. Here is a brief description of JSON Path in PL/JSON:
+\subsection*{JSON Path description}
+A JSON Path is a way to navigate in a JSON Object. The implementation is quite simple and does not support all the features that are available in stefan goessners JavaScript, Python and PHP implementation of JSON Path. Actually, all that is does is to add the support for navigation in JSON, that are allready build in into those languages. When navigating with JSON Path in PL/JSON, members of JSON Objects are found with the dot operator while elements in lists are found with square brackets. The following examples show how you can use JSON Path to extract from a JSON Object.\\\\
+The JSON Object:
+\begin{verbatim}
+{
+  "xyz" : {
+    "abc" : [1,2,3,[4,5,{"123":45}]]
+  }
+}
+\end{verbatim}
+Extract the ''abc'' list:
+\begin{verbatim}
+json_ext.get_json_list(obj, 
+  'xyz.abc').print;
+-----------
+[1, 2, 3, [4 ,5 , {
+  "123" : 123
+}]]
+\end{verbatim}
+Extract the ''123'' number:
+\begin{verbatim}
+json_ext.get_number(obj,
+  'xyz.abc[4][3].123').print;
+----------
+45
+\end{verbatim}
+Square brackets cannot be used to extract JSON members like you would do in JavaScript (We will might add that feature later on). \\\\
+You can also use JSON Path to modify an existing JSON Object:
+\begin{verbatim}
+json_ext.put(obj, 'xyz.abc',
+  json('{"val":123}'));
+----------
+{
+  "xyz" : {
+    "abc" : {
+      "val" : 123
+    }
+  }
+}
+\end{verbatim}
+Remove unwanted elements is also an option:
+\begin{verbatim}
+json_ext.remove(obj, 'xyz.abc');
+----------
+{
+  "xyz" : {
+  }
+}
+\end{verbatim}
+The example files 8 to 10 provides a more detailed explaination.
 
 \section*{TESTSUITE}
-Any proper product is tested for correctness. So should PL/JSON be with a testsuite that can be executed without installing any additional software on your database. You probaly don't need the testsuite, but if you modify the implementation or add more features, tests will be needed. Also if you discover a bug, you could report the bug by writing a relevant testcase.
+Any proper product is tested for correctness. So should PL/JSON be, with a testsuite that can be executed without installing any additional software on your database. You probaly don't need the testsuite, but if you modify the implementation or add more features, tests will be needed. Also if you discover a bug, you could report the bug by writing a relevant testcase.
 
 \section*{CONTRIBUTING}
 Write to us in the forums of sourceforge.net. We will be happy to hear from you. \\\\
@@ -160,7 +213,6 @@ When you are contributing then more eyes will look at your code.
 Possible errors might get detected and corrected and new features may arrise from your features - making it a better product you can use.
 
 \section*{FUTURE PLANS}
-Maybe an XPATH way of accessing and storing values will be implemented.\\
 Additional json-list or json operations such as concat, substract, join, union, etc.\\
 Enhancing the parser and printer to handle strings larger than 32K.\\
 Test's and examples of storing JSON in a table.\\
@@ -225,13 +277,13 @@ Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
 \hline
 
 \hline
-  \textbf{MEMBER FUNCTION} & to\_char\\
+  \textbf{MEMBER FUNCTION} & to\_char(spaces boolean default true)\\
 \hline
-  \multicolumn{2}{|p{15cm}|}{Pretty-prints the JSON-object into a VARCHAR2} \\
+  \multicolumn{2}{|p{15cm}|}{Pretty-prints the JSON-object into a VARCHAR2. Set spaces to false if you want a compact pretty-print} \\
 \hline
 
 \hline
-  \textbf{MEMBER PROCEDURE} & print\\
+  \textbf{MEMBER PROCEDURE} & print(spaces boolean default true)\\
 \hline
   \multicolumn{2}{|p{15cm}|}{Outputs to\_char with dbms\_output.put\_line.} \\
 \hline
@@ -348,13 +400,13 @@ Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
 \hline
 
 \hline
-  \textbf{MEMBER FUNCTION} & to\_char\\
+  \textbf{MEMBER FUNCTION} & to\_char(spaces boolean default true)\\
 \hline
-  \multicolumn{2}{|p{15cm}|}{Pretty-prints the JSON\_LIST-object into a VARCHAR2} \\
+  \multicolumn{2}{|p{15cm}|}{Pretty-prints the JSON\_LIST-object into a VARCHAR2. Set spaces to false if you want a compact pretty-print} \\
 \hline
 
 \hline
-  \textbf{MEMBER PROCEDURE} & print\\
+  \textbf{MEMBER PROCEDURE} & print(spaces boolean default true)\\
 \hline
   \multicolumn{2}{|p{15cm}|}{Outputs to\_char with dbms\_output.put\_line.} \\
 \hline

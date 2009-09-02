@@ -20,9 +20,10 @@ create or replace package json_printer as
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
+  indent_string varchar2(10) := '  '; --chr(9); for tab
 
-  function pretty_print(obj json) return varchar2;
-  function pretty_print_list(obj json_list) return varchar2;
+  function pretty_print(obj json, spaces boolean default true) return varchar2;
+  function pretty_print_list(obj json_list, spaces boolean default true) return varchar2;
 end json_printer;
 /
 
@@ -53,16 +54,22 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PRINTER" as
     return sys_context('userenv', 'current_schema');
   end;  
 
-  function tab(indent number) return varchar2 as
+  function tab(indent number, spaces boolean) return varchar2 as
     i varchar(200) := '';
   begin
-    for x in 1 .. indent loop i := i || ' '; end loop;
+    if(not spaces) then return ''; end if;
+    for x in 1 .. indent loop i := i || indent_string; end loop;
     return i;
   end;
   
-  procedure ppObj(obj json, indent number, buf in out nocopy varchar2);
+  procedure ppObj(obj json, indent number, buf in out nocopy varchar2, spaces boolean);
 
-  procedure ppEA(input json_list, indent number, buf in out varchar2) as
+  function getCommaSep(spaces boolean) return varchar2 as
+  begin
+    if(spaces) then return ', '; else return ','; end if;
+  end;
+
+  procedure ppEA(input json_list, indent number, buf in out varchar2, spaces boolean) as
     elem json_element; 
     x number; t_num number; t_str varchar2(4000); bool json_bool; obj json; jlist json_list;
     arr json_element_array := input.list_data;
@@ -85,22 +92,31 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PRINTER" as
         when get_schema || '.JSON_LIST' then
           buf := buf || '[';
           x := elem.element_data.getobject(jlist);
-          ppEA(jlist, indent, buf);
+          ppEA(jlist, indent, buf, spaces);
           buf := buf || ']';
         when get_schema || '.JSON' then
           x := elem.element_data.getobject(obj);
-          ppObj(obj, indent, buf);
+          ppObj(obj, indent, buf, spaces);
         else buf := buf || elem.element_data.gettypename;
       end case;
       end if;
-      if(y != arr.count) then buf := buf || ', '; end if;
+      if(y != arr.count) then buf := buf || getCommaSep(spaces); end if;
     end loop;
   end ppEA;
 
-  procedure ppMem(mem json_member, indent number, buf in out nocopy varchar2) as
+  function getMemName(mem json_member, spaces boolean) return varchar2 as
+  begin
+    if(spaces) then
+      return '"' || mem.member_name || '" : ';
+    else 
+      return '"' || mem.member_name || '":';
+    end if;
+  end;
+
+  procedure ppMem(mem json_member, indent number, buf in out nocopy varchar2, spaces boolean) as
     x number; t_num number; t_str varchar2(4000); bool json_bool; obj json; jlist json_list;
   begin
-    buf := buf || tab(indent) || '"' || mem.member_name || '" : ';
+    buf := buf || tab(indent, spaces) || getMemName(mem, spaces);
     case mem.member_data.gettypename
       when 'SYS.NUMBER' then 
         x := mem.member_data.getnumber(t_num);
@@ -116,41 +132,45 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PRINTER" as
       when get_schema || '.JSON_LIST' then
         buf := buf || '[';
         x := mem.member_data.getobject(jlist);
-        ppEA(jlist, indent, buf);
+        ppEA(jlist, indent, buf, spaces);
         buf := buf || ']';
       when get_schema || '.JSON' then
         x := mem.member_data.getobject(obj);
-        ppObj(obj, indent, buf);
+        ppObj(obj, indent, buf, spaces);
       else buf := buf || mem.member_data.gettypename;
     end case;
   end ppMem;
-
-  procedure ppObj(obj json, indent number, buf in out nocopy varchar2) as
+  
+  function newline(spaces boolean) return varchar2 as
   begin
-    buf := buf || '{' || chr(13);
+    if(spaces) then return chr(13); else return ''; end if;
+  end;
+
+  procedure ppObj(obj json, indent number, buf in out nocopy varchar2, spaces boolean) as
+  begin
+    buf := buf || '{' || newline(spaces);
     for m in 1 .. obj.json_data.count loop
-      ppMem(obj.json_data(m), indent+2, buf);
-      if(m != obj.json_data.count) then buf := buf || ',' || chr(13);
-      else buf := buf || chr(13); end if;
+      ppMem(obj.json_data(m), indent+1, buf, spaces);
+      if(m != obj.json_data.count) then buf := buf || ',' || newline(spaces);
+      else buf := buf || newline(spaces); end if;
     end loop;
-    buf := buf || tab(indent) || '}'; -- || chr(13);
+    buf := buf || tab(indent, spaces) || '}'; -- || chr(13);
   end ppObj;
   
-  function pretty_print(obj json) return varchar2 as
+  function pretty_print(obj json, spaces boolean default true) return varchar2 as
     buf varchar2(32676) := '';
   begin
-    ppObj(obj, 0, buf);
+    ppObj(obj, 0, buf, spaces);
     return buf;
   end pretty_print;
 
-  function pretty_print_list(obj json_list) return varchar2 as
+  function pretty_print_list(obj json_list, spaces boolean default true) return varchar2 as
     buf varchar2(32676) := '[';
   begin
-    ppEA(obj, 0, buf);
+    ppEA(obj, 0, buf, spaces);
     buf := buf || ']';
     return buf;
   end;
 
-end json_printer;
-/
- 
+end json_printer;/
+

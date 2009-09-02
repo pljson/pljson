@@ -88,11 +88,23 @@ begin
   assertFail('{ "a": NULL }','unexpected char l.226');
   --unicode char test
   assertPass('{"æåø": "ÅÆØ"}','Unicode char test - on UTF8 databases');
+  --string ending test
+  declare 
+    tokens json_parser.lTokens;
+  begin
+    tokens := json_parser.lexer('"kbwkbwkbkb');
+    fail('Lexer String ending test');
+  exception
+    when others then pass('Lexer String ending test');
+  end;
   
   dbms_output.put_line('');
   dbms_output.put_line('Parser testing:');
   assertFail('{ "a": [}]}','array expecting value got }');
   assertFail('{ "a": [,]}','premature exit from array');
+  assertFail('{ "a": [,','premature exit from array2');
+  assertFail('{ "a": [2','premature exit from array3');
+  assertFail('{ "a": [','premature exit from array4');
   assertFail('{ "a": [ 2 2 ]}','commas between values in array 1');
   assertPass('{ "a": [ 2, 2 ]}','commas between values in array 2');
   assertFail('{ "a": [ 2, 2 }','remember to end array');  
