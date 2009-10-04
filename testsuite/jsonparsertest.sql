@@ -91,9 +91,12 @@ begin
   --string ending test
   declare 
     tokens json_parser.lTokens;
+    src json_parser.json_src;
   begin
-    tokens := json_parser.lexer('"kbwkbwkbkb');
+    src := json_parser.prepareVarchar2('"kbwkbwkbkb'); /* since 0.84*/
+    tokens := json_parser.lexer(src);
     fail('Lexer String ending test');
+    null;
   exception
     when others then pass('Lexer String ending test');
   end;

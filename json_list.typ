@@ -24,6 +24,7 @@ create or replace type json_list as object (
   list_data json_element_array,
   constructor function json_list return self as result,
   constructor function json_list(str varchar2) return self as result,
+  constructor function json_list(str clob) return self as result,
   member procedure add_elem(elem anydata, position pls_integer default null),
   member procedure add_elem(elem varchar2, position pls_integer default null),
   member procedure add_elem(elem number, position pls_integer default null),
@@ -38,6 +39,7 @@ create or replace type json_list as object (
   member function get_first return anydata,
   member function get_last return anydata,
   member function to_char(spaces boolean default true) return varchar2,
+  member procedure to_clob(buf in out nocopy clob, spaces boolean default false),
   member procedure print(spaces boolean default true)
 );
 /

@@ -33,7 +33,7 @@ create or replace package json_ext as
   function is_json_null(v anydata) return boolean;
   
   --JSON Path getters
-  function get_anydata(obj json, path varchar2) return anydata;
+  function get_anydata(obj json, v_path varchar2) return anydata;
   function get_varchar2(obj json, path varchar2) return varchar2;
   function get_number(obj json, path varchar2) return number;
   function get_json(obj json, path varchar2) return json;
@@ -144,7 +144,8 @@ create or replace package body json_ext as
   end;
 
   --JSON Path getters
-  function get_anydata(obj json, path varchar2) return anydata as
+  function get_anydata(obj json, v_path varchar2) return anydata as
+    path varchar2(32767);
     t_obj json;
     returndata anydata := null;
     
@@ -181,7 +182,10 @@ create or replace package body json_ext as
   begin
     t_obj := obj;
     --until e_indx = 0 read to next .
-    if(path is null) then return obj.to_anydata; end if;
+    if(v_path is null) then return obj.to_anydata; end if;
+    path := regexp_replace(v_path, '(\s)*\[(\s)*"', '.');
+    path := regexp_replace(path, '"(\s)*\](\s)*', '');
+    if(substr(path, 1, 1) = '.') then path := substr(path, 2); end if;
     while (e_indx != 0) loop
       e_indx := instr(path,'.',s_indx,1);
       if(e_indx = 0) then subpath := substr(path, s_indx);
@@ -278,7 +282,8 @@ create or replace package body json_ext as
   
   /* JSON Path putter internal function */
   /* I know the code is crap - feel free to rewrite it */ 
-  procedure put_internal(obj in out nocopy json, path varchar2, elem varchar2, del boolean default false) as
+  procedure put_internal(obj in out nocopy json, v_path varchar2, elem varchar2, del boolean default false) as
+    path varchar2(32767);
     /* variables */
     type indekses is table of number(38) index by pls_integer;
     build json;
@@ -406,8 +411,12 @@ create or replace package body json_ext as
     end;
   
   begin
-    if(substr(path, 1, 1) = '.') then raise_application_error(-20110, 'Path error: . not a valid start'); end if;  
-    if(path is null) then raise_application_error(-20110, 'Path error: no path'); end if;  
+    if(substr(v_path, 1, 1) = '.') then raise_application_error(-20110, 'Path error: . not a valid start'); end if;  
+    if(v_path is null) then raise_application_error(-20110, 'Path error: no path'); end if;  
+    path := regexp_replace(v_path, '(\s)*\[(\s)*"', '.');
+    path := regexp_replace(path, '"(\s)*\](\s)*', '');
+    if(substr(path, 1, 1) = '.') then path := substr(path, 2); end if;
+    --dbms_output.put_line('PATH: '||path);
     while (i <= length(path)) loop
       tok := substr(path, i, 1);  
       if(tok = '.') then 
