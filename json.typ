@@ -29,6 +29,7 @@ CREATE OR REPLACE TYPE json AS OBJECT (
   constructor function json return self as result,
   constructor function json(pair_data in json_member_array) return self as result,
   constructor function json(str varchar2) return self as result,
+  constructor function json(str clob) return self as result,
     
   /* Member setter methods */  
   member procedure remove(pair_name varchar2),
@@ -45,6 +46,7 @@ CREATE OR REPLACE TYPE json AS OBJECT (
   member function get(pair_name varchar2) return anydata, 
   member function exist(pair_name varchar2) return boolean,
   member function to_char(spaces boolean default true) return varchar2,
+  member procedure to_clob(buf in out nocopy clob, spaces boolean default false),
   member procedure print(spaces boolean default true),
   member function to_anydata return anydata,
   

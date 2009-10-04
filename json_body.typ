@@ -42,6 +42,12 @@ create or replace type body json as
     return;
   end;
   
+  constructor function json(str clob) return self as result as
+  begin
+    self := json_parser.parser(str);
+    return;
+  end;  
+
   /* Member setter methods */  
   member procedure remove(pair_name varchar2) as
     temp json_member;
@@ -227,6 +233,15 @@ create or replace type body json as
     end if;
   end;
   
+  member procedure to_clob(buf in out nocopy clob, spaces boolean default false) as
+  begin
+    if(spaces is null) then	
+      json_printer.pretty_print(self, false, buf);
+    else 
+      json_printer.pretty_print(self, spaces, buf);
+    end if;
+  end;
+
   member procedure print(spaces boolean default true) as
   begin
     dbms_output.put_line(self.to_char(spaces));

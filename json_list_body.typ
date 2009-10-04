@@ -32,6 +32,12 @@ create or replace type body json_list as
     self := json_parser.parse_list(str);
     return;
   end;
+  
+  constructor function json_list(str clob) return self as result as
+  begin
+    self := json_parser.parse_list(str);
+    return;
+  end;
 
   member procedure add_elem(elem anydata, position pls_integer default null) as
     indx pls_integer;
@@ -174,6 +180,15 @@ create or replace type body json_list as
       return json_printer.pretty_print_list(self);
     else 
       return json_printer.pretty_print_list(self, spaces);
+    end if;
+  end;
+
+  member procedure to_clob(buf in out nocopy clob, spaces boolean default false) as
+  begin
+    if(spaces is null) then	
+      json_printer.pretty_print_list(self, false, buf);
+    else 
+      json_printer.pretty_print_list(self, spaces, buf);
     end if;
   end;
 

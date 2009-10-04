@@ -42,7 +42,7 @@ begin
     assertTrue(json_ext.get_json_bool(obj, 'a').is_true);
     assertTrue(json_ext.get_json(obj, 'a') is null);
     assertTrue(json_ext.get_json(obj, 'b') is not null);
-    assertTrue(json_ext.get_number(obj, 'b.c')=123);
+    assertTrue(nvl(json_ext.get_number(obj, 'b.c'),0)=123);
     assertTrue(json_ext.get_varchar2(obj, 'b.c') is null);
     pass(str);
   exception
@@ -56,10 +56,10 @@ begin
     obj := json('{"a": [1,[true,15]]}');
     assertTrue(json_ext.get_json_bool(obj, 'a') is null);
     assertTrue(json_ext.get_json_list(obj, 'a') is not null);
-    assertTrue(json_ext.get_number(obj, 'a[1]')=1);
-    assertTrue(json_ext.get_number(obj, 'a[2][2]')=15);
+    assertTrue(nvl(json_ext.get_number(obj, 'a[1]'),0)=1);
+    assertTrue(nvl(json_ext.get_number(obj, 'a[2][2]'),0)=15);
     assertTrue(json_ext.get_json_bool(obj, 'a[2][1]').is_true);
-    assertFalse(json_ext.get_number(obj, 'a[0][13]')=15);
+    assertFalse(nvl(json_ext.get_number(obj, 'a[0][13]'),0)=15);
     pass(str);
   exception
     when others then fail(str);
@@ -73,8 +73,8 @@ begin
     --obj.print;
     assertTrue(json_ext.get_json_bool(obj, 'a') is null);
     assertTrue(json_ext.get_json_list(obj, 'a') is not null);
-    assertTrue(json_ext.get_number(obj, 'a[3]')=15);
-    assertTrue(json_ext.get_number(obj, 'a[2].a.i[1].A')=2);
+    assertTrue(nvl(json_ext.get_number(obj, 'a[2][2]'),0)=15);
+    assertTrue(nvl(json_ext.get_number(obj, 'a[2][1].a.i[1].A'),0)=2);
     pass(str);
   exception
     when others then fail(str);
@@ -86,7 +86,7 @@ begin
   begin
     obj := json('{" a ": true, "b     ":{" s  ":[{" 3 ":7913}]}}');
     assertTrue(json_ext.get_json_bool(obj, ' a ').is_true);
-    assertTrue(json_ext.get_number(obj, 'b     . s [  1   ]. 3 ')=7913);
+    assertTrue(nvl(json_ext.get_number(obj, 'b     . s  [  1   ]. 3 '),0)=7913);
     pass(str);
   exception
     when others then fail(str);
@@ -115,9 +115,9 @@ begin
     obj json := json();
   begin
     json_ext.put(obj, 'a', 'x');
-    assertTrue(json_ext.get_varchar2(obj, 'a') = 'x');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a'),'a') = 'x');
     json_ext.put(obj, 'a', 'y');
-    assertTrue(json_ext.get_varchar2(obj, 'a') = 'y');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a'),'a') = 'y');
     pass(str);
   exception
     when others then fail(str);
@@ -128,18 +128,18 @@ begin
     obj json := json();
   begin
     json_ext.put(obj, 'a', json_list('["x"]'));
-    assertTrue(json_ext.get_varchar2(obj, 'a[1]') = 'x');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a[1]'),'a') = 'x');
     json_ext.put(obj, 'a[1]', 'y');
-    assertTrue(json_ext.get_varchar2(obj, 'a[1]') = 'y');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a[1]'),'a') = 'y');
     json_ext.put(obj, 'a[3]', 'z');
-    assertTrue(json_ext.get_varchar2(obj, 'a[1]') = 'y');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a[1]'),'a') = 'y');
     assertTrue(json_ext.get_json_null(obj, 'a[2]') is not null);
-    assertTrue(json_ext.get_varchar2(obj, 'a[3]') = 'z');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a[3]'),'a') = 'z');
     json_ext.put(obj, 'a[2]', json_ext.get_varchar2(obj, 'a[1]'));
     json_ext.put(obj, 'a[1]', 'x');
-    assertTrue(json_ext.get_varchar2(obj, 'a[1]') = 'x');
-    assertTrue(json_ext.get_varchar2(obj, 'a[2]') = 'y');
-    assertTrue(json_ext.get_varchar2(obj, 'a[3]') = 'z');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a[1]'),'a') = 'x');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a[2]'),'a') = 'y');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a[3]'),'a') = 'z');
     pass(str);
   exception
     when others then fail(str);
@@ -168,9 +168,9 @@ begin
     json_ext.put(obj, 'a', json_null());
     assertTrue(json_ext.get_json_null(obj, 'a') is not null);
     json_ext.put(obj, 'a', 'string');
-    assertTrue(json_ext.get_varchar2(obj, 'a') = 'string');
+    assertTrue(nvl(json_ext.get_varchar2(obj, 'a'),'a') = 'string');
     json_ext.put(obj, 'a', 123.456);
-    assertTrue(json_ext.get_number(obj, 'a') = 123.456);
+    assertTrue(nvl(json_ext.get_number(obj, 'a'),0) = 123.456);
     pass(str);
   exception
     when others then fail(str);
@@ -181,12 +181,12 @@ begin
     obj json := json();
   begin
     json_ext.put(obj, 'a[1][2][3].c.d', date '2009-08-31');
-    assertTrue(json_ext.get_date(obj, 'a[1][2][3].c.d') = date '2009-08-31');
+    assertTrue(nvl(json_ext.get_date(obj, 'a[1][2][3].c.d'),date '2000-01-01') = date '2009-08-31');
     assertTrue(json_ext.get_json_null(obj, 'a[1][2][2]') is not null);
     assertTrue(json_ext.get_json_null(obj, 'a[1][2][1]') is not null);
     assertTrue(json_ext.get_json_null(obj, 'a[1][1]') is not null);
     json_ext.put(obj, 'f[1]', json_list('[1,null,[[12],2],null]'));
-    assertTrue(json_ext.get_number(obj, 'f[1][3][1][1]') = 12);
+    assertTrue(nvl(json_ext.get_number(obj, 'f[1][3][1][1]'),0) = 12);
     pass(str);
   exception
     when others then fail(str);
@@ -253,12 +253,12 @@ begin
       when others then null;
     end;
 
-    begin
+  /*  begin
       json_ext.put(obj, 'a["xyz"][2][3]', date '2009-08-31'); --maybe we will support this later
       failure := true;
     exception 
       when others then null;
-    end;
+    end;*/
 
     if(failure) then fail(str); else pass(str); end if;
   end;
@@ -269,7 +269,7 @@ begin
     obj json := json('{"2":[1,2,3]}');
   begin
     json_ext.remove(obj, '2[2]');
-    assertTrue(json_ext.get_number(obj, '2[2]') = 3);
+    assertTrue(nvl(json_ext.get_number(obj, '2[2]'),0) = 3);
     json_ext.remove(obj, '2');
     assertTrue(obj.count = 0);
     pass(str);
@@ -286,6 +286,28 @@ begin
     assertTrue(obj.count = 1);
     json_ext.remove(obj, 'b[1]');
     assertTrue(json_ext.get_json_list(obj, 'b').count = 0);
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'Getter index with [" "]';
+  declare 
+    obj json := json('{"a": [1,[{"a":{"i":[{"A":2}]}},15] ] }');
+  begin
+    assertTrue(nvl(json_ext.get_number(obj, 'a[2][1].a.i[1].A'),0) = 2);
+    assertTrue(nvl(json_ext.get_number(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]'),0) = 2);
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
+  str := 'Putter index with [" "]';
+  declare 
+    obj json := json('{"a": [1,[{"a":{"i":[{"A":2}]}},15] ] }');
+  begin
+    json_ext.put(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]', 78);
+    assertTrue(nvl(json_ext.get_number(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]'),0)=78);
     pass(str);
   exception
     when others then fail(str);

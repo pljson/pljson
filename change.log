@@ -19,6 +19,12 @@ This software has been released under the MIT license:
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
+      Version: 0.8.4
+        Added clob methods
+        Enhanced the json-path to support bracket select in json objects
+        Updated documentation
+        Added one example file
+        Added NVL to various unittests.
       Version: 0.8.3
         Added optional compact output
         four parser-errors catched.

@@ -53,7 +53,7 @@
 \columnsep 0.4in
 \footskip 0.4in 
 
-\title{PL/JSON Reference Guide (version 0.8.3)}
+\title{PL/JSON Reference Guide (version 0.8.4)}
 \subtitle{For Oracle 10g and 11g}
 \author{Jonas Krogsbøll}
 \date{}
@@ -82,7 +82,7 @@ The parser and pretty-printer is implemented in two packages, but you'll never n
 \item 8 new oracle types ready to use in your database.
 \item 3 packages (parser, printer and extension)
 \item A few examples files - *Note* examples do not modify the database.
-\item Some testing script - creates and delete a table (JSON\_TESTSUITE)
+\item Some testing scripts - creates and delete a table (JSON\_TESTSUITE)
 \end{itemize}
 
 \subsection*{Going from 0.6.2 to 0.8.0?}
@@ -92,43 +92,10 @@ We are finding that people like products that just work. It turns out that desig
 \end{quotation}
 
 \section*{KNOWN LIMITATIONS}
-People hate limitations, but frustration kicks in when the limitations are unknown or undescribed. 
 \begin{itemize}
-\item The maximum input size the parser can accept is 32000 characters.
-\item The pretty-printer limits it's output to 32676 characters (extra space added for line breaks and spaces).
 \item Each string (pair-name or value) is limited to 4000 characters.
 \item The number parsing assumes that oracles number type can contain the input (in most cases it can).
 \end {itemize}
-
-\subsection*{Example to workaround the pretty-printer size limit}
-Suppose we want to build a large json-list and print it with dbms\_output.put\_line:
-\small
-\begin{verbatim}
-declare
-  obj json := json('{ 
-    "test": true, 
-    "array": [1,2,3]}');
-  thelist json_list := json_list();
-begin
-  for i in 1 .. 300 loop
-    obj.put('Loop counter', i);
-    thelist.add_elem(obj.to_anydata);
-  end loop;
-
-  --printing starts
-  dbms_output.put('[');
-  for i in 1 .. thelist.count loop
-    obj := json.to_json(thelist.get_elem(i));
-    dbms_output.put(obj.to_char);
-    if(i != thelist.count) then 
-      dbms_output.put(', '); 
-    end if;
-  end loop;
-  dbms_output.put_line(']');
-end;
-\end{verbatim}
-\normalsize
-Now the limitation will be the size of the dbms\_output buffer.
 
 \section*{GETTING STARTED}
 To get started using this product, you should first install the product with the install script and then take a look at the examples in the \em examples \em folder. The content of each example file are:
@@ -143,6 +110,7 @@ To get started using this product, you should first install the product with the
 \item \textbf{ex8.sql}: Using JSON Path getters.
 \item \textbf{ex9.sql}: Using JSON Path putters.
 \item \textbf{ex10.sql}: Using JSON Path remove.
+\item \textbf{ex11.sql}: Using the TO\_CLOB method to save JSON.
 \item \textbf{sqlplus\_run.sql}: Displaying examples from www.json.org/example.html
 \end{itemize}
 
@@ -165,7 +133,7 @@ json_ext.get_json_list(obj,
   'xyz.abc').print;
 -----------
 [1, 2, 3, [4 ,5 , {
-  "123" : 123
+  "123" : 45
 }]]
 \end{verbatim}
 Extract the ''123'' number:
@@ -175,7 +143,13 @@ json_ext.get_number(obj,
 ----------
 45
 \end{verbatim}
-Square brackets cannot be used to extract JSON members like you would do in JavaScript (We will might add that feature later on). \\\\
+As of version 0.8.4, square brackets can be used to extract JSON members like you would do in JavaScript: 
+\begin{verbatim}
+json_ext.get_number(obj,
+  '["xyz"]["abc"][4][3]["123"]').print;
+----------
+45
+\end{verbatim}
 You can also use JSON Path to modify an existing JSON Object:
 \begin{verbatim}
 json_ext.put(obj, 'xyz.abc',
@@ -213,10 +187,7 @@ When you are contributing then more eyes will look at your code.
 Possible errors might get detected and corrected and new features may arrise from your features - making it a better product you can use.
 
 \section*{FUTURE PLANS}
-Additional json-list or json operations such as concat, substract, join, union, etc.\\
-Enhancing the parser and printer to handle strings larger than 32K.\\
-Test's and examples of storing JSON in a table.\\
-
+Additional json-list or json operations such as concat, substract, join, union, sort, etc.\\
 
 \onecolumn
 \section*{TYPES}
@@ -239,6 +210,14 @@ Example of usage can be found in the \em example \em folder. The important objec
   \multicolumn{2}{|p{15cm}|}{Parses an json-text and return a JSON-object. 
 Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
 \hline
+
+\hline
+  \textbf{CONSTRUCTOR} & json(clob)\\
+\hline
+  \multicolumn{2}{|p{15cm}|}{Parses an json-text and return a JSON-object. 
+Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
+\hline
+
 
 \hline
   \textbf{MEMBER PROCEDURE} & put(varchar2, anydata, position)\\
@@ -280,6 +259,12 @@ Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
   \textbf{MEMBER FUNCTION} & to\_char(spaces boolean default true)\\
 \hline
   \multicolumn{2}{|p{15cm}|}{Pretty-prints the JSON-object into a VARCHAR2. Set spaces to false if you want a compact pretty-print} \\
+\hline
+
+\hline
+  \textbf{MEMBER PROCEDURE} & to\_clob(buf in out nocopy clob, spaces boolean default false)\\
+\hline
+  \multicolumn{2}{|p{15cm}|}{Pretty-prints the JSON-object into a CLOB. Set spaces to true if you do not want a compact pretty-print} \\
 \hline
 
 \hline
@@ -348,6 +333,13 @@ Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
 \hline
 
 \hline
+  \textbf{CONSTRUCTOR} & json\_list(clob)\\
+\hline
+  \multicolumn{2}{|p{15cm}|}{Parses an json-text and return a JSON\_LIST-object. 
+Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
+\hline
+
+\hline
   \textbf{MEMBER PROCEDURE} & add\_elem(anydata, position)\\
 & add\_elem(varchar2, position)\\
 & add\_elem(number, position)\\
@@ -403,6 +395,12 @@ Throws ORA-20101 and ORA-20100 in case of an faulty json-text.} \\
   \textbf{MEMBER FUNCTION} & to\_char(spaces boolean default true)\\
 \hline
   \multicolumn{2}{|p{15cm}|}{Pretty-prints the JSON\_LIST-object into a VARCHAR2. Set spaces to false if you want a compact pretty-print} \\
+\hline
+
+\hline
+  \textbf{MEMBER PROCEDURE} & to\_clob(buf in out nocopy clob, spaces boolean default false)\\
+\hline
+  \multicolumn{2}{|p{15cm}|}{Pretty-prints the JSON\_LIST-object into a CLOB. Set spaces to true if you do not want a compact pretty-print} \\
 \hline
 
 \hline
