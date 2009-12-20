@@ -24,8 +24,10 @@ create or replace package json_printer as
 
   function pretty_print(obj json, spaces boolean default true) return varchar2;
   function pretty_print_list(obj json_list, spaces boolean default true) return varchar2;
+  function pretty_print_any(json_part anydata, spaces boolean default true) return varchar2;
   procedure pretty_print(obj json, spaces boolean default true, buf in out nocopy clob);
   procedure pretty_print_list(obj json_list, spaces boolean default true, buf in out nocopy clob);
+  procedure pretty_print_any(json_part anydata, spaces boolean default true, buf in out nocopy clob);
 end json_printer;
 /
 
@@ -198,6 +200,35 @@ PACKAGE BODY "JSON_PRINTER" as
     flush_clob(buf, buf_str);
   end;
 
+  procedure pretty_print_any(json_part anydata, spaces boolean default true, buf in out nocopy clob) as
+    buf_str varchar2(32767) := '';
+    x number; t_num number; t_str varchar2(4000); bool json_bool; obj json; jlist json_list;
+  begin
+    case json_part.gettypename
+      when 'SYS.NUMBER' then 
+        x := json_part.getnumber(t_num);
+        add_to_clob(buf, buf_str, to_char(t_num, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
+      when 'SYS.VARCHAR2' then 
+        x := json_part.getvarchar2(t_str);
+        add_to_clob(buf, buf_str, t_str);
+      when get_schema || '.JSON_BOOL' then
+        x := json_part.getobject(bool);
+        add_to_clob(buf, buf_str, bool.to_char);
+      when get_schema || '.JSON_NULL' then
+        add_to_clob(buf, buf_str, 'null');
+      when get_schema || '.JSON_LIST' then
+        x := json_part.getobject(jlist);
+        pretty_print_list(jlist, spaces, buf);
+        return;
+      when get_schema || '.JSON' then
+        x := json_part.getobject(obj);
+        pretty_print(obj, spaces, buf);
+        return;
+      else add_to_clob(buf, buf_str, 'unknown type:'|| json_part.gettypename);
+    end case;
+    flush_clob(buf, buf_str);
+  end;
+
 /* Clob method end here */
 
 /* Varchar2 method start here */
@@ -290,6 +321,33 @@ PACKAGE BODY "JSON_PRINTER" as
   begin
     ppEA(obj, 0, buf, spaces);
     buf := buf || ']';
+    return buf;
+  end;
+
+  function pretty_print_any(json_part anydata, spaces boolean default true) return varchar2 as
+    buf varchar2(32767) := '';
+    x number; t_num number; t_str varchar2(4000); bool json_bool; obj json; jlist json_list;
+  begin
+    case json_part.gettypename
+      when 'SYS.NUMBER' then 
+        x := json_part.getnumber(t_num);
+        buf := to_char(t_num, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
+      when 'SYS.VARCHAR2' then 
+        x := json_part.getvarchar2(t_str);
+        buf := t_str;
+      when get_schema || '.JSON_BOOL' then
+        x := json_part.getobject(bool);
+        buf := bool.to_char;
+      when get_schema || '.JSON_NULL' then
+        buf := 'null';
+      when get_schema || '.JSON_LIST' then
+        x := json_part.getobject(jlist);
+        buf := pretty_print_list(jlist, spaces);
+      when get_schema || '.JSON' then
+        x := json_part.getobject(obj);
+        buf := pretty_print(obj, spaces);
+      else buf := 'unknown type:'|| json_part.gettypename;
+    end case;
     return buf;
   end;
 

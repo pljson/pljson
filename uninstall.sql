@@ -34,4 +34,4 @@ declare begin
   begin execute immediate 'drop type json_bool force'; exception when others then null; end;
   begin execute immediate 'drop type json_null force'; exception when others then null; end;
 end;
-
+/

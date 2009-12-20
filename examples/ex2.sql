@@ -34,3 +34,4 @@ begin
   dbms_output.put_line(obj.to_char); --equivalent to print
   dbms_output.put_line(obj.to_char(false)); --equivalent to print(false) -- compact
 end;
+/
