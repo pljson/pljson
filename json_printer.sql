@@ -21,6 +21,9 @@ create or replace package json_printer as
   THE SOFTWARE.
   */
   indent_string varchar2(10) := '  '; --chr(9); for tab
+  newline_char varchar2(2) := chr(13)||chr(10); -- Windows style
+  --newline_char varchar2(2) := chr(10); -- Mac style
+  --newline_char varchar2(2) := chr(13); -- Linux style
 
   function pretty_print(obj json, spaces boolean default true) return varchar2;
   function pretty_print_list(obj json_list, spaces boolean default true) return varchar2;
@@ -57,7 +60,7 @@ PACKAGE BODY "JSON_PRINTER" as
 
   function newline(spaces boolean) return varchar2 as
   begin
-    if(spaces) then return chr(13); else return ''; end if;
+    if(spaces) then return newline_char; else return ''; end if;
   end;
 
   function get_schema return varchar2 as

@@ -40,11 +40,11 @@ begin
   begin
     obj := json();
     assertTrue(obj.count = 0);
-    assertTrue(obj.to_char = '{'||chr(13)||'}');
+    assertTrue(obj.to_char(false) = '{}');
     --obj.print;
     obj := json('{     }');
     assertTrue(obj.count = 0);
-    assertTrue(obj.to_char = '{'||chr(13)||'}');
+    assertTrue(obj.to_char(false) = '{}');
     pass(str);
   exception
     when others then fail(str);
@@ -66,9 +66,10 @@ begin
     assertTrue(obj.count = 3);
     temp := json_printer.indent_string;
     json_printer.indent_string := '  ';
-    tester := obj.to_char;
+    tester := obj.to_char(false); --avoid newline problems
     json_printer.indent_string := temp;
-    tester := substr(tester, 5,3);
+    --dbms_output.put_line(tester);
+    tester := substr(tester, 2,3);
     assertTrue(tester = '"A"');
     pass(str);
   exception

@@ -19,6 +19,8 @@ This software has been released under the MIT license:
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
+      Version: 0.8.6
+        Added support for windows linebreak see json_printer
       Version: 0.8.5
         Fix in uninstall.sql (11g error)
         Fix in simpletypes.sql (11g error)
