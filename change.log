@@ -24,7 +24,7 @@ This software has been released under the MIT license:
         Fix in simpletypes.sql (11g error)
         Added prettyprint capabilities to anydata type
         Added hooks to new printing cap. in json_ext (pp, pp_htp)
-        Added example12.sql
+        Added example/ex12.sql
       Version: 0.8.4
         Added clob methods
         Enhanced the json-path to support bracket select in json objects
