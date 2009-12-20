@@ -21,7 +21,7 @@
   */
 
 CREATE OR REPLACE TYPE json_null AS OBJECT (
-  null_data char,
+  null_data char(1),
   CONSTRUCTOR FUNCTION json_null RETURN SELF AS RESULT  
 );
 /

@@ -56,3 +56,4 @@ begin
   obj2.print;
   --JSON_LIST works in the same manner.
 end;
+/

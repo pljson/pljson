@@ -65,3 +65,4 @@ begin
   obj.put('An array', json_list('[1,2,3,4,5]'));
   obj.print;
 end;
+/

@@ -50,6 +50,11 @@ create or replace package json_ext as
 
   procedure remove(obj in out nocopy json, path varchar2);
   
+  --Pretty print with JSON Path
+  function pp(obj json, v_path varchar2) return varchar2;
+  procedure pp(obj json, v_path varchar2); --using dbms_output.put_line
+  procedure pp_htp(obj json, v_path varchar2); --using htp.print
+
   --extra function checks if number has no fraction
   function is_integer(v anydata) return boolean;
   
@@ -519,6 +524,33 @@ create or replace package body json_ext as
       json_ext.put_internal(obj,path,'"delete me"', true);
     end if;
   end remove;
+
+    --Pretty print with JSON Path
+  function pp(obj json, v_path varchar2) return varchar2 as
+    json_part anydata;
+  begin
+    json_part := json_ext.get_anydata(obj, v_path);
+    if(json_part is null) then 
+      return ''; 
+    else 
+      return json_printer.pretty_print_any(json_part); 
+    end if;
+  end pp;
+  
+  procedure pp(obj json, v_path varchar2) as --using dbms_output.put_line
+  begin
+    dbms_output.put_line(pp(obj, v_path));
+  end pp;
+  
+  -- spaces = false!
+  procedure pp_htp(obj json, v_path varchar2) as --using htp.print
+    json_part anydata;
+  begin
+    json_part := json_ext.get_anydata(obj, v_path);
+    if(json_part is null) then htp.print; else 
+      htp.print(json_printer.pretty_print_any(json_part, false)); 
+    end if;
+  end pp_htp;
 
 end json_ext;
 /

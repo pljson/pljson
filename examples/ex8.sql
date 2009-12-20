@@ -123,6 +123,4 @@ begin
   dbms_output.put_line(json_ext.get_number(obj, 'g'));
 
 end;
-
-
-
+/
