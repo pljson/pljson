@@ -47,9 +47,9 @@ begin
    
   -- Suppose we want to change e : 7913 to e : 123. Then we might try to do it 
   -- like this:
-  tempobj := json.to_json(obj.get('c'));
-  temparray := json.to_json_list(tempobj.get('d'));
-  tempobj := json.to_json(temparray.get_last);
+  tempobj := json(obj.get('c'));
+  temparray := json_list(tempobj.get('d'));
+  tempobj := json(temparray.get_last);
   dbms_output.put_line('Got the right inner json?');
   tempobj.print;
   dbms_output.put_line('Yes - now change the value');

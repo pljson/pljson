@@ -34,9 +34,9 @@ begin
   obj := json_list(); --an empty structure
   obj.add_elem('a little string');
   obj.add_elem(123456789);
-  obj.add_elem(json_bool(true));
-  obj.add_elem(json_bool(false));
-  obj.add_elem(json_null());
+  obj.add_elem(true);
+  obj.add_elem(false);
+  obj.add_elem(json_value);
   obj.print;
   p('add with position');
   obj.add_elem('Wow thats great!', 5);
@@ -54,9 +54,9 @@ begin
   dbms_output.put_line(obj.count);
   p('you can also add json or json_lists as values:');
   obj := json_list(); --fresh list;
-  obj.add_elem(json('{"lazy construction": true}').to_anydata);
+  obj.add_elem(json('{"lazy construction": true}').to_json_value);
   obj.add_elem(json_list('[1,2,3,4,5]'));
   obj.print;
-  p('however notice that we had to use the "to_anydata" function on the json object');
+  p('however notice that we had to use the "to_json_value" function on the json object');
 end;
 /

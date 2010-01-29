@@ -44,10 +44,11 @@ create or replace package json_parser as
 
   function parser(str varchar2) return json;
   function parse_list(str varchar2) return json_list;
+--  function parse_any(str varchar2) return json_value;
   function parser(str clob) return json;
   function parse_list(str clob) return json_list;
-    
-
+--  function parse_any(str clob) return json_value;
+  
 end json_parser;
 /
 
@@ -369,29 +370,29 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       e_arr.extend;
       v_count := v_count + 1;
       case tok.type_name
-        when 'TRUE' then e_arr(v_count) := json_element(v_count, anydata.convertobject( json_bool(true) ));
-        when 'FALSE' then e_arr(v_count) := json_element(v_count, anydata.convertobject( json_bool(false) ));
-        when 'NULL' then e_arr(v_count) := json_element(v_count, anydata.convertobject( json_null ));
-        when 'STRING' then e_arr(v_count) := json_element(v_count, anydata.convertvarchar2( tok.data ));
+        when 'TRUE' then e_arr(v_count) := json_element(v_count, json_value(true) );
+        when 'FALSE' then e_arr(v_count) := json_element(v_count, json_value(false) );
+        when 'NULL' then e_arr(v_count) := json_element(v_count, json_value);
+        when 'STRING' then e_arr(v_count) := json_element(v_count, json_value(tok.data) );
         when 'NUMBER' then 
           declare rev varchar2(10); begin
             --stupid countries with , as decimal point
             SELECT VALUE into rev FROM NLS_SESSION_PARAMETERS WHERE PARAMETER = 'NLS_NUMERIC_CHARACTERS';
             if(rev = ',.') then
-              e_arr(v_count) := json_element(v_count, anydata.convertnumber( to_number(replace(tok.data, '.',','))));
+              e_arr(v_count) := json_element(v_count, json_value( to_number(replace(tok.data, '.',','))));
             else
-              e_arr(v_count) := json_element(v_count, anydata.convertnumber( to_number(tok.data )));
+              e_arr(v_count) := json_element(v_count, json_value( to_number(tok.data )));
             end if;
           end;
         when '[' then 
           declare e_list json_list; begin
             indx := indx + 1;
             e_list := parseArr(tokens, indx);
-            e_arr(v_count) := json_element(v_count, anydata.convertobject(e_list));
+            e_arr(v_count) := json_element(v_count, e_list.to_json_value);
           end;
         when '{' then 
           indx := indx + 1;
-          e_arr(v_count) := json_element(v_count, anydata.convertobject(parseObj(tokens, indx)));
+          e_arr(v_count) := json_element(v_count, parseObj(tokens, indx).to_json_value);
         else
           p_error('Expected a value', tok);
       end case;
@@ -410,9 +411,6 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       end if;
 
     end loop;
-    --HACK START
---    if(e_arr.count mod 2 = 0) then e_arr.extend; end if;
-    --HACK END 
     ret_list.list_data := e_arr;
     return ret_list;
   end parseArr;
@@ -423,18 +421,18 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
   begin
     tok := tokens(indx);
     case tok.type_name
-      when 'TRUE' then mem := json_member(mem_indx, mem_name, anydata.convertobject( json_bool(true) ));
-      when 'FALSE' then mem := json_member(mem_indx, mem_name, anydata.convertobject( json_bool(false) ));
-      when 'NULL' then mem := json_member(mem_indx, mem_name, anydata.convertobject(json_null));
-      when 'STRING' then mem := json_member(mem_indx, mem_name, anydata.convertvarchar2( tok.data ));
+      when 'TRUE' then mem := json_member(mem_indx, mem_name, json_value(true));
+      when 'FALSE' then mem := json_member(mem_indx, mem_name, json_value(false));
+      when 'NULL' then mem := json_member(mem_indx, mem_name, json_value);
+      when 'STRING' then mem := json_member(mem_indx, mem_name, json_value( tok.data ));
       when 'NUMBER' then 
         declare rev varchar2(10); begin
-          --stupid countries with , as decimal point
+          --stupid countries with , as decimal point - like my own
           SELECT VALUE into rev FROM NLS_SESSION_PARAMETERS WHERE PARAMETER = 'NLS_NUMERIC_CHARACTERS';
           if(rev = ',.') then
-            mem := json_member(mem_indx, mem_name, anydata.convertnumber( to_number(replace(tok.data, '.',','))));
+            mem := json_member(mem_indx, mem_name, json_value( to_number(replace(tok.data, '.',','))));
           else
-            mem := json_member(mem_indx, mem_name, anydata.convertnumber( to_number(tok.data )));
+            mem := json_member(mem_indx, mem_name, json_value( to_number(tok.data )));
           end if;
         end;
       when '[' then 
@@ -443,11 +441,11 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
         begin
           indx := indx + 1;
           e_list := parseArr(tokens, indx);
-          mem := json_member(mem_indx, mem_name, anydata.convertobject(e_list));
+          mem := json_member(mem_indx, mem_name, e_list.to_json_value);
         end;
       when '{' then 
         indx := indx + 1;
-        mem := json_member(mem_indx, mem_name, anydata.convertobject(parseObj(tokens, indx)));
+        mem := json_member(mem_indx, mem_name, parseObj(tokens, indx).to_json_value);
       else 
         p_error('Found '||tok.type_name, tok);
     end case;
@@ -513,7 +511,10 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
         end if;
 
       when '}' then
-        return json(arr);
+        obj := json();
+	obj.num_elements := arr.count;
+        obj.json_data := arr;
+        return obj;
       else 
         p_error('Expected string or }', tok);
       end case;

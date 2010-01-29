@@ -28,7 +28,7 @@ declare
 begin
   obj := json('{"a": "true"}');
   --directly from json_printer
-  dbms_output.put_line(json_printer.pretty_print_any(json_ext.get_anydata(obj, 'a')));
+  dbms_output.put_line(json_printer.pretty_print_any(json_ext.get_json_value(obj, 'a')));
   --from json_ext varchar2
   dbms_output.put_line(json_ext.pp(obj, 'a'));
   --from json_ext dbms_output.put_line

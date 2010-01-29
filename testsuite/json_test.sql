@@ -93,7 +93,7 @@ begin
     --obj.print;
     for i in 1 .. obj.count loop
       assertTrue(obj.json_data(i).id = i);
-      assertTrue(obj.json_data(i).member_name = json.to_varchar2(obj.json_data(i).member_data));
+      assertTrue(obj.json_data(i).member_name = obj.json_data(i).member_data.get_string);
     end loop;
     pass(str);
   exception
@@ -107,8 +107,8 @@ begin
     obj := json();
     obj.put('A', 'varchar2');
     obj.put('A', 2);
-    obj.put('A', json_bool(true));
-    obj.put('A', json_null());
+    obj.put('A', json_value(true));
+    obj.put('A', json_value());
     obj.put('A', json());
     obj.put('A', json_list('[34,34]'));
     assertTrue(obj.count = 1);
@@ -193,11 +193,11 @@ begin
   declare
     obj json := json();
     x number := null;
-    n json_null;
+    n json_value;
   begin
     obj.put('X', x);
-    n := json.to_json_null(obj.get('X'));
-    assertFalse(n is null); --may seam odd -- but initialized vars are best! 
+    n := obj.get('X');
+    assertTrue(n.is_null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
     when others then fail(str);
@@ -211,8 +211,8 @@ begin
   begin
     obj.put('X1', x1);
     obj.put('X2', x2);
-    x1 := json.to_varchar2(obj.get('X1'));
-    x2 := json.to_varchar2(obj.get('X2'));
+    x1 := obj.get('X1').get_string;
+    x2 := obj.get('X2').get_string;
     pass(str);
   exception
     when others then fail(str);
@@ -221,11 +221,11 @@ begin
   str := 'Bool null insert test';
   declare
     obj json := json();
-    x json_bool := null;
-    n json_null;
+    x boolean := null;
+    n json_value;
   begin
     obj.put('X', x);
-    n := json.to_json_null(obj.get('X'));
+    n := obj.get('X');
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
@@ -235,11 +235,11 @@ begin
   str := 'Null null insert test';
   declare
     obj json := json();
-    x json_null := null;
-    n json_null;
+    x json_value := null;
+    n json_value;
   begin
     obj.put('X', x);
-    n := json.to_json_null(obj.get('X'));
+    n := obj.get('X');
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
@@ -250,10 +250,10 @@ begin
   declare
     obj json := json();
     x json := null;
-    n json_null;
+    n json_value;
   begin
     obj.put('X', x);
-    n := json.to_json_null(obj.get('X'));
+    n := obj.get('X');
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
@@ -264,10 +264,10 @@ begin
   declare
     obj json := json();
     x json_list := null;
-    n json_null;
+    n json_value;
   begin
     obj.put('X', x);
-    n := json.to_json_null(obj.get('X'));
+    n := obj.get('X');
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
