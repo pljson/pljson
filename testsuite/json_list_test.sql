@@ -79,16 +79,16 @@ begin
     assertTrue(15 = l.count);
     for i in 1 .. l.count loop
       assertTrue(i = l.list_data(i).element_id);
-      assertTrue(i = json.to_number(l.get_elem(i)));
+      assertTrue(i = l.get_elem(i).get_number);
     end loop;
     l := json_list('[1, [], {"nest":true}]');
     assertTrue(l.count = 3);
-    assertTrue(1 = json.to_number(l.get_elem(1)));
+    assertTrue(1 = l.get_elem(1).get_number);
     assertTrue(1 = l.list_data(1).element_id);
-    obj := json.to_json(l.get_elem(3));
+    obj := json(l.get_elem(3));
     assertTrue(obj.exist('nest'));
     assertTrue(obj.count = 1);
-    l := json.to_json_list(l.get_elem(2));
+    l := json_list(l.get_elem(2));
     assertTrue(l.count = 0);
     pass(str);
   exception
@@ -107,13 +107,13 @@ begin
 
   str := 'Add different types test';
   declare
-    l json_list; elem anydata;
+    l json_list; elem json_value;
   begin
     l := json_list(); 
     l.add_elem('varchar2');
     l.add_elem(13);
-    l.add_elem(json_bool.makefalse);
-    l.add_elem(json_null());
+    l.add_elem(json_value(false));
+    l.add_elem(json_value.makenull);
     l.add_elem(json_list('[1,2,3]'));
     assertTrue(l.count = 5);
     l.add_elem(l.get_first);
@@ -246,7 +246,7 @@ begin
 
   str := 'Get first and last';
   declare
-    l json_list; 
+    l json_list; n json_value;
   begin
     l := json_list(); 
     assertTrue(l.get_first is null);
@@ -258,8 +258,10 @@ begin
     assertFalse(l.get_first is null);
     assertFalse(l.get_last is null);
     l := json_list('[1,2]'); 
-    assertTrue(1 = json.to_number(l.get_first));
-    assertTrue(2 = json.to_number(l.get_last));
+    n := l.get_first;
+    assertTrue(1 = n.get_number);
+    n := l.get_last;
+    assertTrue(2 = n.get_number);
     pass(str);
   exception
     when others then fail(str);
@@ -269,10 +271,10 @@ begin
   declare
     obj json_list := json_list();
     x number := null;
-    n json_null;
+    n json_value;
   begin
     obj.add_elem(x);
-    n := json.to_json_null(obj.get_first);
+    n := obj.get_first;
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
@@ -284,11 +286,14 @@ begin
     obj json_list := json_list();
     x1 varchar2(20) := null;
     x2 varchar2(20) := '';
+    n json_value;
   begin
     obj.add_elem(x1);
     obj.add_elem(x2);
-    x1 := json.to_varchar2(obj.get_first);
-    x2 := json.to_varchar2(obj.get_last);
+    n := obj.get_first;
+    x1 := n.get_string;
+    n := obj.get_last;
+    x2 := n.get_string;
     pass(str);
   exception
     when others then fail(str);
@@ -297,11 +302,11 @@ begin
   str := 'Bool null insert test';
   declare
     obj json_list := json_list();
-    x json_bool := null;
-    n json_null;
+    x boolean := null;
+    n json_value;
   begin
     obj.add_elem(x);
-    n := json.to_json_null(obj.get_first);
+    n := obj.get_first;
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
@@ -311,11 +316,11 @@ begin
   str := 'Null null insert test';
   declare
     obj json_list := json_list();
-    x json_null := null;
-    n json_null;
+    x json_value := null;
+    n json_value;
   begin
     obj.add_elem(x);
-    n := json.to_json_null(obj.get_first);
+    n := obj.get_first;
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
@@ -326,10 +331,10 @@ begin
   declare
     obj json_list := json_list();
     x json_list := null;
-    n json_null;
+    n json_value;
   begin
     obj.add_elem(x);
-    n := json.to_json_null(obj.get_first);
+    n := obj.get_first;
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception

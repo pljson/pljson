@@ -27,31 +27,16 @@ This software has been released under the MIT license:
 
 set serveroutput on format wrapped;
 declare
-  mylist json_list; --lists are easy to write
+  obj json := json();
+  testdate date := date '2009-12-24'; --Xmas
   procedure p(v varchar2) as begin dbms_output.put_line(null);dbms_output.put_line(v); end;
 begin
-  mylist := json_list('["abc", 23, {}, [], true, null]');
-  mylist.print;
-  if(json_ext.is_varchar2( mylist.get_elem(1) ) ) then p('No need to write SYS.VARCHAR2'); end if;
-  if(json_ext.is_number(mylist.get_elem(2))) then p('Hassle free'); end if;
-  if(json_ext.is_json(mylist.get_elem(3))) then p('Maybe not'); end if;
-  if(json_ext.is_json_list(mylist.get_elem(4))) then p('But anydata should be tested before converted'); end if;
-  if(json_ext.is_json_bool(mylist.get_elem(5))) then p('Use the static functions in JSON'); end if;
-  if(json_ext.is_json_null(mylist.get_elem(6))) then p('That''s it'); end if;
-
-  p('What about date values - well json doesn''t specify that - so let us put it in a string.');
-  declare
-    obj json := json();
-    testdate date := date '2009-12-24'; --Xmas
-  begin
-    obj.put('My favorite date', json_ext.to_anydata(testdate));
-    obj.print;
-    if(json_ext.is_date(obj.get('My favorite date'))) then
-      p('We can also test the value');
-    end if;
-    p('And convert it back');
-    dbms_output.put_line(json_ext.to_date2(obj.get('My favorite date')));
-  end;
-
+  obj.put('My favorite date', json_ext.to_json_value(testdate));
+  obj.print;
+  if(json_ext.is_date(obj.get('My favorite date'))) then
+    p('We can also test the value');
+  end if;
+  p('And convert it back');
+  dbms_output.put_line(json_ext.to_date2(obj.get('My favorite date')));
 end;
 /

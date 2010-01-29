@@ -1,5 +1,4 @@
-create or replace type body json_list as
-  /*
+/*
   Copyright (c) 2009 Jonas Krogsboell
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,6 +20,8 @@ create or replace type body json_list as
   THE SOFTWARE.
   */
 
+create or replace type body json_list as
+
   constructor function json_list return self as result as
   begin
     self.list_data := json_element_array();
@@ -39,23 +40,22 @@ create or replace type body json_list as
     return;
   end;
 
-  member procedure add_elem(elem anydata, position pls_integer default null) as
-    indx pls_integer;
+  constructor function json_list(cast json_value) return self as result as
+    x number;
   begin
-    case elem.gettypename
-      when 'SYS.VARCHAR2' then null;
-      when 'SYS.NUMBER' then null;
-      when sys_context('userenv', 'current_schema')||'.JSON_BOOL' then null;
-      when sys_context('userenv', 'current_schema')||'.JSON_NULL' then null;
-      when sys_context('userenv', 'current_schema')||'.JSON_LIST' then null;
-      when sys_context('userenv', 'current_schema')||'.JSON' then null;
-      else raise_application_error(-20102, 'JSON_LIST add_elem method type error');
-    end case;
+    x := cast.object_or_array.getobject(self);
+    return;
+  end;
 
+
+  member procedure add_elem(elem json_value, position pls_integer default null) as
+    indx pls_integer;
+    insert_value json_value := NVL(elem, json_value);
+  begin
     if(position is null or position > self.count) then --end of list
       indx := self.count + 1;
       self.list_data.extend(1);
-      self.list_data(indx) := json_element(indx, elem);
+      self.list_data(indx) := json_element(indx, insert_value);
     elsif(position < 1) then --new first
       indx := self.count;
       self.list_data.extend(1);
@@ -63,7 +63,7 @@ create or replace type body json_list as
         self.list_data(x+1) := self.list_data(x);
         self.list_data(x+1).element_id := x+1;
       end loop;
-      self.list_data(1) := json_element(1, elem);
+      self.list_data(1) := json_element(1, insert_value);
     else
       indx := self.count;
       self.list_data.extend(1);
@@ -71,49 +71,40 @@ create or replace type body json_list as
         self.list_data(x+1) := self.list_data(x);
         self.list_data(x+1).element_id := x+1;
       end loop;
-      self.list_data(position) := json_element(position, elem);
+      self.list_data(position) := json_element(position, insert_value);
     end if;
 
   end;
 
   member procedure add_elem(elem varchar2, position pls_integer default null) as
   begin
-    add_elem(anydata.convertvarchar2(elem), position);
+    add_elem(json_value(elem), position);
   end;
   
   member procedure add_elem(elem number, position pls_integer default null) as
   begin
     if(elem is null) then
-      add_elem(json_null(), position);
+      add_elem(json_value(), position);
     else
-      add_elem(anydata.convertnumber(elem), position);
+      add_elem(json_value(elem), position);
     end if;
   end;
   
-  member procedure add_elem(elem json_bool, position pls_integer default null) as
+  member procedure add_elem(elem boolean, position pls_integer default null) as
   begin
     if(elem is null) then
-      add_elem(json_null(), position);
+      add_elem(json_value(), position);
     else
-      add_elem(anydata.convertobject(elem), position);
+      add_elem(json_value(elem), position);
     end if;
   end;
-  
-  member procedure add_elem(elem json_null, position pls_integer default null) as
-  begin
-    if(elem is null) then
-      add_elem(json_null(), position);
-    else
-      add_elem(anydata.convertobject(elem), position);
-    end if;
-  end;
-  
+
   member procedure add_elem(elem json_list, position pls_integer default null) as
   begin
     if(elem is null) then
-      add_elem(json_null(), position);
+      add_elem(json_value(), position);
     else
-      add_elem(anydata.convertobject(elem), position);
+      add_elem(elem.to_json_value, position);
     end if;
   end;
   
@@ -150,7 +141,7 @@ create or replace type body json_list as
     end if;
   end;
   
-  member function get_elem(position pls_integer) return anydata as
+  member function get_elem(position pls_integer) return json_value as
   begin
     if(self.count >= position and position > 0) then
       return self.list_data(position).element_data;
@@ -158,7 +149,7 @@ create or replace type body json_list as
     return null; -- do not throw error, just return null
   end;
   
-  member function get_first return anydata as
+  member function get_first return json_value as
   begin
     if(self.count > 0) then
       return self.list_data(self.list_data.first).element_data;
@@ -166,7 +157,7 @@ create or replace type body json_list as
     return null; -- do not throw error, just return null
   end;
   
-  member function get_last return anydata as
+  member function get_last return json_value as
   begin
     if(self.count > 0) then
       return self.list_data(self.list_data.last).element_data;
@@ -196,7 +187,12 @@ create or replace type body json_list as
   begin
     dbms_output.put_line(self.to_char(spaces));
   end;
-  
+
+  member function to_json_value return json_value as
+  begin
+    return json_value(anydata.convertobject(self));
+  end;
+ 
 end;
 /
 

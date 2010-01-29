@@ -34,9 +34,9 @@ begin
   obj := json(); --an empty structure
   obj.put('A', 'a little string');
   obj.put('B', 123456789);
-  obj.put('C', json_bool(true));
-  obj.put('D', json_bool(false));
-  obj.put('F', json_null());
+  obj.put('C', true);
+  obj.put('D', false);
+  obj.put('F', json_value.makenull);
   obj.print;
   p('add with position');
   obj.put('E', 'Wow thats great!', 5);

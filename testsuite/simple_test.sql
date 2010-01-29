@@ -36,22 +36,16 @@ begin
   
   str := 'Bool test';
   declare
-    obj json_bool;
+    obj json_value;
   begin
-    obj := json_bool(true);
-    assertTrue(obj.is_true);
-    assertFalse(obj.is_false);
-    obj := json_bool.maketrue;
-    assertTrue(obj.is_true);
-    assertFalse(obj.is_false);
-    assertTrue(obj.to_char = 'true');
-    obj := json_bool(false);
-    assertFalse(obj.is_true);
-    assertTrue(obj.is_false);
-    obj := json_bool.makefalse;
-    assertFalse(obj.is_true);
-    assertTrue(obj.is_false);
-    assertTrue(obj.to_char = 'false');
+    obj := json_value(true);
+    assertTrue(obj.get_bool);
+    assertFalse(not obj.get_bool);
+    assertTrue(json_printer.pretty_print_any(obj) = 'true');
+    obj := json_value(false);
+    assertFalse(obj.get_bool);
+    assertTrue(not obj.get_bool);
+    assertTrue(json_printer.pretty_print_any(obj) = 'false');
     pass(str);
   exception
     when others then fail(str);
@@ -59,13 +53,11 @@ begin
 
   str := 'Null test';
   declare
-    obj json_null;
+    obj json_value;
   begin
-    obj := json_null();
+    obj := json_value();
     assertTrue(obj is not null);
-    assertTrue(obj.null_data is null);
-    obj := json_null(chr(13));
-    assertTrue(obj is not null);
+    assertTrue(json_printer.pretty_print_any(obj) = 'null');
     --assertTrue(obj.null_data is null); --doesnt matter really
     pass(str);
   exception

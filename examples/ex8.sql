@@ -55,16 +55,16 @@ begin
   declare 
     printme number := null;
     temp json_list;
-    tempdata anydata;
+    tempdata json_value;
     tempobj json;
   begin
     if(obj.exist('b')) then
-      if(json_ext.is_json_list(obj.get('b'))) then
-        temp := json.to_json_list(obj.get('b'));
+      if(obj.get('b').is_array) then
+        temp := json_list(obj.get('b'));
         tempdata := temp.get_elem(3); --return null on outofbounds
         if(tempdata is not null) then
-          if(json_ext.is_number(tempdata)) then
-            printme := json.to_number(tempdata);
+          if(tempdata.is_number) then
+            printme := tempdata.get_number;
           end if;
         end if;
       end if; 
@@ -72,18 +72,18 @@ begin
     if(printme is null) then
       if(obj.exist('c')) then
         tempdata := obj.get('c');
-        if(json_ext.is_json(tempdata)) then
-          tempobj := json.to_json(tempdata);
+        if(tempdata.is_object) then
+          tempobj := json(tempdata);
           if(tempobj.exist('d')) then
             tempdata := tempobj.get('d');
-            if(json_ext.is_json_list(tempdata)) then
-              temp := json.to_json_list(tempdata);
+            if(tempdata.is_array) then
+              temp := json_list(tempdata);
               tempdata := temp.get_elem(3);
-              if(json_ext.is_json(tempdata)) then
-                tempobj := json.to_json(tempdata);
+              if(tempdata.is_object) then
+                tempobj := json(tempdata);
                 tempdata := tempobj.get('e');
-                if(tempdata is not null and json_ext.is_number(tempdata)) then
-                  printme := json.to_number(tempdata);
+                if(tempdata is not null and tempdata.is_number) then
+                  printme := tempdata.get_number;
                 end if;
               end if;
             end if;
@@ -110,13 +110,12 @@ begin
   -- use dots to navigate through the json scopes.
   -- the empty string as path returns the entire json object.
   -- JSON Path only work with JSON as input.
-  -- 7 get types are supported: varchar2, number, json_bool, json_null, json, json_list and date!
+  -- 7 get types are supported: string, number, bool, null, json, json_list and date!
   -- spaces inside [ ] are not important, but is important otherwise
   
   obj := json('{" a ": "String", "b": false, "c": null, "d":{}, "e":[],"f": "2009-09-01 00:00:00", "g":-789456}');  
-  dbms_output.put_line(json_ext.get_varchar2(obj, ' a '));
-  dbms_output.put_line(json_ext.get_json_bool(obj, 'b').to_char);
-  if(json_ext.get_json_null(obj, 'c') is not null) then dbms_output.put_line('null'); end if;
+  dbms_output.put_line(json_ext.get_string(obj, ' a '));
+  if(json_ext.get_json_value(obj, 'c') is not null) then dbms_output.put_line('null'); end if;
   dbms_output.put_line(json_ext.get_json(obj, 'd').to_char(false));
   dbms_output.put_line(json_ext.get_json_list(obj, 'e').to_char);
   dbms_output.put_line(json_ext.get_date(obj, 'f'));

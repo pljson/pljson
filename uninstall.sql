@@ -1,6 +1,6 @@
 
   /*
-  Copyright (c) 2009 Jonas Krogsboell
+  Copyright (c) 2010 Jonas Krogsboell
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -33,5 +33,6 @@ declare begin
   begin execute immediate 'drop type json_element force'; exception when others then null; end;
   begin execute immediate 'drop type json_bool force'; exception when others then null; end;
   begin execute immediate 'drop type json_null force'; exception when others then null; end;
+  begin execute immediate 'drop type json_value force'; exception when others then null; end;
 end;
 /

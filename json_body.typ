@@ -1,6 +1,5 @@
-create or replace type body json as
-  /*
-  Copyright (c) 2009 Jonas Krogsboell
+/*
+  Copyright (c) 2010 Jonas Krogsboell
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -19,34 +18,39 @@ create or replace type body json as
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
-  */
+*/
+create or replace type body json as
 
   /* Constructors */
   constructor function json return self as result as
   begin
     self.num_elements := 0;
     self.json_data := json_member_array();
-    return;
-  end;
-  
-  constructor function json(pair_data in json_member_array) return self as result as
-  begin
-    self.num_elements := pair_data.count;
-    self.json_data := pair_data;
+    self.check_for_duplicate := 1;
     return;
   end;
 
   constructor function json(str varchar2) return self as result as
   begin
     self := json_parser.parser(str);
+    self.check_for_duplicate := 1;
     return;
   end;
   
   constructor function json(str clob) return self as result as
   begin
     self := json_parser.parser(str);
+    self.check_for_duplicate := 1;
     return;
   end;  
+
+  constructor function json(cast json_value) return self as result as
+    x number;
+  begin
+    x := cast.object_or_array.getobject(self);
+    self.check_for_duplicate := 1;
+    return;
+  end;
 
   /* Member setter methods */  
   member procedure remove(pair_name varchar2) as
@@ -79,7 +83,8 @@ create or replace type body json as
     num_elements := num_elements - 1;
   end;
 
-  member procedure put(pair_name varchar2, pair_value anydata, position pls_integer default null) as
+  member procedure put(pair_name varchar2, pair_value json_value, position pls_integer default null) as
+    insert_value json_value := nvl(pair_value, json_value);
     indx pls_integer; x number;
     temp json_member;
     function get_member(pair_name varchar2) return json_member as
@@ -97,27 +102,18 @@ create or replace type body json as
     if(pair_name is null) then 
       raise_application_error(-20102, 'JSON put-method type error: name cannot be null');
     end if;
-    case pair_value.gettypename
-      when 'SYS.VARCHAR2' then null;
-      when 'SYS.NUMBER' then null;
-      when sys_context('userenv', 'current_schema')||'.JSON_BOOL' then null;
-      when sys_context('userenv', 'current_schema')||'.JSON_NULL' then null;
-      when sys_context('userenv', 'current_schema')||'.JSON_LIST' then null;
-      when sys_context('userenv', 'current_schema')||'.JSON' then null;
-      else raise_application_error(-20102, 'JSON put-method type error');
-    end case;
 
 --    self.remove(pair_name);
-    temp := get_member(pair_name);
+    if(self.check_for_duplicate = 1) then temp := get_member(pair_name); else temp := null; end if;
     if(temp is not null) then
-      json_data(temp.id).member_data := pair_value;
+      json_data(temp.id).member_data := insert_value;
       return;
     elsif(position is null or position > self.count) then
       --insert at the end of the list
       --dbms_output.put_line('Test');
       indx := self.count + 1;
       json_data.extend;
-      json_data(indx) := json_member(indx, pair_name, pair_value);
+      json_data(indx) := json_member(indx, pair_name, insert_value);
       --dbms_output.put_line('Test2');
     elsif(position < 2) then
       --insert at the start of the list
@@ -130,7 +126,7 @@ create or replace type body json as
         json_data(temp.id) := temp;
         indx := json_data.prior(indx);
       end loop;
-      json_data(1) := json_member(1, pair_name, pair_value);
+      json_data(1) := json_member(1, pair_name, insert_value);
     else 
       --insert somewhere in the list
       indx := json_data.last; 
@@ -145,69 +141,70 @@ create or replace type body json as
         exit when indx = position;
         indx := json_data.prior(indx);
       end loop;
-      json_data(position) := json_member(position, pair_name, pair_value);
+      json_data(position) := json_member(position, pair_name, insert_value);
     end if;
     num_elements := num_elements + 1;
   end;
   
   member procedure put(pair_name varchar2, pair_value varchar2, position pls_integer default null) as
   begin
-    put(pair_name, anydata.convertvarchar2(pair_value), position);
+    put(pair_name, json_value(pair_value), position);
   end;
   
   member procedure put(pair_name varchar2, pair_value number, position pls_integer default null) as
   begin
     if(pair_value is null) then
-      put(pair_name, json_null(), position);
+      put(pair_name, json_value(), position);
     else 
-      put(pair_name, anydata.convertnumber(pair_value), position);
+      put(pair_name, json_value(pair_value), position);
     end if;
   end;
   
-  member procedure put(pair_name varchar2, pair_value json_bool, position pls_integer default null) as
+  member procedure put(pair_name varchar2, pair_value boolean, position pls_integer default null) as
   begin
     if(pair_value is null) then
-      put(pair_name, json_null(), position);
+      put(pair_name, json_value(), position);
     else 
-      put(pair_name, anydata.convertobject(pair_value), position);
-    end if;
-  end;
-
-  member procedure put(pair_name varchar2, pair_value json_null, position pls_integer default null) as
-  begin
-    if(pair_value is null) then
-      put(pair_name, json_null(), position);
-    else 
-      put(pair_name, anydata.convertobject(pair_value), position);
+      put(pair_name, json_value(pair_value), position);
     end if;
   end;
   
-  member procedure put(pair_name varchar2, pair_value json_list, position pls_integer default null) as
+  member procedure check_duplicate(set boolean) as
   begin
-    if(pair_value is null) then
-      put(pair_name, json_null(), position);
+    if(set) then 
+      check_for_duplicate := 1;
     else 
-      put(pair_name, anydata.convertobject(pair_value), position);
+      check_for_duplicate := 0;
     end if;
-  end;
+  end; 
 
+  /* deprecated putters */
+ 
   member procedure put(pair_name varchar2, pair_value json, position pls_integer default null) as
   begin
     if(pair_value is null) then
-      put(pair_name, json_null(), position);
+      put(pair_name, json_value(), position);
     else 
-      put(pair_name, anydata.convertobject(pair_value), position);
+      put(pair_name, pair_value.to_json_value, position);
     end if;
   end;
 
- 
+  member procedure put(pair_name varchar2, pair_value json_list, position pls_integer default null) as
+  begin
+    if(pair_value is null) then
+      put(pair_name, json_value(), position);
+    else 
+      put(pair_name, pair_value.to_json_value, position);
+    end if;
+  end;
+
   /* Member getter methods */ 
   member function count return number as
   begin
     return self.num_elements;
   end;
 
-  member function get(pair_name varchar2) return anydata as
+  member function get(pair_name varchar2) return json_value as
     indx pls_integer;
   begin
     indx := json_data.first;
@@ -247,54 +244,11 @@ create or replace type body json as
     dbms_output.put_line(self.to_char(spaces));
   end;
   
-  member function to_anydata return anydata as
+  member function to_json_value return json_value as
   begin
-    return anydata.convertobject(self);
+    return json_value(anydata.convertobject(self));
   end;
 
-  /* Static conversion methods */  
-  static function to_json(v anydata) return json as
-    temp json; x number;
-  begin
-    x := v.getobject(temp);
-    return temp;
-  end;
-  
-  static function to_number(v anydata) return number as 
-    temp number; x number;
-  begin
-    x := v.getnumber(temp);
-    return temp;
-  end;
-
-  static function to_varchar2(v anydata) return varchar2 as
-    temp varchar2(4000); x number;
-  begin
-    x := v.getvarchar2(temp);
-    return temp;
-  end;
-  
-  static function to_json_list(v anydata) return json_list as 
-    temp json_list; x number;
-  begin
-    x := v.getobject(temp);
-    return temp;
-  end;
-
-  static function to_json_bool(v anydata) return json_bool as
-    temp json_bool; x number;
-  begin
-    x := v.getobject(temp);
-    return temp;
-  end;
-
-  static function to_json_null(v anydata) return json_null as
-    temp json_null; x number;
-  begin
-    x := v.getobject(temp);
-    return temp;
-  end;
- 
 end;
 / 
 sho err

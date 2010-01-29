@@ -30,7 +30,7 @@ declare
   obj json;
   obj2 json;
   str varchar2(20);
-  pair_value anydata;
+  pair_value json_value;
   procedure p(v varchar2) as begin dbms_output.put_line(null);dbms_output.put_line(v); end;
 begin
   p('Variables are copies');
@@ -51,8 +51,8 @@ begin
   
   p('Extract data from json');
   pair_value := obj.get('N1');
-  --what to do with anydata? get the content into the right type!
-  obj2 := json.to_json(pair_value); --look at the static methods in json
+  --what to do with json_value? get the content into the right type!
+  obj2 := json(pair_value); --json construtor with json_value only works if json_value contains a json
   obj2.print;
   --JSON_LIST works in the same manner.
 end;

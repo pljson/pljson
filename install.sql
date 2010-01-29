@@ -1,7 +1,7 @@
 /*
 This software has been released under the MIT license:
 
-  Copyright (c) 2009 Lewis R Cunningham, Jonas Krogsboell
+  Copyright (c) 2009 Jonas Krogsboell based on code from Lewis R Cunningham
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ PROMPT -----------------------------------;
 PROMPT -- Compiling objects for PL/JSON --;
 PROMPT -----------------------------------;
 @@uninstall.sql
+@@json_value.typ
 @@simpletypes.typ
 @@json_list.typ
 @@json.typ

@@ -39,12 +39,12 @@ begin
     mylist json_list; --im lazy
   begin
     mylist := json_list('["abc", 23, {}, [], true, null]');
-    assertTrue(json_ext.is_varchar2(mylist.get_elem(1)));
-    assertTrue(json_ext.is_number(mylist.get_elem(2)));
-    assertTrue(json_ext.is_json(mylist.get_elem(3)));
-    assertTrue(json_ext.is_json_list(mylist.get_elem(4)));
-    assertTrue(json_ext.is_json_bool(mylist.get_elem(5)));
-    assertTrue(json_ext.is_json_null(mylist.get_elem(6)));
+    assertTrue(mylist.get_elem(1).is_string);
+    assertTrue(mylist.get_elem(2).is_number);
+    assertTrue(mylist.get_elem(3).is_object);
+    assertTrue(mylist.get_elem(4).is_array);
+    assertTrue(mylist.get_elem(5).is_bool);
+    assertTrue(mylist.get_elem(6).is_null);
     pass(str);
   exception
     when others then fail(str);
@@ -55,11 +55,11 @@ begin
     mylist json_list; --im lazy
   begin
     mylist := json_list('[23, 2.1, 0.0, 120, 0.00000001]');
-    assertTrue(json_ext.is_number(mylist.get_elem(1)));
-    assertTrue(json_ext.is_number(mylist.get_elem(2)));
-    assertTrue(json_ext.is_number(mylist.get_elem(3)));
-    assertTrue(json_ext.is_number(mylist.get_elem(4)));
-    assertTrue(json_ext.is_number(mylist.get_elem(5)));
+    assertTrue(mylist.get_elem(1).is_number);
+    assertTrue(mylist.get_elem(2).is_number);
+    assertTrue(mylist.get_elem(3).is_number);
+    assertTrue(mylist.get_elem(4).is_number);
+    assertTrue(mylist.get_elem(5).is_number);
 
     assertTrue(json_ext.is_integer(mylist.get_elem(1)));
     assertFalse(json_ext.is_integer(mylist.get_elem(2)));
@@ -78,7 +78,7 @@ begin
   begin
     json_ext.format_string := 'yyyy-mm-dd hh24:mi:ss';
     mylist := json_list('["2009-07-01 00:22:33", "2007-04-04hulubalulu", "09-07-08", "2009-07-01", "2007/Jan/03" ]');
-    assertFalse(json_ext.is_number(mylist.get_elem(1))); --why not
+    assertFalse(mylist.get_elem(1).is_number); --why not
     
     assertTrue(json_ext.is_date(mylist.get_elem(1)));
     assertFalse(json_ext.is_date(mylist.get_elem(2)));
@@ -103,15 +103,15 @@ begin
     json_ext.format_string := 'yyyy-mm-dd hh24:mi:ss';
     mylist := json_list('["2009-07-01 00:22:33", "2007-04-04hulubalulu", "09-07-08", "2009-07-01", "2007/Jan/03" ]');
     --correct the dates
-    mylist.add_elem(json_ext.to_anydata(json_ext.to_date2(mylist.get_elem(1))), 1);
+    mylist.add_elem(json_ext.to_json_value(json_ext.to_date2(mylist.get_elem(1))), 1);
     mylist.remove_elem(2); --remove the old
-    mylist.add_elem(json_ext.to_anydata(newinsert), 2);
+    mylist.add_elem(json_ext.to_json_value(newinsert), 2);
     mylist.remove_elem(3); --remove the old falsy one
-    mylist.add_elem(json_ext.to_anydata(json_ext.to_date2(mylist.get_elem(3))), 3);
+    mylist.add_elem(json_ext.to_json_value(json_ext.to_date2(mylist.get_elem(3))), 3);
     mylist.remove_elem(4); --remove the old
-    mylist.add_elem(json_ext.to_anydata(json_ext.to_date2(mylist.get_elem(4))), 4);
+    mylist.add_elem(json_ext.to_json_value(json_ext.to_date2(mylist.get_elem(4))), 4);
     mylist.remove_elem(5); --remove the old
-    mylist.add_elem(json_ext.to_anydata(json_ext.to_date2(mylist.get_elem(5))), 5);
+    mylist.add_elem(json_ext.to_json_value(json_ext.to_date2(mylist.get_elem(5))), 5);
     mylist.remove_elem(6); --remove the old
     
     assertTrue(mylist.to_char = '["2009-07-01 00:22:33", "2009-08-08 00:00:00", "0009-07-08 00:00:00", "2009-07-01 00:00:00", "2007-01-03 00:00:00"]');
@@ -129,7 +129,7 @@ begin
     obj json := json();
     v_when date := null;
   begin
-    obj.put('X', json_ext.to_anydata(v_when));
+    obj.put('X', json_ext.to_json_value(v_when));
     v_when := json_ext.to_date2(obj.get('X'));
     assertTrue(v_when is null);
     assertTrue(json_ext.is_date(obj.get('X')));
@@ -137,7 +137,6 @@ begin
   exception 
     when others then fail(str);
   end;
-
 
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
