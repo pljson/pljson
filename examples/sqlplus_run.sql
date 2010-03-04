@@ -67,7 +67,7 @@ DECLARE
                        }'
                        ;
   v_json4 VARCHAR2(32000) := 
-                          '"xyz":"de\"f",
+                          '{"xyz":"de\"f",
                           "dpkxvdvvcxzvxasasa":23345.99 , 
                           "djfdjf":null,
                           "ghi":    false, 
