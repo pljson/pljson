@@ -24,7 +24,7 @@ create or replace type body json_list as
 
   constructor function json_list return self as result as
   begin
-    self.list_data := json_element_array();
+    self.list_data := json_value_array();
     return;
   end;
 
@@ -48,40 +48,38 @@ create or replace type body json_list as
   end;
 
 
-  member procedure add_elem(elem json_value, position pls_integer default null) as
+  member procedure add_elem(self in out nocopy json_list, elem json_value, position pls_integer default null) as
     indx pls_integer;
     insert_value json_value := NVL(elem, json_value);
   begin
     if(position is null or position > self.count) then --end of list
       indx := self.count + 1;
       self.list_data.extend(1);
-      self.list_data(indx) := json_element(indx, insert_value);
+      self.list_data(indx) := insert_value;
     elsif(position < 1) then --new first
       indx := self.count;
       self.list_data.extend(1);
       for x in reverse 1 .. indx loop
         self.list_data(x+1) := self.list_data(x);
-        self.list_data(x+1).element_id := x+1;
       end loop;
-      self.list_data(1) := json_element(1, insert_value);
+      self.list_data(1) := insert_value;
     else
       indx := self.count;
       self.list_data.extend(1);
       for x in reverse position .. indx loop
         self.list_data(x+1) := self.list_data(x);
-        self.list_data(x+1).element_id := x+1;
       end loop;
-      self.list_data(position) := json_element(position, insert_value);
+      self.list_data(position) := insert_value;
     end if;
 
   end;
 
-  member procedure add_elem(elem varchar2, position pls_integer default null) as
+  member procedure add_elem(self in out nocopy json_list, elem varchar2, position pls_integer default null) as
   begin
     add_elem(json_value(elem), position);
   end;
   
-  member procedure add_elem(elem number, position pls_integer default null) as
+  member procedure add_elem(self in out nocopy json_list, elem number, position pls_integer default null) as
   begin
     if(elem is null) then
       add_elem(json_value(), position);
@@ -90,7 +88,7 @@ create or replace type body json_list as
     end if;
   end;
   
-  member procedure add_elem(elem boolean, position pls_integer default null) as
+  member procedure add_elem(self in out nocopy json_list, elem boolean, position pls_integer default null) as
   begin
     if(elem is null) then
       add_elem(json_value(), position);
@@ -99,7 +97,7 @@ create or replace type body json_list as
     end if;
   end;
 
-  member procedure add_elem(elem json_list, position pls_integer default null) as
+  member procedure add_elem(self in out nocopy json_list, elem json_list, position pls_integer default null) as
   begin
     if(elem is null) then
       add_elem(json_value(), position);
@@ -113,28 +111,26 @@ create or replace type body json_list as
     return self.list_data.count;
   end;
   
-  member procedure remove_elem(position pls_integer) as
+  member procedure remove_elem(self in out nocopy json_list, position pls_integer) as
   begin
     if(position is null or position < 1 or position > self.count) then return; end if;
     for x in (position+1) .. self.count loop
       self.list_data(x-1) := self.list_data(x);
-      self.list_data(x-1).element_id := x-1;
     end loop;
     self.list_data.trim(1);
   end;
   
-  member procedure remove_first as 
+  member procedure remove_first(self in out nocopy json_list) as 
   begin
     for x in 2 .. self.count loop
       self.list_data(x-1) := self.list_data(x);
-      self.list_data(x-1).element_id := x-1;
     end loop;
     if(self.count > 0) then 
       self.list_data.trim(1);
     end if;
   end;
   
-  member procedure remove_last as
+  member procedure remove_last(self in out nocopy json_list) as
   begin
     if(self.count > 0) then 
       self.list_data.trim(1);
@@ -144,7 +140,7 @@ create or replace type body json_list as
   member function get_elem(position pls_integer) return json_value as
   begin
     if(self.count >= position and position > 0) then
-      return self.list_data(position).element_data;
+      return self.list_data(position);
     end if;
     return null; -- do not throw error, just return null
   end;
@@ -152,7 +148,7 @@ create or replace type body json_list as
   member function get_first return json_value as
   begin
     if(self.count > 0) then
-      return self.list_data(self.list_data.first).element_data;
+      return self.list_data(self.list_data.first);
     end if;
     return null; -- do not throw error, just return null
   end;
@@ -160,7 +156,7 @@ create or replace type body json_list as
   member function get_last return json_value as
   begin
     if(self.count > 0) then
-      return self.list_data(self.list_data.last).element_data;
+      return self.list_data(self.list_data.last);
     end if;
     return null; -- do not throw error, just return null
   end;
@@ -174,7 +170,7 @@ create or replace type body json_list as
     end if;
   end;
 
-  member procedure to_clob(buf in out nocopy clob, spaces boolean default false) as
+  member procedure to_clob(self in json_list, buf in out nocopy clob, spaces boolean default false) as
   begin
     if(spaces is null) then	
       json_printer.pretty_print_list(self, false, buf);
@@ -183,7 +179,7 @@ create or replace type body json_list as
     end if;
   end;
 
-  member procedure print(spaces boolean default true) as
+  member procedure print(self in json_list, spaces boolean default true) as
   begin
     dbms_output.put_line(self.to_char(spaces));
   end;

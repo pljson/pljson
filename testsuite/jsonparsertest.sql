@@ -53,6 +53,7 @@ declare
     when others then
     fail_count := fail_count + 1;
     fail(testname);
+    dbms_output.put_line(sqlerrm);
   end;
 
 begin

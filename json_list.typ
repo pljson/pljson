@@ -21,30 +21,30 @@ create or replace type json_list as object (
   THE SOFTWARE.
   */
 
-  list_data json_element_array,
+  list_data json_value_array,
   constructor function json_list return self as result,
   constructor function json_list(str varchar2) return self as result,
   constructor function json_list(str clob) return self as result,
   constructor function json_list(cast json_value) return self as result,
   
-  member procedure add_elem(elem json_value, position pls_integer default null),
-  member procedure add_elem(elem varchar2, position pls_integer default null),
-  member procedure add_elem(elem number, position pls_integer default null),
-  member procedure add_elem(elem boolean, position pls_integer default null),
+  member procedure add_elem(self in out nocopy json_list, elem json_value, position pls_integer default null),
+  member procedure add_elem(self in out nocopy json_list, elem varchar2, position pls_integer default null),
+  member procedure add_elem(self in out nocopy json_list, elem number, position pls_integer default null),
+  member procedure add_elem(self in out nocopy json_list, elem boolean, position pls_integer default null),
 
   /* deprecated putter use json_value */
-  member procedure add_elem(elem json_list, position pls_integer default null),
+  member procedure add_elem(self in out nocopy json_list, elem json_list, position pls_integer default null),
 
   member function count return number,
-  member procedure remove_elem(position pls_integer),
-  member procedure remove_first,
-  member procedure remove_last,
+  member procedure remove_elem(self in out nocopy json_list, position pls_integer),
+  member procedure remove_first(self in out nocopy json_list),
+  member procedure remove_last(self in out nocopy json_list),
   member function get_elem(position pls_integer) return json_value,
   member function get_first return json_value,
   member function get_last return json_value,
   member function to_char(spaces boolean default true) return varchar2,
-  member procedure to_clob(buf in out nocopy clob, spaces boolean default false),
-  member procedure print(spaces boolean default true),
+  member procedure to_clob(self in json_list, buf in out nocopy clob, spaces boolean default false),
+  member procedure print(self in json_list, spaces boolean default true),
   member function to_json_value return json_value
 );
 /

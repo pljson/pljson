@@ -43,7 +43,7 @@ create or replace package json_ext as
   procedure remove(obj in out nocopy json, path varchar2);
   
   --Pretty print with JSON Path
-  function pp(obj json, v_path varchar2) return varchar2;
+  function pp(obj json, v_path varchar2) return varchar2; 
   procedure pp(obj json, v_path varchar2); --using dbms_output.put_line
   procedure pp_htp(obj json, v_path varchar2); --using htp.print
 
@@ -61,6 +61,10 @@ create or replace package json_ext as
   --JSON Path with date
   function get_date(obj json, path varchar2) return date;
   procedure put(obj in out nocopy json, path varchar2, elem date);
+  
+  --experimental support of binary data with base64
+  function base64(binarydata blob) return json_list;
+  function base64(l json_list) return blob;
   
 end json_ext;
 /
@@ -238,7 +242,7 @@ create or replace package body json_ext as
   /* I know the code is crap - feel free to rewrite it */ 
   procedure put_internal(obj in out nocopy json, v_path varchar2, elem json_value, del boolean default false) as
     path varchar2(32767);
-    /* variables */
+    -- variables 
     type indekses is table of number(38) index by pls_integer;
     build json;
     s_build varchar2(32000) := '{"';
@@ -253,16 +257,27 @@ create or replace package body json_ext as
     str VARCHAR2(32000);
     dot boolean := false;
     v_del boolean := del;
-    /* creates a simple json with nulls */
+    -- creates a simple json with nulls 
     function fix_indxs(node json_value, indxs indekses, indx number) return json_value as
       j_node json;
       j_list json_list;
       num number;
+      savename varchar2(4000);
     begin
       if(indxs.count < indx) then return node; end if;
       if(node.is_object) then
+--        dbms_output.put_line('A');
+--        node.print;
         j_node := json(node);
-        j_node.json_data(1).member_data := fix_indxs(j_node.json_data(1).member_data, indxs, indx);
+        savename := j_node.json_data(1).mapname;
+--        dbms_output.put_line('SN'||savename);
+        j_node.json_data(1) := fix_indxs(j_node.json_data(1), indxs, indx);
+--        dbms_output.put_line('B');
+--        j_node.print;
+        j_node.json_data(1).mapname := savename;
+        j_node.json_data(1).mapindx := 1;
+--        dbms_output.put_line('C');
+--        j_node.print;
         return j_node.to_json_value;
       elsif(node.is_array) then
         j_list := json_list(node);
@@ -270,7 +285,7 @@ create or replace package body json_ext as
         for i in 1 .. (num-1) loop
           j_list.add_elem(json_value.makenull, 1);
         end loop;
-        j_list.list_data(num).element_data := fix_indxs(j_list.list_data(num).element_data, indxs, indx+1);
+        j_list.list_data(num) := fix_indxs(j_list.list_data(num), indxs, indx+1);
         return j_list.to_json_value;
       else
         dbms_output.put_line('Should never come here!');
@@ -278,18 +293,19 @@ create or replace package body json_ext as
       end if;
     end;
     
-    /* Join the data */
+    -- Join the data 
     function join_data(o_node json_value, n_node json_value, levels number) return json_value as
       o_obj json; o_list json_list;
       n_obj json; n_list json_list;
+      savename varchar2(4000);
     begin
-      /* code used for remove start*/
+      -- code used for remove start
       if(levels = 1 and v_del = true) then
         --dbms_output.put_line('delete here');
         if(o_node.is_object) then
           o_obj := json(o_node);   
           n_obj := json(n_node);   
-          o_obj.remove(n_obj.json_data(1).member_name);
+          o_obj.remove(n_obj.json_data(1).mapname);
           return o_obj.to_json_value;
         elsif(o_node.is_array) then
           o_list := json_list(o_node);
@@ -300,19 +316,30 @@ create or replace package body json_ext as
           dbms_output.put_line('error here');
           return o_node;
         end if;  
-      /* code used for remove end */
+      -- code used for remove end 
       elsif(o_node.typeval = n_node.typeval and levels > 0) then
         if(n_node.is_object) then
           o_obj := json(o_node);   
           n_obj := json(n_node);   
-          if(o_obj.exist(n_obj.json_data(1).member_name)) then
+--          dbms_output.put_line('Here');
+          savename := n_obj.json_data(1).mapname;
+          if(o_obj.exist(n_obj.json_data(1).mapname)) then
             --join the subtrees
-            n_obj.json_data(1).member_data := join_data(o_obj.get(n_obj.json_data(1).member_name), 
-                                                        n_obj.json_data(1).member_data, levels-1);
+  --          dbms_output.put_line('SN'||savename);
+            n_obj.json_data(1) := join_data(o_obj.get(n_obj.json_data(1).mapname), 
+                                                        n_obj.json_data(1), levels-1);
           end if;
+          n_obj.json_data(1).mapname := savename;                                                        
+          n_obj.json_data(1).mapindx := 1;
             --add the new tree
-          --dbms_output.put_line('putting in tree '||n_obj.json_data(1).member_name);
-          o_obj.put(n_obj.json_data(1).member_name, n_obj.json_data(1).member_data);
+          --dbms_output.put_line('putting in tree '||n_obj.json_data(1).mapname);
+--          dbms_output.put_line('aname '||savename);
+--          n_obj.json_data(1).print;
+--          o_obj.print;
+--          dbms_output.put_line('adata '||n_obj.json_data(1).to_char(false));
+          o_obj.put(n_obj.json_data(1).mapname, n_obj.json_data(1));
+          
+--          dbms_output.put_line('b '||savename);
           return o_obj.to_json_value;
         elsif(n_node.is_array) then
           o_list := json_list(o_node);
@@ -323,8 +350,8 @@ create or replace package body json_ext as
               o_list.add_elem(n_list.get_elem(i));
             end loop;
           else 
-            o_list.list_data(n_list.count).element_data := join_data(o_list.list_data(n_list.count).element_data,
-                                                                     n_list.list_data(n_list.count).element_data, levels-1);
+            o_list.list_data(n_list.count) := join_data(o_list.list_data(n_list.count),
+                                                                     n_list.list_data(n_list.count), levels-1);
           end if;
           --return the modified list;
           return o_list.to_json_value;
@@ -336,30 +363,37 @@ create or replace package body json_ext as
       end if;
     end join_data;
   
-    /* fix then join */
+    -- fix then join 
     function join_json_value(o1 json_value, o2 json_value, indxs indekses, levels number) return json_value as
       temp json_value;
     begin
       temp := fix_indxs(o2, indxs, 1);
       if(o1 is null or o1.typeval != o2.typeval) then
         --replace o1 with o2
+--        dbms_output.put_line('Temp o1 null');
+--        temp.print;
         return temp;
       else 
-        return join_data(o1, temp, levels);
+--        dbms_output.put_line('Temp before');
+--        temp.print;
+        temp := join_data(o1, temp, levels); 
+--        dbms_output.put_line('Temp after');
+--        temp.print;
+        return temp;
       end if;
     end;
     
-    /* process the two jsons */
+    -- process the two jsons 
     function join_jsons(obj in out nocopy json, build json, indxs indekses, levels number) return json as
       m_name varchar2(4000);
       edit json_value;
     begin
-      m_name := build.json_data(1).member_name;
+      m_name := build.json_data(1).mapname;
       edit := join_json_value(obj.get(m_name), build.get(m_name), indxs, levels);
       if(v_del = true and levels = 0) then
         obj.remove(m_name);
       else 
-        obj.put(m_name, edit);
+        obj.put(m_name, edit);        
       end if;
       return obj;
     end;
@@ -409,6 +443,7 @@ create or replace package body json_ext as
     --dbms_output.put_line(str);
     begin
       build := json(str);
+      --build.print;
     exception
       when others then raise_application_error(-20110, 'Path error: consult the documentation');
     end;
@@ -421,8 +456,12 @@ create or replace package body json_ext as
       end if;
       --dbms_output.put_line(indxs(i));
     end loop;
-    
+
+--    dbms_output.put_line('obj bef');
+--    obj.print(false);
     obj := join_jsons(obj, build, indxs, levels);
+--    dbms_output.put_line('obj aft');
+--    obj.print(false);
   end put_internal;
   /* JSON Path putter internal end */  
 
@@ -501,6 +540,139 @@ create or replace package body json_ext as
       htp.print(json_printer.pretty_print_any(json_part, false)); 
     end if;
   end pp_htp;
+  
+  function base64(binarydata blob) return json_list as
+    obj json_list := json_list();
+    c clob := empty_clob();
+    benc blob;    
+  
+    v_blob_offset NUMBER := 1;
+    v_clob_offset NUMBER := 1;
+    v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
+    v_warning NUMBER;
+    v_amount PLS_INTEGER;
+--    temp varchar2(32767);
+
+    FUNCTION encodeBlob2Base64(pBlobIn IN BLOB) RETURN BLOB IS
+      vAmount NUMBER := 45;
+      vBlobEnc BLOB := empty_blob();
+      vBlobEncLen NUMBER := 0;
+      vBlobInLen NUMBER := 0;
+      vBuffer RAW(45);
+      vOffset NUMBER := 1;
+    BEGIN
+      dbms_output.put_line('Start base64 encoding.');
+      vBlobInLen := dbms_lob.getlength(pBlobIn);
+      dbms_output.put_line('<BlobInLength>' || vBlobInLen);
+      dbms_lob.createtemporary(vBlobEnc, TRUE);
+      LOOP
+        IF vOffset >= vBlobInLen THEN
+          EXIT;
+        END IF;
+        dbms_lob.read(pBlobIn, vAmount, vOffset, vBuffer);
+        BEGIN
+          dbms_lob.append(vBlobEnc, utl_encode.base64_encode(vBuffer));
+        EXCEPTION
+          WHEN OTHERS THEN
+          dbms_output.put_line('<vAmount>' || vAmount || '<vOffset>' || vOffset || '<vBuffer>' || vBuffer);
+          dbms_output.put_line('ERROR IN append: ' || SQLERRM);
+          RAISE;
+        END;
+        vOffset := vOffset + vAmount;
+      END LOOP;
+      vBlobEncLen := dbms_lob.getlength(vBlobEnc);
+      dbms_output.put_line('<BlobEncLength>' || vBlobEncLen);
+      dbms_output.put_line('Finshed base64 encoding.');
+      RETURN vBlobEnc;
+    END encodeBlob2Base64;
+  begin
+    benc := encodeBlob2Base64(binarydata);
+    dbms_lob.createtemporary(c, TRUE);
+    v_amount := DBMS_LOB.GETLENGTH(benc);
+    DBMS_LOB.CONVERTTOCLOB(c, benc, v_amount, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
+  
+    v_amount := DBMS_LOB.GETLENGTH(c);
+    v_clob_offset := 1;
+    --dbms_output.put_line('V amount: '||v_amount);
+    while(v_clob_offset < v_amount) loop
+      --dbms_output.put_line(v_offset);
+      --temp := ;
+      --dbms_output.put_line('size: '||length(temp));
+      obj.add_elem(dbms_lob.SUBSTR(c, 4000,v_clob_offset));
+      v_clob_offset := v_clob_offset + 4000;
+    end loop;
+    dbms_lob.freetemporary(benc);
+    dbms_lob.freetemporary(c);
+  --dbms_output.put_line(obj.count);
+  --dbms_output.put_line(obj.get_last().to_char);
+    return obj;
+  
+  end base64;
+
+
+  function base64(l json_list) return blob as
+    c clob := empty_clob();
+    b blob := empty_blob();
+    bret blob;
+  
+    v_blob_offset NUMBER := 1;
+    v_clob_offset NUMBER := 1;
+    v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
+    v_warning NUMBER;
+    v_amount PLS_INTEGER;
+
+    FUNCTION decodeBase642Blob(pBlobIn IN BLOB) RETURN BLOB IS
+      vAmount NUMBER := 256;--32;
+      vBlobDec BLOB := empty_blob();
+      vBlobDecLen NUMBER := 0;
+      vBlobInLen NUMBER := 0;
+      vBuffer RAW(256);--32);
+      vOffset NUMBER := 1;
+    BEGIN
+      dbms_output.put_line('Start base64 decoding.');
+      vBlobInLen := dbms_lob.getlength(pBlobIn);
+      dbms_output.put_line('<BlobInLength>' || vBlobInLen);
+      dbms_lob.createtemporary(vBlobDec, TRUE);
+      LOOP
+        IF vOffset >= vBlobInLen THEN
+          EXIT;
+        END IF;
+        dbms_lob.read(pBlobIn, vAmount, vOffset, vBuffer);
+        BEGIN
+          dbms_lob.append(vBlobDec, utl_encode.base64_decode(vBuffer));
+        EXCEPTION
+          WHEN OTHERS THEN
+          dbms_output.put_line('<vAmount>' || vAmount || '<vOffset>' || vOffset || '<vBuffer>' || vBuffer);
+          dbms_output.put_line('ERROR IN append: ' || SQLERRM);
+          RAISE;
+        END;
+        vOffset := vOffset + vAmount;
+      END LOOP;
+      vBlobDecLen := dbms_lob.getlength(vBlobDec);
+      dbms_output.put_line('<BlobDecLength>' || vBlobDecLen);
+      dbms_output.put_line('Finshed base64 decoding.');
+      RETURN vBlobDec;
+    END decodeBase642Blob;
+  begin
+    dbms_lob.createtemporary(c, TRUE);
+    for i in 1 .. l.count loop
+      dbms_lob.append(c, l.get_elem(i).to_char(false));
+    end loop;
+    v_amount := DBMS_LOB.GETLENGTH(c);
+--    dbms_output.put_line('L C'||v_amount);
+    
+    dbms_lob.createtemporary(b, TRUE);
+    DBMS_LOB.CONVERTTOBLOB(b, c, v_amount, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
+    dbms_lob.freetemporary(c);
+    v_amount := DBMS_LOB.GETLENGTH(b);
+--    dbms_output.put_line('L B'||v_amount);
+    
+    bret := decodeBase642Blob(b); 
+    dbms_lob.freetemporary(b);
+    return bret;
+  
+  end base64;
+
 
 end json_ext;
 /

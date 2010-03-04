@@ -24,8 +24,7 @@ create or replace type body json as
   /* Constructors */
   constructor function json return self as result as
   begin
-    self.num_elements := 0;
-    self.json_data := json_member_array();
+    self.json_data := json_value_array();
     self.check_for_duplicate := 1;
     return;
   end;
@@ -37,7 +36,7 @@ create or replace type body json as
     return;
   end;
   
-  constructor function json(str clob) return self as result as
+  constructor function json(str in clob) return self as result as
   begin
     self := json_parser.parser(str);
     self.check_for_duplicate := 1;
@@ -52,18 +51,32 @@ create or replace type body json as
     return;
   end;
 
+  constructor function json(l in out nocopy json_list) return self as result as
+  begin
+    for i in 1 .. l.list_data.count loop
+      if(l.list_data(i).mapname is null or l.list_data(i).mapname like 'row%') then
+      l.list_data(i).mapname := 'row'||i;
+      end if;
+      l.list_data(i).mapindx := i;
+    end loop;
+
+    self.json_data := l.list_data;
+    self.check_for_duplicate := 1;
+    return;
+  end;
+
   /* Member setter methods */  
-  member procedure remove(pair_name varchar2) as
-    temp json_member;
+  member procedure remove(self in out nocopy json, pair_name varchar2) as
+    temp json_value;
     indx pls_integer;
     
-    function get_member(pair_name varchar2) return json_member as
+    function get_member(pair_name varchar2) return json_value as
       indx pls_integer;
     begin
       indx := json_data.first;
       loop
         exit when indx is null;
-        if(json_data(indx).member_name = pair_name) then return json_data(indx); end if;
+        if(json_data(indx).mapname = pair_name) then return json_data(indx); end if;
         indx := json_data.next(indx);
       end loop;
       return null;
@@ -72,49 +85,57 @@ create or replace type body json as
     temp := get_member(pair_name);
     if(temp is null) then return; end if;
     
-    indx := json_data.next(temp.id);
+    indx := json_data.next(temp.mapindx);
     loop 
       exit when indx is null;
-      json_data(indx).id := indx - 1;
+      json_data(indx).mapindx := indx - 1;
       json_data(indx-1) := json_data(indx);
       indx := json_data.next(indx);
     end loop;
     json_data.trim(1);
-    num_elements := num_elements - 1;
+    --num_elements := num_elements - 1;
   end;
 
-  member procedure put(pair_name varchar2, pair_value json_value, position pls_integer default null) as
-    insert_value json_value := nvl(pair_value, json_value);
+  member procedure put(self in out nocopy json, pair_name varchar2, pair_value json_value, position pls_integer default null) as
+    insert_value json_value := nvl(pair_value, json_value.makenull);
     indx pls_integer; x number;
-    temp json_member;
-    function get_member(pair_name varchar2) return json_member as
+    temp json_value;
+    function get_member(pair_name varchar2) return json_value as
       indx pls_integer;
     begin
       indx := json_data.first;
       loop
         exit when indx is null;
-        if(json_data(indx).member_name = pair_name) then return json_data(indx); end if;
+        if(json_data(indx).mapname = pair_name) then return json_data(indx); end if;
         indx := json_data.next(indx);
       end loop;
       return null;
     end;
   begin
+    --dbms_output.put_line('PN '||pair_name);
+
     if(pair_name is null) then 
       raise_application_error(-20102, 'JSON put-method type error: name cannot be null');
     end if;
-
+    insert_value.mapname := pair_name;
 --    self.remove(pair_name);
     if(self.check_for_duplicate = 1) then temp := get_member(pair_name); else temp := null; end if;
     if(temp is not null) then
-      json_data(temp.id).member_data := insert_value;
+      insert_value.mapindx := temp.mapindx;
+      json_data(temp.mapindx) := insert_value; 
       return;
     elsif(position is null or position > self.count) then
       --insert at the end of the list
       --dbms_output.put_line('Test');
-      indx := self.count + 1;
-      json_data.extend;
-      json_data(indx) := json_member(indx, pair_name, insert_value);
-      --dbms_output.put_line('Test2');
+--      indx := self.count + 1;
+      json_data.extend(1);
+      json_data(json_data.count) := insert_value;
+--      insert_value.mapindx := json_data.count;
+      json_data(json_data.count).mapindx := json_data.count;
+--      dbms_output.put_line('Test2'||insert_value.mapindx);
+--      dbms_output.put_line('Test2'||insert_value.mapname);
+--      insert_value.print(false);
+--      self.print;
     elsif(position < 2) then
       --insert at the start of the list
       indx := json_data.last;
@@ -122,11 +143,12 @@ create or replace type body json as
       loop
         exit when indx is null;
         temp := json_data(indx);
-        temp.id := indx+1;
-        json_data(temp.id) := temp;
+        temp.mapindx := indx+1;
+        json_data(temp.mapindx) := temp;
         indx := json_data.prior(indx);
       end loop;
-      json_data(1) := json_member(1, pair_name, insert_value);
+      json_data(1) := insert_value;
+      insert_value.mapindx := 1;
     else 
       --insert somewhere in the list
       indx := json_data.last; 
@@ -136,22 +158,23 @@ create or replace type body json as
       loop
 --        dbms_output.put_line('Test '||indx);
         temp := json_data(indx);
-        temp.id := indx + 1;
-        json_data(temp.id) := temp;
+        temp.mapindx := indx + 1;
+        json_data(temp.mapindx) := temp;
         exit when indx = position;
         indx := json_data.prior(indx);
       end loop;
-      json_data(position) := json_member(position, pair_name, insert_value);
+      json_data(position) := insert_value;
+      json_data(position).mapindx := position;
     end if;
-    num_elements := num_elements + 1;
+--    num_elements := num_elements + 1;
   end;
   
-  member procedure put(pair_name varchar2, pair_value varchar2, position pls_integer default null) as
+  member procedure put(self in out nocopy json, pair_name varchar2, pair_value varchar2, position pls_integer default null) as
   begin
     put(pair_name, json_value(pair_value), position);
   end;
   
-  member procedure put(pair_name varchar2, pair_value number, position pls_integer default null) as
+  member procedure put(self in out nocopy json, pair_name varchar2, pair_value number, position pls_integer default null) as
   begin
     if(pair_value is null) then
       put(pair_name, json_value(), position);
@@ -160,7 +183,7 @@ create or replace type body json as
     end if;
   end;
   
-  member procedure put(pair_name varchar2, pair_value boolean, position pls_integer default null) as
+  member procedure put(self in out nocopy json, pair_name varchar2, pair_value boolean, position pls_integer default null) as
   begin
     if(pair_value is null) then
       put(pair_name, json_value(), position);
@@ -169,7 +192,7 @@ create or replace type body json as
     end if;
   end;
   
-  member procedure check_duplicate(set boolean) as
+  member procedure check_duplicate(self in out nocopy json, set boolean) as
   begin
     if(set) then 
       check_for_duplicate := 1;
@@ -180,7 +203,7 @@ create or replace type body json as
 
   /* deprecated putters */
  
-  member procedure put(pair_name varchar2, pair_value json, position pls_integer default null) as
+  member procedure put(self in out nocopy json, pair_name varchar2, pair_value json, position pls_integer default null) as
   begin
     if(pair_value is null) then
       put(pair_name, json_value(), position);
@@ -189,7 +212,7 @@ create or replace type body json as
     end if;
   end;
 
-  member procedure put(pair_name varchar2, pair_value json_list, position pls_integer default null) as
+  member procedure put(self in out nocopy json, pair_name varchar2, pair_value json_list, position pls_integer default null) as
   begin
     if(pair_value is null) then
       put(pair_name, json_value(), position);
@@ -201,7 +224,7 @@ create or replace type body json as
   /* Member getter methods */ 
   member function count return number as
   begin
-    return self.num_elements;
+    return self.json_data.count;
   end;
 
   member function get(pair_name varchar2) return json_value as
@@ -210,12 +233,32 @@ create or replace type body json as
     indx := json_data.first;
     loop
       exit when indx is null;
-      if(json_data(indx).member_name = pair_name) then return json_data(indx).member_data; end if;
+      if(json_data(indx).mapname = pair_name) then return json_data(indx); end if;
       indx := json_data.next(indx);
     end loop;
     return null;
   end;
   
+  member function get(position pls_integer) return json_value as
+  begin
+    if(self.count >= position and position > 0) then
+      return self.json_data(position);
+    end if;
+    return null; -- do not throw error, just return null
+  end;
+  
+  member function index_of(pair_name varchar2) return number as
+    indx pls_integer;
+  begin
+    indx := json_data.first;
+    loop
+      exit when indx is null;
+      if(json_data(indx).mapname = pair_name) then return indx; end if;
+      indx := json_data.next(indx);
+    end loop;
+    return -1;
+  end;
+
   member function exist(pair_name varchar2) return boolean as
   begin
     return (self.get(pair_name) is not null);
@@ -230,7 +273,7 @@ create or replace type body json as
     end if;
   end;
   
-  member procedure to_clob(buf in out nocopy clob, spaces boolean default false) as
+  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false) as
   begin
     if(spaces is null) then	
       json_printer.pretty_print(self, false, buf);
@@ -239,7 +282,7 @@ create or replace type body json as
     end if;
   end;
 
-  member procedure print(spaces boolean default true) as
+  member procedure print(self in json, spaces boolean default true) as
   begin
     dbms_output.put_line(self.to_char(spaces));
   end;
@@ -248,6 +291,34 @@ create or replace type body json as
   begin
     return json_value(anydata.convertobject(self));
   end;
+
+  /* Thanks to Matt Nolan */
+  member function get_keys return json_list as
+    keys json_list;
+    indx pls_integer;
+  begin
+    keys := json_list();
+    indx := json_data.first;
+    loop
+      exit when indx is null;
+      keys.add_elem(json_data(indx).mapname);
+      indx := json_data.next(indx);
+    end loop;
+    return keys;
+  end;
+  
+  member function get_values return json_list as
+    vals json_list := json_list();
+  begin
+    vals.list_data := self.json_data;
+    return vals;
+  end;
+  
+  member procedure remove_duplicates(self in out nocopy json) as
+  begin
+    json_parser.remove_duplicates(self);
+  end remove_duplicates;
+
 
 end;
 / 

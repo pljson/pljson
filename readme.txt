@@ -28,7 +28,6 @@ Installation:
 4.  To Test the implementation, run the /testsuite/testall.sql file
 5.  To learn the API, look at the files in /examples
 
-Documentation can be found at  http://oracleoss.com or at http://database-geek.com
 Generel information about JSON is available at http://www.json.org
 
 

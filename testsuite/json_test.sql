@@ -92,8 +92,8 @@ begin
     assertTrue(obj.count = 7);
     --obj.print;
     for i in 1 .. obj.count loop
-      assertTrue(obj.json_data(i).id = i);
-      assertTrue(obj.json_data(i).member_name = obj.json_data(i).member_data.get_string);
+      assertTrue(obj.json_data(i).mapindx = i);
+      assertTrue(obj.json_data(i).mapname = obj.json_data(i).get_string);
     end loop;
     pass(str);
   exception
@@ -114,7 +114,7 @@ begin
     assertTrue(obj.count = 1);
     --obj.print;
     for i in 1 .. obj.count loop
-      assertTrue(obj.json_data(i).id = i);
+      assertTrue(obj.json_data(i).mapindx = i);
     end loop;
     pass(str);
   exception
@@ -144,7 +144,7 @@ begin
     assertFalse(obj.exist('D'));
     --obj.print;
     for i in 1 .. obj.count loop
-      assertTrue(obj.json_data(i).id = i);
+      assertTrue(obj.json_data(i).mapindx = i);
     end loop;
     obj := json();
     obj.put('A', 'A', 1);
@@ -153,7 +153,7 @@ begin
     obj.remove('A');
     assertTrue(obj.count = 0);
     for i in 1 .. obj.count loop
-      assertTrue(obj.json_data(i).id = i);
+      assertTrue(obj.json_data(i).mapindx = i);
     end loop;
 
     pass(str);
