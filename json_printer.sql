@@ -60,12 +60,12 @@ package body "JSON_PRINTER" as
     if(spaces) then return ', '; else return ','; end if;
   end;
 
-  function getMemName(mem json_member, spaces boolean) return varchar2 as
+  function getMemName(mem json_value, spaces boolean) return varchar2 as
   begin
     if(spaces) then
-      return '"' || mem.member_name || '" : ';
+      return '"' || mem.mapname || '" : ';
     else 
-      return '"' || mem.member_name || '":';
+      return '"' || mem.mapname || '":';
     end if;
   end;
 
@@ -88,19 +88,19 @@ package body "JSON_PRINTER" as
   procedure ppObj(obj json, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2);
 
   procedure ppEA(input json_list, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
-    elem json_element; 
-    arr json_element_array := input.list_data;
+    elem json_value; 
+    arr json_value_array := input.list_data;
   begin
     for y in 1 .. arr.count loop
       elem := arr(y);
       if(elem is not null) then
-      case elem.element_data.get_type
+      case elem.get_type
         when 'number' then 
-          add_to_clob(buf, buf_str, to_char(elem.element_data.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
+          add_to_clob(buf, buf_str, to_char(elem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
         when 'string' then 
-          add_to_clob(buf, buf_str, '"' || elem.element_data.get_string || '"');
+          add_to_clob(buf, buf_str, '"' || elem.get_string || '"');
         when 'bool' then
-          if(elem.element_data.get_bool) then 
+          if(elem.get_bool) then 
             add_to_clob(buf, buf_str, 'true');
           else
             add_to_clob(buf, buf_str, 'false');
@@ -109,27 +109,27 @@ package body "JSON_PRINTER" as
           add_to_clob(buf, buf_str, 'null');
         when 'array' then
           add_to_clob(buf, buf_str, '[');
-          ppEA(json_list(elem.element_data), indent, buf, spaces, buf_str);
+          ppEA(json_list(elem), indent, buf, spaces, buf_str);
           add_to_clob(buf, buf_str, ']');
         when 'object' then
-          ppObj(json(elem.element_data), indent, buf, spaces, buf_str);
-        else add_to_clob(buf, buf_str, elem.element_data.get_type);
+          ppObj(json(elem), indent, buf, spaces, buf_str);
+        else add_to_clob(buf, buf_str, elem.get_type);
       end case;
       end if;
       if(y != arr.count) then add_to_clob(buf, buf_str, getCommaSep(spaces)); end if;
     end loop;
   end ppEA;
 
-  procedure ppMem(mem json_member, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
+  procedure ppMem(mem json_value, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
   begin
     add_to_clob(buf, buf_str, tab(indent, spaces) || getMemName(mem, spaces));
-    case mem.member_data.get_type
+    case mem.get_type
       when 'number' then 
-        add_to_clob(buf, buf_str, to_char(mem.member_data.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
+        add_to_clob(buf, buf_str, to_char(mem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
       when 'string' then 
-        add_to_clob(buf, buf_str, '"' || mem.member_data.get_string || '"');
+        add_to_clob(buf, buf_str, '"' || mem.get_string || '"');
       when 'bool' then
-        if(mem.member_data.get_bool) then 
+        if(mem.get_bool) then 
           add_to_clob(buf, buf_str, 'true');
         else
           add_to_clob(buf, buf_str, 'false');
@@ -138,11 +138,11 @@ package body "JSON_PRINTER" as
         add_to_clob(buf, buf_str, 'null');
       when 'array' then
         add_to_clob(buf, buf_str, '[');
-        ppEA(json_list(mem.member_data), indent, buf, spaces, buf_str);
+        ppEA(json_list(mem), indent, buf, spaces, buf_str);
         add_to_clob(buf, buf_str, ']');
       when 'object' then
-        ppObj(json(mem.member_data), indent, buf, spaces, buf_str);
-      else add_to_clob(buf, buf_str, mem.member_data.get_type);
+        ppObj(json(mem), indent, buf, spaces, buf_str);
+      else add_to_clob(buf, buf_str, mem.get_type);
     end case;
   end ppMem;
 
@@ -185,7 +185,7 @@ package body "JSON_PRINTER" as
       when 'string' then 
         add_to_clob(buf, buf_str, json_part.get_string);
       when 'bool' then
-	if(json_part.get_bool) then
+	      if(json_part.get_bool) then
           add_to_clob(buf, buf_str, 'true');
         else
           add_to_clob(buf, buf_str, 'false');
@@ -210,19 +210,19 @@ package body "JSON_PRINTER" as
   procedure ppObj(obj json, indent number, buf in out nocopy varchar2, spaces boolean);
 
   procedure ppEA(input json_list, indent number, buf in out varchar2, spaces boolean) as
-    elem json_element; 
-    arr json_element_array := input.list_data;
+    elem json_value; 
+    arr json_value_array := input.list_data;
   begin
     for y in 1 .. arr.count loop
       elem := arr(y);
       if(elem is not null) then
-      case elem.element_data.get_type
+      case elem.get_type
         when 'number' then 
-          buf := buf || to_char(elem.element_data.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
+          buf := buf || to_char(elem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
         when 'string' then 
-          buf := buf || '"' || elem.element_data.get_string || '"';
+          buf := buf || '"' || elem.get_string || '"';
         when 'bool' then
-          if(elem.element_data.get_bool) then           
+          if(elem.get_bool) then           
             buf := buf || 'true';
           else
             buf := buf || 'false';
@@ -231,40 +231,40 @@ package body "JSON_PRINTER" as
           buf := buf || 'null';
         when 'array' then
           buf := buf || '[';
-          ppEA(json_list(elem.element_data), indent, buf, spaces);
+          ppEA(json_list(elem), indent, buf, spaces);
           buf := buf || ']';
         when 'object' then
-          ppObj(json(elem.element_data), indent, buf, spaces);
-        else buf := buf || elem.element_data.get_type; /* should never happen */
+          ppObj(json(elem), indent, buf, spaces);
+        else buf := buf || elem.get_type; /* should never happen */
       end case;
       end if;
       if(y != arr.count) then buf := buf || getCommaSep(spaces); end if;
     end loop;
   end ppEA;
 
-  procedure ppMem(mem json_member, indent number, buf in out nocopy varchar2, spaces boolean) as
+  procedure ppMem(mem json_value, indent number, buf in out nocopy varchar2, spaces boolean) as
   begin
     buf := buf || tab(indent, spaces) || getMemName(mem, spaces);
-    case mem.member_data.get_type
+    case mem.get_type
       when 'number' then 
-        buf := buf || to_char(mem.member_data.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
+        buf := buf || to_char(mem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
       when 'string' then 
-        buf := buf || '"' || mem.member_data.get_string || '"';
+        buf := buf || '"' || mem.get_string || '"';
       when 'bool' then
-        if(mem.member_data.get_bool) then 
-	  buf := buf || 'true';
+        if(mem.get_bool) then 
+          buf := buf || 'true';
         else 
-	  buf := buf || 'false';
+          buf := buf || 'false';
         end if;
       when 'null' then
         buf := buf || 'null';
       when 'array' then
         buf := buf || '[';
-        ppEA(json_list(mem.member_data), indent, buf, spaces);
+        ppEA(json_list(mem), indent, buf, spaces);
         buf := buf || ']';
       when 'object' then
-        ppObj(json(mem.member_data), indent, buf, spaces);
-      else buf := buf || mem.member_data.get_type; /* should never happen */
+        ppObj(json(mem), indent, buf, spaces);
+      else buf := buf || mem.get_type; /* should never happen */
     end case;
   end ppMem;
   

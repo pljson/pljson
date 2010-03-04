@@ -78,13 +78,11 @@ begin
     l := json_list('[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]');
     assertTrue(15 = l.count);
     for i in 1 .. l.count loop
-      assertTrue(i = l.list_data(i).element_id);
       assertTrue(i = l.get_elem(i).get_number);
     end loop;
     l := json_list('[1, [], {"nest":true}]');
     assertTrue(l.count = 3);
     assertTrue(1 = l.get_elem(1).get_number);
-    assertTrue(1 = l.list_data(1).element_id);
     obj := json(l.get_elem(3));
     assertTrue(obj.exist('nest'));
     assertTrue(obj.count = 1);
@@ -121,7 +119,6 @@ begin
     for i in 1 .. l.count loop
       elem := l.get_first;
       assertFalse(elem is null);
-      assertTrue(l.list_data(1).element_id = 1);
       l.remove_first;
     end loop;
     
@@ -142,9 +139,6 @@ begin
     l.add_elem('-1', -11); 
     l.add_elem('4', 6); 
     assertTrue(l.to_char = '["-1", "0", "1", "2", "3", "4"]'); --pretty printer must work this way
-    for i in 1 .. l.count loop
-      assertTrue(i = l.list_data(i).element_id);
-    end loop;    
     pass(str);
   exception
     when others then fail(str);
@@ -168,9 +162,6 @@ begin
     assertTrue(l.to_char = '["0", "1", "2"]');
     l.remove_elem(2);
     assertTrue(l.to_char = '["0", "2"]');
-    for i in 1 .. l.count loop
-      assertTrue(i = l.list_data(i).element_id);
-    end loop;    
     pass(str);
   exception
     when others then fail(str);
@@ -290,8 +281,8 @@ begin
   begin
     obj.add_elem(x1);
     obj.add_elem(x2);
-    n := obj.get_first;
-    x1 := n.get_string;
+    --n := obj.get_first;
+    x1 := obj.get_first().get_string;
     n := obj.get_last;
     x2 := n.get_string;
     pass(str);

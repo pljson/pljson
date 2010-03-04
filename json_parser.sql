@@ -20,7 +20,6 @@ create or replace package json_parser as
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-
   /* scanner tokens:
     '{', '}', ',', ':', '[', ']', STRING, NUMBER, TRUE, FALSE, NULL 
   */
@@ -36,18 +35,18 @@ create or replace package json_parser as
   function next_char(indx number, s in out nocopy json_src) return varchar2;
   function next_char2(indx number, s in out nocopy json_src, amount number default 1) return varchar2;
   
-  function prepareClob(buf clob) return json_parser.json_src;
-  function prepareVarchar2(buf varchar2) return json_parser.json_src;
+  function prepareClob(buf in clob) return json_parser.json_src;
+  function prepareVarchar2(buf in varchar2) return json_parser.json_src;
   function lexer(jsrc in out nocopy json_src) return lTokens;
-
   procedure print_token(t rToken);
 
   function parser(str varchar2) return json;
   function parse_list(str varchar2) return json_list;
---  function parse_any(str varchar2) return json_value;
+  function parse_any(str varchar2) return json_value;
   function parser(str clob) return json;
   function parse_list(str clob) return json_list;
---  function parse_any(str clob) return json_value;
+  function parse_any(str clob) return json_value;
+  procedure remove_duplicates(obj in out nocopy json);
   
 end json_parser;
 /
@@ -75,7 +74,6 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
   THE SOFTWARE.
   */
   
-  /* 10 is constant */
   /*type json_src is record (len number, offset number, src varchar2(10), s_clob clob); */
   function next_char(indx number, s in out nocopy json_src) return varchar2 as
   begin
@@ -150,7 +148,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     return token;
   end;
 
-  function lexNumber(jsrc in out nocopy json_src, tok in out rToken, indx in out pls_integer) return pls_integer as
+  function lexNumber(jsrc in out nocopy json_src, tok in out nocopy rToken, indx in out nocopy pls_integer) return pls_integer as
     numbuf varchar2(4000) := '';
     buf varchar2(4);
     checkLoop boolean;
@@ -208,7 +206,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     return indx;
   end lexNumber;
 
-  function lexString(jsrc in out nocopy json_src, tok in out rToken, indx in out pls_integer) return pls_integer as
+  function lexString(jsrc in out nocopy json_src, tok in out nocopy rToken, indx in out nocopy pls_integer) return pls_integer as
     varbuf varchar2(4000) := '';
     buf varchar(4);
     wrong boolean;
@@ -355,10 +353,10 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     raise_application_error(-20101, 'JSON Parser exception @ line: '||tok.line||' column: '||tok.col||' - '||text);
   end;
   
-  function parseObj(tokens lTokens, indx in out pls_integer) return json;
+  function parseObj(tokens lTokens, indx in out nocopy pls_integer) return json;
 
-  function parseArr(tokens lTokens, indx in out pls_integer) return json_list as
-    e_arr json_element_array := json_element_array();
+  function parseArr(tokens lTokens, indx in out nocopy pls_integer) return json_list as
+    e_arr json_value_array := json_value_array();
     ret_list json_list := json_list();
     v_count number := 0;
     tok rToken;
@@ -370,29 +368,29 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       e_arr.extend;
       v_count := v_count + 1;
       case tok.type_name
-        when 'TRUE' then e_arr(v_count) := json_element(v_count, json_value(true) );
-        when 'FALSE' then e_arr(v_count) := json_element(v_count, json_value(false) );
-        when 'NULL' then e_arr(v_count) := json_element(v_count, json_value);
-        when 'STRING' then e_arr(v_count) := json_element(v_count, json_value(tok.data) );
+        when 'TRUE' then e_arr(v_count) := json_value(true);
+        when 'FALSE' then e_arr(v_count) := json_value(false);
+        when 'NULL' then e_arr(v_count) := json_value;
+        when 'STRING' then e_arr(v_count) := json_value(tok.data);
         when 'NUMBER' then 
           declare rev varchar2(10); begin
             --stupid countries with , as decimal point
             SELECT VALUE into rev FROM NLS_SESSION_PARAMETERS WHERE PARAMETER = 'NLS_NUMERIC_CHARACTERS';
             if(rev = ',.') then
-              e_arr(v_count) := json_element(v_count, json_value( to_number(replace(tok.data, '.',','))));
+              e_arr(v_count) := json_value( to_number(replace(tok.data, '.',',')));
             else
-              e_arr(v_count) := json_element(v_count, json_value( to_number(tok.data )));
+              e_arr(v_count) := json_value( to_number(tok.data ));
             end if;
           end;
         when '[' then 
           declare e_list json_list; begin
             indx := indx + 1;
             e_list := parseArr(tokens, indx);
-            e_arr(v_count) := json_element(v_count, e_list.to_json_value);
+            e_arr(v_count) := e_list.to_json_value;
           end;
         when '{' then 
           indx := indx + 1;
-          e_arr(v_count) := json_element(v_count, parseObj(tokens, indx).to_json_value);
+          e_arr(v_count) := parseObj(tokens, indx).to_json_value;
         else
           p_error('Expected a value', tok);
       end case;
@@ -415,24 +413,24 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     return ret_list;
   end parseArr;
   
-  function parseMem(tokens lTokens, indx in out pls_integer, mem_name varchar2, mem_indx number) return json_member as
-    mem json_member;
+  function parseMem(tokens lTokens, indx in out pls_integer, mem_name varchar2, mem_indx number) return json_value as
+    mem json_value;
     tok rToken;
   begin
     tok := tokens(indx);
     case tok.type_name
-      when 'TRUE' then mem := json_member(mem_indx, mem_name, json_value(true));
-      when 'FALSE' then mem := json_member(mem_indx, mem_name, json_value(false));
-      when 'NULL' then mem := json_member(mem_indx, mem_name, json_value);
-      when 'STRING' then mem := json_member(mem_indx, mem_name, json_value( tok.data ));
+      when 'TRUE' then mem := json_value(true);
+      when 'FALSE' then mem := json_value(false);
+      when 'NULL' then mem := json_value;
+      when 'STRING' then mem := json_value( tok.data );
       when 'NUMBER' then 
         declare rev varchar2(10); begin
           --stupid countries with , as decimal point - like my own
           SELECT VALUE into rev FROM NLS_SESSION_PARAMETERS WHERE PARAMETER = 'NLS_NUMERIC_CHARACTERS';
           if(rev = ',.') then
-            mem := json_member(mem_indx, mem_name, json_value( to_number(replace(tok.data, '.',','))));
+            mem := json_value( to_number(replace(tok.data, '.',',')));
           else
-            mem := json_member(mem_indx, mem_name, json_value( to_number(tok.data )));
+            mem := json_value( to_number(tok.data ));
           end if;
         end;
       when '[' then 
@@ -441,33 +439,38 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
         begin
           indx := indx + 1;
           e_list := parseArr(tokens, indx);
-          mem := json_member(mem_indx, mem_name, e_list.to_json_value);
+          mem := e_list.to_json_value;
         end;
       when '{' then 
         indx := indx + 1;
-        mem := json_member(mem_indx, mem_name, parseObj(tokens, indx).to_json_value);
+        mem := parseObj(tokens, indx).to_json_value;
       else 
         p_error('Found '||tok.type_name, tok);
     end case;
+    mem.mapname := mem_name;
+    mem.mapindx := mem_indx;
 
     indx := indx + 1;
     return mem;
   end parseMem;
   
-  procedure test_duplicate_members(arr in json_member_array, mem_name in varchar2, wheretok rToken) as
+  /*procedure test_duplicate_members(arr in json_member_array, mem_name in varchar2, wheretok rToken) as
   begin
     for i in 1 .. arr.count loop
       if(arr(i).member_name = mem_name) then
         p_error('Duplicate member name', wheretok);
       end if;
     end loop;
-  end test_duplicate_members;
+  end test_duplicate_members;*/
   
-  function parseObj(tokens lTokens, indx in out pls_integer) return json as
+  function parseObj(tokens lTokens, indx in out nocopy pls_integer) return json as
+    type memmap is table of number index by varchar2(4000); -- i've read somewhere that this is not possible - but it is!
+    mymap memmap;
+    
     obj json;
     tok rToken;
     mem_name varchar(4000);
-    arr json_member_array := json_member_array();
+    arr json_value_array := json_value_array();
   begin
     --what to expect?
     while(indx <= tokens.count) loop
@@ -477,6 +480,14 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       when 'STRING' then
         --member 
         mem_name := tok.data;
+        begin
+          if(mymap(mem_name) is not null) then
+            p_error('Duplicate member name: '||mem_name, tok);
+          end if;
+        exception 
+          when no_data_found then mymap(mem_name) := 1;
+        end;
+        
         indx := indx + 1;
         if(indx > tokens.count) then p_error('Unexpected end of input', tok); end if;
         tok := tokens(indx);
@@ -485,13 +496,12 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
         if(tok.type_name = ':') then
           --parse 
           declare 
-            jmb json_member;
+            jmb json_value;
             x number;
           begin
             x := arr.count + 1;
             jmb := parseMem(tokens, indx, mem_name, x);
             arr.extend;
-            test_duplicate_members(arr, mem_name, tok);
             arr(x) := jmb;
           end;
         else
@@ -512,7 +522,6 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
 
       when '}' then
         obj := json();
-	obj.num_elements := arr.count;
         obj.json_data := arr;
         return obj;
       else 
@@ -521,6 +530,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     end loop;
     
     p_error('} not found', tokens(indx-1));
+    
     return obj;
   
   end;
@@ -609,6 +619,66 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     
     return obj;
   end parser;
+  
+  function parse_any(str varchar2) return json_value as
+    tokens lTokens;
+    obj json_list;
+    ret json_value;
+    indx pls_integer := 1;
+    jsrc json_src;
+  begin
+    jsrc := prepareVarchar2(str);
+    tokens := lexer(jsrc); 
+    tokens(tokens.count+1).type_name := ']';
+    obj := parseArr(tokens, indx);
+    if(tokens.count != indx) then
+      p_error('] should end the JSON List object', tokens(indx));
+    end if;
+    
+    return obj.get_elem(1);
+  end parse_any;
+
+  function parse_any(str clob) return json_value as
+    tokens lTokens;
+    obj json_list;
+    indx pls_integer := 1;
+    jsrc json_src;
+  begin
+    jsrc := prepareClob(str);
+    tokens := lexer(jsrc); 
+    tokens(tokens.count+1).type_name := ']';
+    obj := parseArr(tokens, indx);
+    if(tokens.count != indx) then
+      p_error('] should end the JSON List object', tokens(indx));
+    end if;
+    
+    return obj.get_elem(1);
+  end parse_any;
+
+  /* last entry is the one to keep */
+  procedure remove_duplicates(obj in out nocopy json) as
+    type memberlist is table of json_value index by varchar2(4000);
+    members memberlist;
+    validated json := json();
+    indx varchar2(4000);
+  begin
+    for i in 1 .. obj.count loop
+      members(obj.get(i).mapname) := obj.get(i);
+    end loop;
+    
+    validated.check_duplicate(false);
+    indx := members.first;
+    loop
+      exit when indx is null;
+      validated.put(indx, members(indx));
+      indx := members.next(indx);
+    end loop;
+    
+    validated.check_for_duplicate := obj.check_for_duplicate;
+    
+    obj := validated;  
+  end;
+
 
 end json_parser;
 /

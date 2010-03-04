@@ -26,11 +26,13 @@ PROMPT -- Compiling objects for PL/JSON --;
 PROMPT -----------------------------------;
 @@uninstall.sql
 @@json_value.typ
-@@simpletypes.typ
+--@@simpletypes.typ
 @@json_list.typ
 @@json.typ
 @@json_parser.sql
 @@json_printer.sql
+@@json_value_body.typ
 @@json_list_body.typ
 @@json_body.typ
 @@json_ext.sql --extra method to lookup types and add dates in json
+@@json_dyn.sql --dynamic sql execute (requires json_ext to handle dates)

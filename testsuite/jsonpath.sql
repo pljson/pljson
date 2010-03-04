@@ -151,7 +151,10 @@ begin
   begin
     json_ext.put(obj, 'a.b[1].c', true);
     assertTrue(json_ext.get_json_list(obj, 'a.b') is not null);
+--    obj.print;
     json_ext.put(obj, 'a.b[1].c', false);
+--    dbms_output.put_line('Put false');
+--    obj.print;
     assertTrue(json_ext.get_json_list(obj, 'a.b') is not null);
     assertFalse(json_ext.get_json_value(obj, 'a.b[1].c').get_bool);
     pass(str);
