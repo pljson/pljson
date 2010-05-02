@@ -184,6 +184,13 @@ create or replace type body json_list as
     dbms_output.put_line(self.to_char(spaces));
   end;
 
+  /* json path */
+  member function path(json_path varchar2) return json_value as
+    cp json_list := self;
+  begin
+    return json_ext.get_json_value(json(cp), json_path);
+  end path;
+
   member function to_json_value return json_value as
   begin
     return json_value(anydata.convertobject(self));

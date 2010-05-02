@@ -1,0 +1,583 @@
+% rail.tex - documentation file for Rail package
+%
+% To create rail.dvi, use
+%
+%	latex rail	(creates rail.rai from rail.tex)
+%	rail rail	(creates rail.rao from rail.rai)
+%	latex rail	(creates rail.dvi from rail.tex and rail.rao)
+%
+% Or type
+%
+%	make doc
+%
+% 09-Jul-90 L. Rooijakkers
+% 08-Oct-90 L. Rooijakkers	alternate star layout
+% 07-Feb-91 L. Rooijakkers	auto indexing, embedded options
+% 08-Feb-91 L. Rooijakkers	version 1.0 #0 docs
+% 12-Feb-91 L. Rooijakkers	patchlevel 1
+% 28-Jun-94 K. Barthelmann	adapted for LaTeX2e
+% 13-Dec-96 K. Barthelmann	added second author, updated availability section
+% 28-Oct-97 K. Barthelmann	updated availability section
+% 18-Apr-98 K. Barthelmann	added backward compatibility (sub)section
+% 21-May-98 K. Barthelmann	describe new \railoption for arrow-heads
+%				contributed by J. Olsson
+%
+\documentclass[a4paper]{article}
+
+\usepackage{rail}
+
+\railoptions{+ac}   % \railoptions{-h}
+
+\railalias{quote}{'}
+\railalias{dquote}{"}
+\railalias{cr}{\char"5C\char"5C}
+\railterm{quote,dquote,cr}
+
+\newcommand\Rail{Rail}
+\newcommand\nt[1]{\textit{#1}}
+\newcommand\file[1]{\textit{file}\texttt{.#1}}
+\newcommand\lit[1]{\texttt{#1}}
+\newcommand\cs[1]{\lit{\char"5C\relax#1}}
+
+\newenvironment{example}%
+{\begin{trivlist}\item[]\begin{tabular}{l}}%
+{\end{tabular}\end{trivlist}}
+
+\title{
+\Rail \\[1ex]
+Syntax Diagrams For \LaTeX
+}
+
+\author{
+   L.W.J. Rooijakkers\thanks{original version}
+\\ University of Nijmegen
+\\ The Netherlands
+\\ E-mail: \texttt{lwj@cs.kun.nl}
+\and
+   K. Barthelmann\thanks{update}
+\\ University of Mainz
+\\ Germany
+\\ E-mail: \texttt{barthel@informatik.uni-mainz.de}
+}
+
+\date{May 21, 1998}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+The \Rail\ package allows you to include syntax diagrams (also known as
+\emph{railroad diagrams}) in a \LaTeX\ document. Such a diagram looks
+like this:
+\label{example}
+\begin{rail}
+
+decl : 'def' identifier '=' ( expression + ';' )
+     | 'type' identifier '=' type
+     ;
+
+\end{rail}
+(If you like arrow-heads where the lines enter the boxes, a nice feature
+contributed by J.~Olsson, see Section \ref{sec:options}.)
+The idea is that any sequence of terminals and nonterminals that can be
+produced by starting at the left and following the lines is a valid sentence
+of some language. As such, these diagrams are analogous to BNF with embedded
+regular expressions for each right-hand side. Actually, the input
+language looks like that, except that production rules need not be named
+and there is some extra annotation. This document describes version 1.2
+of the \Rail\ package.
+
+\section{Usage}
+
+To use the \Rail\ package in your \LaTeX\ document you need to write
+\begin{example}
+\verb!\usepackage{rail}!
+\end{example}
+in the document's preamble.
+It is usually best to put the \lit{rail} option last. Then you can
+display diagrams in your document body by using
+\begin{example}
+\verb!\begin{rail}! \\
+\nt{rules} \\
+\verb!\end{rail}!
+\end{example}
+where the syntax of \nt{rules} is given in Figures \ref{rules} and
+\ref{body}, as a railroad diagram. There are also various options
+you can set in the preamble.
+
+\begin{figure}
+\begin{rail}
+
+rules	: ( rule ? + ';' ) ;
+
+rule	: ( identifier ':' ) ? body[1--5] ;
+
+\end{rail}
+\caption{Input syntax for \Rail}
+\label{rules}
+\end{figure}
+
+\begin{figure}
+\begin{rail}
+
+body	: [1] ( ( '[' string ']' ) ? body[2--6] + '|' )
+	| [2] body[3--6] '*' body[5--6]
+	| [2] body[3--6] '+' body[5--6]
+	| [3] ( body[4--5] + )
+	| [4] body[5] '?'
+	| [5] identifier ( '[' string ']' ) ?
+	| [5] quote string quote
+	| [5] dquote string dquote
+	| [5] '(' body[1--6] ')'
+	| [5] cr
+	| [6]
+	;
+
+\end{rail}
+\caption{Input syntax for \Rail, continued}
+\label{body}
+\end{figure}
+
+After running your \file{tex} through \LaTeX, a file named \file{rai} will
+have been created, containing all the \nt{rules} from your document.
+This file must then be processed with the \lit{rail} program to produce
+\file{rao} containing \LaTeX\ formatting instructions for each diagram
+This is done with the command
+\begin{example}
+\texttt{rail} \textit{file}
+\end{example}
+On the next \LaTeX\ run, the diagrams will be picked up and integrated
+into the output.
+If the diagrams in \file{rao} are not up-to-date with your \LaTeX\ file,
+the \lit{rail} package will detect this and warn you with
+\begin{example}
+\verb!Package rail Warning: Railroad diagram {!\nt{number}\verb!} doesn't match on input line !\nt{number}\verb!.!
+\end{example}
+for each diagram, and again at the end of the document with
+\begin{example}
+\verb!Package rail Warning: Railroad diagram(s) may have changed. Use 'rail' and rerun.!
+\end{example}
+The \nt{number} between braces can be used to find the diagram in
+\file{rai} or \file{rao} if needed.
+
+\section{Input language}
+
+As said before, diagrams are displayed by using
+\begin{example}
+\verb!\begin{rail}! \\
+\nt{rules} \\
+\verb!\end{rail}!
+\end{example}
+Refer to Figures \ref{rules} and \ref{body} for the syntax of \nt{rules}.
+This syntax is rather strict. Some use of \TeX\ macros within \nt{rules}
+is possible, but no nested environments are allowed. However, defining a
+macro to save typing is possible.
+
+As seen in the figure, \nt{rules} consist of zero or more occurrences of a
+\nt{rule}, separated by one or more semicolons. Each \nt{rule}
+starts with an optional \nt{identifier} giving the name of the rule,
+followed by the rule \nt{body} (named rules can be indexed
+automatically with the \lit{-i} option, see below) .
+This looks pretty much like BNF, but
+there are some other operators. Most of these are very similar to the usual
+operators of regular expressions, others are for formatting only.
+Parentheses \verb!( )! are used for grouping. The italic numbers in the
+figure are the priority levels of each alternative. An occurrence like
+\begin{rail}
+body[3--5]
+\end{rail}
+means that only alternatives with a priority in the range 3--5 are
+allowed at that point.
+
+I will illustrate the meaning of the various operators with small
+examples.
+
+\subsection{Atoms}
+
+The primitive atoms of the rules are identifiers and various forms of strings.
+Identifiers usually signify nonterminals, but they can also be used for
+terminal symbols (see \cs{railterm} below).
+Strings delimited by single quotes (\verb!'!) or double quotes
+(\verb!"!) signify terminals. Either kind of string may not contain
+tabs, newlines or it's closing quote. Note that these
+strings pass through \TeX\ several times, thus it is unwise to use
+special characters like \verb!{!, \verb!}!, \verb!$!, \verb!%!,
+\verb!&!, \verb!\! in strings.
+If you need to use these as symbols, see \cs{railalias} below.
+
+Any nonterminal is formatted in a square box, like
+\begin{rail}
+nonterminal
+\end{rail}
+while any terminal text is formatted in a box with rounded corners like
+\begin{rail}
+'terminal'
+\end{rail}
+Nonterminal identifiers can be annotated by following them with a string
+enclosed in \verb![! and \verb!]!. This is described below under the
+\verb!|! operator. The fonts used for typesetting terminals,
+nonterminals and annotations can be specified,
+see \cs{rail}\ldots\lit{font} below.
+
+\subsection{Concatenation}
+
+The most basic operation is concatenation, for which the operator is
+invisible. It works exactly like you think. Entering \verb!x y z!
+produces
+\begin{rail}
+x y z
+\end{rail}
+Related to concatenation is the empty body. It can occur only as operand
+of \verb!|!, \verb!*! or \verb!+! or within parentheses. A safe way to
+write the empty body is \verb!()!, which displays as
+\begin{rail}
+()
+\end{rail}
+i.e., nothing. However, the invisible empty body is useful with the
+repetition operators, as will be seen below.
+
+A feature related to concatenation is the ability to split long
+horizontal sequences with \verb!\\!.
+As an example,
+\verb!a b c d e \\ f g h i j! results in
+\begin{rail}
+a b c d e \\ f g h i j
+\end{rail}
+It is possible to create horrible graphic constructions with this
+operator, for example \verb!\\ | \\!:
+\begin{rail}
+\\ | \\
+\end{rail}
+or \verb!( \\ * \\ ) \\!:
+\begin{rail}
+( \\ * \\ ) \\
+\end{rail}
+Nevertheless, every input should result in reasonable output.
+
+\subsection{Choice}
+
+The next operation is choice, for which the operator is \verb!|!.
+It has the lowest priority of all. Entering \verb!x | y | z! produces
+\begin{rail}
+x | y | z
+\end{rail}
+With this operator, parentheses are significant. The expressions
+\verb!( x | y ) | z! and \verb!x | ( y | z )! produce
+\begin{rail}
+( x | y ) | z
+\end{rail}
+and
+\begin{rail}
+x | ( y | z )
+\end{rail}
+respectively, which have a different layout (but represent the same
+language).
+
+Related to choice are priority annonations, of the form
+\texttt{[}\nt{string}\texttt{]}. An example of their use can be seen in the
+railroad diagram for \nt{body}. They should only be used with the
+top-level choice of a rule body, since otherwise their meaning is
+not clear. As an example, \verb![1] x y | [2] z! produces
+\begin{rail}
+[1] x y | [2] z
+\end{rail}
+When used with identifiers as in \verb!body[2--5]! they produce
+\begin{rail}
+body[2--5]
+\end{rail}
+The \nt{string} between \verb![! and \verb!]! may not contain tabs,
+newlines or \verb!]!. Remember that you should use \verb!--!
+to produce a number dash (see \emph{\LaTeX: A Document Preparation System},
+page~14).
+
+\subsection{Repetition}
+
+There are also the repetition operators \verb!*! and \verb!+!, which are
+similar to their regular-expression counterparts. For our purposes,
+\verb!+! is the most basic one. The expression \verb!x + y! means ``one or
+more times \verb!x!, separated by \verb!y!,'' and is displayed as
+\begin{rail}
+x + y
+\end{rail}
+The utility of this construction is most obvious with things like
+\begin{rail}
+identifier + ','
+\end{rail}
+The second argument of \verb!+! can be empty, resulting in the usual
+meaning of \verb!x +! as ``one or more times \verb!x!,'' which is
+displayed as you would expect:
+\begin{rail}
+x +
+\end{rail}
+The Kleene star operator \verb!*! is just a shorthand: \verb!x * y! is
+identical in meaning to \verb!() | x + y! and both display as
+\begin{rail}
+() | x + y
+\end{rail}
+Analogously, \verb!x *! is usually identical to \verb!() | x + ! and
+displays as
+\begin{rail}
+() | x +
+\end{rail}
+However, it is also possible to transform this to \verb!() + x! which
+displays as
+\begin{rail}
+() + x
+\end{rail}
+This can be made the default behaviour of \Rail\ by using the \lit{-a}
+option, either on the command line or with \verb!\railoptions! (see
+below).
+
+\subsection{Optional things}
+
+Then there is the optionality operator \verb!?!. The expression
+\verb!x ?! is actually just a shorthand for \verb!() | x! and displays
+like
+\begin{rail}
+x ?
+\end{rail}
+
+\subsection{An example}
+
+As an example, here is the input for the example diagram on page
+\pageref{example}:
+\begin{verbatim}
+\begin{rail}
+
+decl : 'def' identifier '=' ( expression + ';' )
+     | 'type' identifier '=' type
+     ;
+
+\end{rail}
+\end{verbatim}
+
+\section{Formatting}
+
+\subsection{Indexing}
+
+The \Rail\ package can automatically index named rules. This is
+specified with the \lit{-i} option of the \lit{rail} command, which can be
+given on the command line or with \cs{railoptions}. If enabled,
+every rule of the form
+\begin{example}
+\nt{identifier} \lit{:} \nt{body}
+\end{example}
+will generate a \LaTeX\ \cs{index} command for this identifier, normally
+in \textit{italic} font (this can be changed with \cs{railindexfont}).
+
+\subsection{Terminal identifiers}
+
+It is possible to use identifiers as terminals, with optional user-specified
+formatting. To declare identifiers as terminals, use
+\begin{example}
+\verb!\railterm{!\nt{identifier}\verb!,!\nt{identifier}\verb!,!\ldots\verb!}!
+\end{example}
+To declare an identifier as a symbol with user-specified formatting, use
+\begin{example}
+\verb!\railalias{!\nt{identifier}\verb!}{!\nt{text}\verb!}!
+\end{example}
+Henceforth, \nt{text} will be used to format the symbol named
+\nt{identifier}. For example, the following commands can be used to use
+special \TeX\ characters as terminals:
+\begin{example}
+\verb!\railalias{lbrace}{\{}! \\
+\verb!\railalias{rbrace}{\}}! \\
+\verb!\railalias{dollar}{\$}! \\
+\verb!\railalias{percent}{\%}! \\
+\verb!\railalias{ampersand}{\&}! \\
+\verb!\railalias{backslash}{\char"5C}! \\
+\verb!\railterm{lbrace,rbrace,dollar,percent,ampersand,backslash}!
+\end{example}
+
+\subsection{Fonts}
+
+To format all text, the \Rail\ package uses fonts that
+are all configurable with the following commands:
+\begin{trivlist}\item[]
+\begin{tabular}{|l|l|l|}
+\hline
+Text & Command & Default \\
+\hline\hline
+rule names & \cs{railnamefont} &
+\textit{italic font} (\cs{rmfamily}\cs{itshape}) \\
+nonterminals & \cs{railnontermfont} &
+\textup{roman font} (\cs{rmfamily}\cs{upshape}) \\
+terminals & \cs{railtermfont} &
+\texttt{typewriter font} (\cs{ttfamily}\cs{upshape}) \\
+annotations & \cs{railannotatefont} &
+\textit{italic font} (\cs{rmfamily}\cs{itshape}) \\
+index entries & \cs{railindexfont} &
+\textit{italic font} (\cs{rmfamily}\cs{itshape}) \\
+\hline
+\end{tabular}
+\end{trivlist}
+All of these are used like
+\begin{example}
+\verb!\rail!\ldots\verb!font{!\nt{font}\verb!}!
+\end{example}
+where \nt{font} is a font control sequence like \cs{rmfamily} or
+a type style like \cs{bfseries} (it can actually be any sequence of
+formatting commands).
+
+\subsection{Style parameters}
+
+Every diagram is formatted as a \LaTeX\ \lit{picture} environment inside a
+\lit{list} environment. The formatting parameters of the \lit{list}
+environment can be set with
+\begin{example}
+\verb!\railparam{!\textit{decls}\verb!}!
+\end{example}
+where \textit{decls} will be used as the \textit{decls} argument of the
+\lit{list} environment. For example,
+\begin{example}
+\verb!\railparam{\addtolength{\itemsep}{1ex}}!
+\end{example}
+increases the amount of vertical space between rules.
+
+The \lit{picture} line thickness is used for all lines in diagrams, so
+\cs{thinlines}, \cs{thicklines} and
+\cs{linethickness}\verb!{!\textit{len}\verb!}! can be used to change it.
+However, \cs{unitlength} is not used (but see \cs{railunit} below).
+
+Some of the formatting within the \lit{picture} can be changed by
+modifying style parameters. If any of these are modified, the command
+\cs{railinit} should be executed before the next \lit{rail}
+environment, otherwise some changes will not take effect. Otherwise,
+these parameters are subject to grouping.
+\begin{description}
+\item[\cs{railnamesep}]
+The amount of vertical space between the rule name and the rule body.
+\item[\cs{railunit}]
+This is the value of \cs{unitlength} used within diagrams. Usually set to
+\verb!1sp! to provide maximal resolution.
+\item[\cs{railextra}]
+The amount of extra line length added at the left and right ends of the
+diagram.
+\item[\cs{railboxheight}]
+The height of the boxes enclosing terminals and nonterminals. This value
+is used as the size argument to \cs{oval}. For best results, only use
+multiples of \verb!4pt!.
+\item[\cs{railboxskip}]
+The amount of vertical space between the lines of a diagram.
+\item[\cs{railboxleft}]
+The amount of extra line length added at the left of a box.
+\item[\cs{railboxright}]
+Idem on the right.
+\item[\cs{railovalspace}]
+The amount of extra space added to the size of the text to get the
+horizontal size of the oval box enclosing it.
+\item[\cs{railframespace}]
+Idem for square boxes.
+\item[\cs{railtextleft}]
+The amount of extra line length added at the left of an annotation.
+\item[\cs{railtextright}]
+Idem at the right.
+\item[\cs{railtextup}]
+The amount that annotation text is shifted up from the line it is
+attached to.
+\item[\cs{railjoinsize}]
+The radius of the circle segments used to join and split lines. This
+value is used as the size argument to \cs{oval}. For best results,
+only use multiples of \verb!4pt!.
+\end{description}
+
+\subsection{Backward compatibility}
+
+The command \verb!\railtoken{!\textit{identifier}\verb!}{!\textit{text}\verb!}!
+has been retained as an abbreviation for
+\begin{example}
+\verb!\railalias{!\textit{identifier}\verb!}{!\textit{text}\verb!}!
+\verb!\railterm{!\textit{identifier}\verb!}!
+\end{example}
+
+Diagrams are now set flush left by default. If you prefer some indentation, you
+can use \cs{railparam}, for example
+\begin{example}
+\verb!\railparam{\setlength{\leftmargin}{\leftmargini}}!
+\end{example}
+
+Older \Rail\ files probably need to be processed again.
+
+\section{The \texttt{rail} program}
+
+The full synopsis of the \lit{rail} program is
+\begin{example}
+\lit{rail} [\lit{+-acdhit}] [\nt{file}]
+\end{example}
+This will read \file{rai} and create \file{rao} if there are no errors.
+If there are any errors, \file{rao} will be removed. If no \nt{file}
+argument is given, \lit{rail} reads from standard input and writes to
+standard output.
+
+\subsection{Options}\label{sec:options}
+
+Option arguments start with a minus or a plus sign, followed by one or
+more option letters. If a minus sign is used, the options are set.
+With a plus sign, the options are reset. By default, no options are set.
+Options can also be set or reset from the \LaTeX\ file (see below).
+This overrides the corresponding options setting from the command line.
+The effect of setting each option is described below.
+\begin{description}
+\item[\lit{-a}]
+An alternate layout is used for the \verb!*! operator with an empty
+second argument. Instead of transforming \verb!x *! into \verb!() | x +!
+it is transformed into \verb!() + x!.
+\item[\lit{-c}]
+The input is checked for undefined identifiers and unnamed rules.
+Statistics about those are printed to the standard output stream.
+\item[\lit{-d}]
+Turns on \textit{yacc} debugging output. This only works if the program
+has been compiled with \verb!YYDEBUG! defined (which is the default) and
+your \textit{yacc} supports it.
+\item[\lit{-h}]
+Arrow-heads are drawn where lines enter the boxes.
+\item[\lit{-i}]
+Index entries are generated for all named rules, i.e., rules that are of
+the form
+\begin{example}
+\nt{identifier} \lit{:} \nt{body}
+\end{example}
+\item[\lit{-t}]
+Print the parse tree of a rule body as comments in the \verb!.rao! file.
+\end{description}
+Options can be set from a \LaTeX\ file by use of
+\begin{example}
+\verb!\railoptions{!\nt{options}\verb!}!
+\end{example}
+where \nt{options} is a set of option arguments just like
+those allowed on the command line. Options specified this way override
+those on the command line. The option settings take effect immediately.
+
+Setting options this way is especially useful for the \lit{-a}, \lit{-c}
+and \lit{-t} options. Messages about redefined identifiers
+are printed according to the setting of \lit{-c} in effect at that
+point, but messages about undefined identifiers and unnamed rules are
+printed only if \lit{-c} is still in effect at the end of the input
+file.
+
+\subsection{Manual page}
+
+There may also be an \textit{nroff}/\textit{troff} manual page available,
+which you can obtain by using \verb!man rail!. This manual page is
+distributed with the \Rail\ package as the file \verb!rail.man!.
+
+\subsection{Bugs}
+
+Due to the use of a \textit{yacc} parser, the error messages are not very
+helpful (essentially only '\lit{syntax error}'), but this is difficult
+to correct.
+
+\section{Availability}
+
+As of version 1.1, the \Rail\ package is available for Internet anonymous FTP
+or WWW from CTAN (Comprehensive \TeX\ Archive Network) hosts in the directory
+\lit{support/rail}.
+
+Please report any bugs or complaints to the second author, K.~Barthelmann. The
+first author, L.W.J.~Rooijakkers, seems to be no longer reachable. Requests for
+features might be honored if I have the time (no chance \lit{:-)}) or need the
+feature myself. Have fun!
+
+\end{document}

@@ -33,7 +33,7 @@ type json_value as object
   mapindx number(32),  
   
   constructor function json_value(object_or_array anydata) return self as result,
-  constructor function json_value(str varchar2) return self as result,
+  constructor function json_value(str varchar2, esc boolean default true) return self as result,
   constructor function json_value(num number) return self as result,
   constructor function json_value(b boolean) return self as result,
   constructor function json_value return self as result,
@@ -54,7 +54,9 @@ type json_value as object
   
   member function to_char(spaces boolean default true) return varchar2,
   member procedure to_clob(self in json_value, buf in out nocopy clob, spaces boolean default false),
-  member procedure print(self in json_value, spaces boolean default true)
+  member procedure print(self in json_value, spaces boolean default true),
+  
+  member function value_of(self in json_value) return varchar2
   
 );
 /

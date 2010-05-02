@@ -45,6 +45,10 @@ create or replace type json_list as object (
   member function to_char(spaces boolean default true) return varchar2,
   member procedure to_clob(self in json_list, buf in out nocopy clob, spaces boolean default false),
   member procedure print(self in json_list, spaces boolean default true),
+
+  /* json path */
+  member function path(json_path varchar2) return json_value,
+
   member function to_json_value return json_value
 );
 /

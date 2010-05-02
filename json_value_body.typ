@@ -15,9 +15,10 @@ type body json_value as
     return;
   end json_value;
 
-  constructor function json_value(str varchar2) return self as result as
+  constructor function json_value(str varchar2, esc boolean default true) return self as result as
   begin
     self.typeval := 3;
+    if(esc) then self.num := 1; else self.num := 0; end if; --message to pretty printer
     self.str := str;
     return;
   end json_value;
@@ -125,6 +126,19 @@ type body json_value as
   begin
     dbms_output.put_line(self.to_char(spaces));
   end;
+
+  member function value_of(self in json_value) return varchar2 as
+  begin
+    case self.typeval
+    when 1 then return 'json object';
+    when 2 then return 'json array';
+    when 3 then return self.get_string();
+    when 4 then return self.get_number();
+    when 5 then if(self.get_bool()) then return 'true'; else return 'false'; end if;
+    else return null;
+    end case;
+  end;
+
 
 end;
 /

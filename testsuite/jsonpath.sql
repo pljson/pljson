@@ -59,7 +59,7 @@ begin
     assertTrue(nvl(json_ext.get_number(obj, 'a[1]'),0)=1);
     assertTrue(nvl(json_ext.get_number(obj, 'a[2][2]'),0)=15);
     assertTrue(json_ext.get_json_value(obj, 'a[2][1]').get_bool);
-    assertFalse(nvl(json_ext.get_number(obj, 'a[0][13]'),0)=15);
+--    assertFalse(nvl(json_ext.get_number(obj, 'a[0][13]'),0)=15); --will throw exception on invalid json path
     pass(str);
   exception
     when others then fail(str);
@@ -151,7 +151,6 @@ begin
   begin
     json_ext.put(obj, 'a.b[1].c', true);
     assertTrue(json_ext.get_json_list(obj, 'a.b') is not null);
---    obj.print;
     json_ext.put(obj, 'a.b[1].c', false);
 --    dbms_output.put_line('Put false');
 --    obj.print;
@@ -200,7 +199,6 @@ begin
     obj json := json();
     failure boolean := false;
   begin
-    --. start
     --empty string
     --..
     --. end
@@ -208,14 +206,8 @@ begin
     --. float as index
     --. string is index
     begin
-      json_ext.put(obj, '.a[1][2][3].c.d', date '2009-08-31');
-      failure := true;
-    exception 
-      when others then null;
-    end;
-
-    begin
       json_ext.put(obj, '', date '2009-08-31');
+      obj.print;
       failure := true;
     exception 
       when others then null;
@@ -223,6 +215,7 @@ begin
     
     begin
       json_ext.put(obj, '[2]..[3].c.d', date '2009-08-31');
+      obj.print;
       failure := true;
     exception 
       when others then null;
@@ -230,6 +223,7 @@ begin
 
     begin
       json_ext.put(obj, 'a[1][2][3].c.d.', date '2009-08-31');
+      obj.print;
       failure := true;
     exception 
       when others then null;
@@ -281,7 +275,7 @@ begin
     assertFalse(obj.exist('a'));
     assertTrue(obj.count = 1);
     json_ext.remove(obj, 'b[1]');
-    assertTrue(json_ext.get_json_list(obj, 'b').count = 0);
+    assertFalse(obj.exist('b'));
     pass(str);
   exception
     when others then fail(str);

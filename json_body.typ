@@ -76,6 +76,7 @@ create or replace type body json as
       indx := json_data.first;
       loop
         exit when indx is null;
+        if(pair_name is null and json_data(indx).mapname is null) then return json_data(indx); end if;
         if(json_data(indx).mapname = pair_name) then return json_data(indx); end if;
         indx := json_data.next(indx);
       end loop;
@@ -106,6 +107,7 @@ create or replace type body json as
       indx := json_data.first;
       loop
         exit when indx is null;
+        if(pair_name is null and json_data(indx).mapname is null) then return json_data(indx); end if;
         if(json_data(indx).mapname = pair_name) then return json_data(indx); end if;
         indx := json_data.next(indx);
       end loop;
@@ -114,9 +116,9 @@ create or replace type body json as
   begin
     --dbms_output.put_line('PN '||pair_name);
 
-    if(pair_name is null) then 
-      raise_application_error(-20102, 'JSON put-method type error: name cannot be null');
-    end if;
+--    if(pair_name is null) then 
+--      raise_application_error(-20102, 'JSON put-method type error: name cannot be null');
+--    end if;
     insert_value.mapname := pair_name;
 --    self.remove(pair_name);
     if(self.check_for_duplicate = 1) then temp := get_member(pair_name); else temp := null; end if;
@@ -233,6 +235,7 @@ create or replace type body json as
     indx := json_data.first;
     loop
       exit when indx is null;
+      if(pair_name is null and json_data(indx).mapname is null) then return json_data(indx); end if;
       if(json_data(indx).mapname = pair_name) then return json_data(indx); end if;
       indx := json_data.next(indx);
     end loop;
@@ -253,6 +256,7 @@ create or replace type body json as
     indx := json_data.first;
     loop
       exit when indx is null;
+      if(pair_name is null and json_data(indx).mapname is null) then return indx; end if;
       if(json_data(indx).mapname = pair_name) then return indx; end if;
       indx := json_data.next(indx);
     end loop;
@@ -291,6 +295,12 @@ create or replace type body json as
   begin
     return json_value(anydata.convertobject(self));
   end;
+
+  /* json path */
+  member function path(json_path varchar2) return json_value as
+  begin
+    return json_ext.get_json_value(self, json_path);
+  end path;
 
   /* Thanks to Matt Nolan */
   member function get_keys return json_list as
