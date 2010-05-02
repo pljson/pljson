@@ -8,4 +8,4 @@ archivename="json_v${version}"
 zip ${archivename} *.sql *.typ change.log readme.txt
 cp tex/main.pdf doc.pdf
 zip ${archivename} doc.pdf
-zip ${archivename} testsuite/*.sql examples/*.sql
+zip ${archivename} testsuite/*.sql examples/*.sql addons/*.sql
