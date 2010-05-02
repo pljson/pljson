@@ -1,0 +1,94 @@
+.TH RAIL 1 "Jul 26, 1998"
+.SH NAME
+rail \- railroad diagrams for LaTeX
+.SH SYNOPSIS
+.B rail
+.RB [ \-+acdhit ]
+.RI [ file ]
+.SH DESCRIPTION
+.B rail
+is part of the Rail package, which allows you to use railroad
+diagrams with LaTeX.
+It will read
+.IB file .rai
+and create
+.IB file .rao
+if there are no errors.
+If there are any errors,
+.IB file .rao
+will be removed.
+If no
+.I file
+argument is given,
+.B rail
+reads from standard input and writes to standard output.
+.SH OPTIONS
+Option arguments start with a minus or a plus sign, followed by one or
+more option letters. If a minus sign is used, the options are set. With a
+plus sign, the options are reset. By default, no options are set.
+Options can also be set or reset from the LaTeX file.
+This overrides the corresponding options setting from the command line.
+The effect of setting each option is described below.
+.TP
+.B \-a
+An alternate layout is used for the
+.B *
+operator with an empty second argument.
+Instead of transforming
+.B "x *"
+into
+.B "() | x +"
+it is transformed into
+.BR "() + x" .
+.TP
+.B \-c
+The input is checked for undefined identifiers and unnamed rules.
+Statistics about those are printed to the standard output stream.
+.TP
+.B \-d
+Turns on
+.BR yacc (1)
+debugging output. This only works if the program
+has been compiled with
+.B YYDEBUG
+defined (which is the default) and your
+.B yacc
+supports it.
+.TP
+.B \-h
+Arrow-heads are drawn where lines enter the boxes.
+.TP
+.B \-i
+Index entries are generated for all named rules, i.e., rules that are of
+the form
+.I identifier
+.B :
+.IR body .
+.TP
+.B \-t
+The parse tree of a rule body is included as comments in
+.IB file .rao .
+.SH FILES
+.PD 0
+.TP 20
+.IB file .rai
+.B rail
+input file
+.TP
+.IB file .rao
+.B rail
+output file
+.PD
+.SH "SEE ALSO"
+.I "Rail - Syntax Diagrams For LaTeX"
+.SH AUTHOR
+L.W.J. Rooijakkers <lwj@cs.kun.nl>,
+K. Barthelmann <barthel@informatik.uni-mainz.de> with contributions by
+J. Olsson and others
+.SH VERSION
+1.2 #1
+.SH BUGS
+Due to the use of
+.BR yacc ,
+the error messages are not very helpful,
+but this is difficult to correct.

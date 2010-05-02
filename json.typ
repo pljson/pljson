@@ -1,6 +1,6 @@
 create or replace type json as object (
   /*
-  Copyright (c) 2010 Jonas Krogsboell, based on code from Lewis R Cunningham
+  Copyright (c) 2010 Jonas Krogsboell
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,9 @@ create or replace type json as object (
   member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false),
   member procedure print(self in json, spaces boolean default true),
   member function to_json_value return json_value,
+
+  /* json path */
+  member function path(json_path varchar2) return json_value,
 
   /* map functions */
   member function get_values return json_list,

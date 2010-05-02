@@ -1,7 +1,7 @@
 /*
 This software has been released under the MIT license:
 
-  Copyright (c) 2009 Jonas Krogsboell based on code from Lewis R Cunningham
+  Copyright (c) 2009 Jonas Krogsboell inspired by code from Lewis R Cunningham
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,18 @@ PROMPT -- Compiling objects for PL/JSON --;
 PROMPT -----------------------------------;
 @@uninstall.sql
 @@json_value.typ
---@@simpletypes.typ
 @@json_list.typ
 @@json.typ
 @@json_parser.sql
 @@json_printer.sql
 @@json_value_body.typ
-@@json_list_body.typ
+@@json_ext.sql --extra helper functions
 @@json_body.typ
-@@json_ext.sql --extra method to lookup types and add dates in json
-@@json_dyn.sql --dynamic sql execute (requires json_ext to handle dates)
+@@json_list_body.typ
+PROMPT ------------------------------------------;
+PROMPT -- Adding optional packages for PL/JSON --;
+PROMPT -------------------------------------------;
+--@@addons/json_dyn.sql --dynamic sql execute 
+--@@addons/jsonml.sql --jsonml (xml to json)
+--@@addons/json_xml.sql --json to xml copied from http://www.json.org/java/org/json/XML.java
+--@@addons/json_util_pkg.sql --dynamic sql from http://ora-00001.blogspot.com/2010/02/ref-cursor-to-json.html

@@ -1,0 +1,827 @@
+Terminals unused in grammar
+
+   CS
+
+
+Tilstand 51 konflikter:  2 reducér/reducér
+
+
+Grammatik
+
+    0 $accept: rails $end
+
+    1 rails: rails rail
+    2      | rail
+
+    3 rail: RAILI raili
+    4     | RAILP railp
+    5     | RAILT railt
+    6     | error
+
+    7 $@1: /* tom */
+
+    8 railp: '{' $@1 options '}'
+
+    9 options: /* tom */
+   10        | options '-'
+   11        | options '+'
+   12        | options IDENTIFIER
+
+   13 railt: '{' IDENTIFIER '}'
+
+   14 $@2: /* tom */
+
+   15 raili: '{' NUMBER '}' $@2 '{' rules '}'
+
+   16 rules: rules ';' rule
+   17      | rules ';'
+   18      | rule
+   19      | error
+
+   20 $@3: /* tom */
+
+   21 rule: IDENTIFIER ':' $@3 body
+   22     | body
+
+   23 body: body0
+
+   24 body0: body0 '|' ANNOT body1
+   25      | body0 '|' body1
+   26      | ANNOT body1
+   27      | body1
+
+   28 body1: body2 '*' body4e
+   29      | body2 '+' body4e
+   30      | body2e
+
+   31 body2e: body2
+   32       | empty
+
+   33 body2: body2 body3
+   34      | body3
+
+   35 body3: body4 '?'
+   36      | body4
+
+   37 body4e: body4
+   38       | empty
+
+   39 body4: '(' body0 ')'
+   40      | STRING annot
+   41      | IDENTIFIER annot
+   42      | RAILCR
+
+   43 empty: /* tom */
+
+   44 annot: ANNOT
+   45      | /* tom */
+
+
+Terminaler, med regler hvor de forekommer
+
+$end (0) 0
+'(' (40) 39
+')' (41) 39
+'*' (42) 28
+'+' (43) 11 29
+'-' (45) 10
+':' (58) 21
+';' (59) 16 17
+'?' (63) 35
+'{' (123) 8 13 15
+'|' (124) 24 25
+'}' (125) 8 13 15
+error (256) 6 19
+IDENTIFIER (258) 12 13 21 41
+NUMBER (259) 15
+ANNOT (260) 24 26 44
+RAILI (261) 3
+RAILP (262) 4
+RAILT (263) 5
+RAILCR (264) 42
+CS (265)
+STRING (266) 40
+
+
+Ikke-terminaler, med regler hvor de forekommer
+
+$accept (23)
+    til venstre: 0
+rails (24)
+    til venstre: 1 2, til højre: 0 1
+rail (25)
+    til venstre: 3 4 5 6, til højre: 1 2
+railp (26)
+    til venstre: 8, til højre: 4
+$@1 (27)
+    til venstre: 7, til højre: 8
+options (28)
+    til venstre: 9 10 11 12, til højre: 8 10 11 12
+railt (29)
+    til venstre: 13, til højre: 5
+raili (30)
+    til venstre: 15, til højre: 3
+$@2 (31)
+    til venstre: 14, til højre: 15
+rules (32)
+    til venstre: 16 17 18 19, til højre: 15 16 17
+rule (33)
+    til venstre: 21 22, til højre: 16 18
+$@3 (34)
+    til venstre: 20, til højre: 21
+body (35)
+    til venstre: 23, til højre: 21 22
+body0 (36)
+    til venstre: 24 25 26 27, til højre: 23 24 25 39
+body1 (37)
+    til venstre: 28 29 30, til højre: 24 25 26 27
+body2e (38)
+    til venstre: 31 32, til højre: 30
+body2 (39)
+    til venstre: 33 34, til højre: 28 29 31 33
+body3 (40)
+    til venstre: 35 36, til højre: 33 34
+body4e (41)
+    til venstre: 37 38, til højre: 28 29
+body4 (42)
+    til venstre: 39 40 41 42, til højre: 35 36 37
+empty (43)
+    til venstre: 43, til højre: 32 38
+annot (44)
+    til venstre: 44 45, til højre: 40 41
+
+
+tilstand 0
+
+    0 $accept: . rails $end
+
+    error  skift, og gå til tilstand 1
+    RAILI  skift, og gå til tilstand 2
+    RAILP  skift, og gå til tilstand 3
+    RAILT  skift, og gå til tilstand 4
+
+    rails  gå til tilstand 5
+    rail   gå til tilstand 6
+
+
+tilstand 1
+
+    6 rail: error .
+
+    $default  reducér med regel 6 (rail)
+
+
+tilstand 2
+
+    3 rail: RAILI . raili
+
+    '{'  skift, og gå til tilstand 7
+
+    raili  gå til tilstand 8
+
+
+tilstand 3
+
+    4 rail: RAILP . railp
+
+    '{'  skift, og gå til tilstand 9
+
+    railp  gå til tilstand 10
+
+
+tilstand 4
+
+    5 rail: RAILT . railt
+
+    '{'  skift, og gå til tilstand 11
+
+    railt  gå til tilstand 12
+
+
+tilstand 5
+
+    0 $accept: rails . $end
+    1 rails: rails . rail
+
+    $end   skift, og gå til tilstand 13
+    error  skift, og gå til tilstand 1
+    RAILI  skift, og gå til tilstand 2
+    RAILP  skift, og gå til tilstand 3
+    RAILT  skift, og gå til tilstand 4
+
+    rail  gå til tilstand 14
+
+
+tilstand 6
+
+    2 rails: rail .
+
+    $default  reducér med regel 2 (rails)
+
+
+tilstand 7
+
+   15 raili: '{' . NUMBER '}' $@2 '{' rules '}'
+
+    NUMBER  skift, og gå til tilstand 15
+
+
+tilstand 8
+
+    3 rail: RAILI raili .
+
+    $default  reducér med regel 3 (rail)
+
+
+tilstand 9
+
+    8 railp: '{' . $@1 options '}'
+
+    $default  reducér med regel 7 ($@1)
+
+    $@1  gå til tilstand 16
+
+
+tilstand 10
+
+    4 rail: RAILP railp .
+
+    $default  reducér med regel 4 (rail)
+
+
+tilstand 11
+
+   13 railt: '{' . IDENTIFIER '}'
+
+    IDENTIFIER  skift, og gå til tilstand 17
+
+
+tilstand 12
+
+    5 rail: RAILT railt .
+
+    $default  reducér med regel 5 (rail)
+
+
+tilstand 13
+
+    0 $accept: rails $end .
+
+    $default  acceptér
+
+
+tilstand 14
+
+    1 rails: rails rail .
+
+    $default  reducér med regel 1 (rails)
+
+
+tilstand 15
+
+   15 raili: '{' NUMBER . '}' $@2 '{' rules '}'
+
+    '}'  skift, og gå til tilstand 18
+
+
+tilstand 16
+
+    8 railp: '{' $@1 . options '}'
+
+    $default  reducér med regel 9 (options)
+
+    options  gå til tilstand 19
+
+
+tilstand 17
+
+   13 railt: '{' IDENTIFIER . '}'
+
+    '}'  skift, og gå til tilstand 20
+
+
+tilstand 18
+
+   15 raili: '{' NUMBER '}' . $@2 '{' rules '}'
+
+    $default  reducér med regel 14 ($@2)
+
+    $@2  gå til tilstand 21
+
+
+tilstand 19
+
+    8 railp: '{' $@1 options . '}'
+   10 options: options . '-'
+   11        | options . '+'
+   12        | options . IDENTIFIER
+
+    IDENTIFIER  skift, og gå til tilstand 22
+    '}'         skift, og gå til tilstand 23
+    '-'         skift, og gå til tilstand 24
+    '+'         skift, og gå til tilstand 25
+
+
+tilstand 20
+
+   13 railt: '{' IDENTIFIER '}' .
+
+    $default  reducér med regel 13 (railt)
+
+
+tilstand 21
+
+   15 raili: '{' NUMBER '}' $@2 . '{' rules '}'
+
+    '{'  skift, og gå til tilstand 26
+
+
+tilstand 22
+
+   12 options: options IDENTIFIER .
+
+    $default  reducér med regel 12 (options)
+
+
+tilstand 23
+
+    8 railp: '{' $@1 options '}' .
+
+    $default  reducér med regel 8 (railp)
+
+
+tilstand 24
+
+   10 options: options '-' .
+
+    $default  reducér med regel 10 (options)
+
+
+tilstand 25
+
+   11 options: options '+' .
+
+    $default  reducér med regel 11 (options)
+
+
+tilstand 26
+
+   15 raili: '{' NUMBER '}' $@2 '{' . rules '}'
+
+    error       skift, og gå til tilstand 27
+    IDENTIFIER  skift, og gå til tilstand 28
+    ANNOT       skift, og gå til tilstand 29
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '('         skift, og gå til tilstand 32
+
+    '}'  reducér med regel 43 (empty)
+    ';'  reducér med regel 43 (empty)
+    '|'  reducér med regel 43 (empty)
+
+    rules   gå til tilstand 33
+    rule    gå til tilstand 34
+    body    gå til tilstand 35
+    body0   gå til tilstand 36
+    body1   gå til tilstand 37
+    body2e  gå til tilstand 38
+    body2   gå til tilstand 39
+    body3   gå til tilstand 40
+    body4   gå til tilstand 41
+    empty   gå til tilstand 42
+
+
+tilstand 27
+
+   19 rules: error .
+
+    $default  reducér med regel 19 (rules)
+
+
+tilstand 28
+
+   21 rule: IDENTIFIER . ':' $@3 body
+   41 body4: IDENTIFIER . annot
+
+    ANNOT  skift, og gå til tilstand 43
+    ':'    skift, og gå til tilstand 44
+
+    $default  reducér med regel 45 (annot)
+
+    annot  gå til tilstand 45
+
+
+tilstand 29
+
+   26 body0: ANNOT . body1
+
+    IDENTIFIER  skift, og gå til tilstand 46
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '('         skift, og gå til tilstand 32
+
+    $default  reducér med regel 43 (empty)
+
+    body1   gå til tilstand 47
+    body2e  gå til tilstand 38
+    body2   gå til tilstand 39
+    body3   gå til tilstand 40
+    body4   gå til tilstand 41
+    empty   gå til tilstand 42
+
+
+tilstand 30
+
+   42 body4: RAILCR .
+
+    $default  reducér med regel 42 (body4)
+
+
+tilstand 31
+
+   40 body4: STRING . annot
+
+    ANNOT  skift, og gå til tilstand 43
+
+    $default  reducér med regel 45 (annot)
+
+    annot  gå til tilstand 48
+
+
+tilstand 32
+
+   39 body4: '(' . body0 ')'
+
+    IDENTIFIER  skift, og gå til tilstand 46
+    ANNOT       skift, og gå til tilstand 29
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '('         skift, og gå til tilstand 32
+
+    $default  reducér med regel 43 (empty)
+
+    body0   gå til tilstand 49
+    body1   gå til tilstand 37
+    body2e  gå til tilstand 38
+    body2   gå til tilstand 39
+    body3   gå til tilstand 40
+    body4   gå til tilstand 41
+    empty   gå til tilstand 42
+
+
+tilstand 33
+
+   15 raili: '{' NUMBER '}' $@2 '{' rules . '}'
+   16 rules: rules . ';' rule
+   17      | rules . ';'
+
+    '}'  skift, og gå til tilstand 50
+    ';'  skift, og gå til tilstand 51
+
+
+tilstand 34
+
+   18 rules: rule .
+
+    $default  reducér med regel 18 (rules)
+
+
+tilstand 35
+
+   22 rule: body .
+
+    $default  reducér med regel 22 (rule)
+
+
+tilstand 36
+
+   23 body: body0 .
+   24 body0: body0 . '|' ANNOT body1
+   25      | body0 . '|' body1
+
+    '|'  skift, og gå til tilstand 52
+
+    $default  reducér med regel 23 (body)
+
+
+tilstand 37
+
+   27 body0: body1 .
+
+    $default  reducér med regel 27 (body0)
+
+
+tilstand 38
+
+   30 body1: body2e .
+
+    $default  reducér med regel 30 (body1)
+
+
+tilstand 39
+
+   28 body1: body2 . '*' body4e
+   29      | body2 . '+' body4e
+   31 body2e: body2 .
+   33 body2: body2 . body3
+
+    IDENTIFIER  skift, og gå til tilstand 46
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '+'         skift, og gå til tilstand 53
+    '*'         skift, og gå til tilstand 54
+    '('         skift, og gå til tilstand 32
+
+    $default  reducér med regel 31 (body2e)
+
+    body3  gå til tilstand 55
+    body4  gå til tilstand 41
+
+
+tilstand 40
+
+   34 body2: body3 .
+
+    $default  reducér med regel 34 (body2)
+
+
+tilstand 41
+
+   35 body3: body4 . '?'
+   36      | body4 .
+
+    '?'  skift, og gå til tilstand 56
+
+    $default  reducér med regel 36 (body3)
+
+
+tilstand 42
+
+   32 body2e: empty .
+
+    $default  reducér med regel 32 (body2e)
+
+
+tilstand 43
+
+   44 annot: ANNOT .
+
+    $default  reducér med regel 44 (annot)
+
+
+tilstand 44
+
+   21 rule: IDENTIFIER ':' . $@3 body
+
+    $default  reducér med regel 20 ($@3)
+
+    $@3  gå til tilstand 57
+
+
+tilstand 45
+
+   41 body4: IDENTIFIER annot .
+
+    $default  reducér med regel 41 (body4)
+
+
+tilstand 46
+
+   41 body4: IDENTIFIER . annot
+
+    ANNOT  skift, og gå til tilstand 43
+
+    $default  reducér med regel 45 (annot)
+
+    annot  gå til tilstand 45
+
+
+tilstand 47
+
+   26 body0: ANNOT body1 .
+
+    $default  reducér med regel 26 (body0)
+
+
+tilstand 48
+
+   40 body4: STRING annot .
+
+    $default  reducér med regel 40 (body4)
+
+
+tilstand 49
+
+   24 body0: body0 . '|' ANNOT body1
+   25      | body0 . '|' body1
+   39 body4: '(' body0 . ')'
+
+    '|'  skift, og gå til tilstand 52
+    ')'  skift, og gå til tilstand 58
+
+
+tilstand 50
+
+   15 raili: '{' NUMBER '}' $@2 '{' rules '}' .
+
+    $default  reducér med regel 15 (raili)
+
+
+tilstand 51
+
+   16 rules: rules ';' . rule
+   17      | rules ';' .
+
+    IDENTIFIER  skift, og gå til tilstand 28
+    ANNOT       skift, og gå til tilstand 29
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '('         skift, og gå til tilstand 32
+
+    '}'       reducér med regel 17 (rules)
+    '}'       [reducér med regel 43 (empty)]
+    ';'       reducér med regel 17 (rules)
+    ';'       [reducér med regel 43 (empty)]
+    '|'       reducér med regel 43 (empty)
+    $default  reducér med regel 17 (rules)
+
+    rule    gå til tilstand 59
+    body    gå til tilstand 35
+    body0   gå til tilstand 36
+    body1   gå til tilstand 37
+    body2e  gå til tilstand 38
+    body2   gå til tilstand 39
+    body3   gå til tilstand 40
+    body4   gå til tilstand 41
+    empty   gå til tilstand 42
+
+
+tilstand 52
+
+   24 body0: body0 '|' . ANNOT body1
+   25      | body0 '|' . body1
+
+    IDENTIFIER  skift, og gå til tilstand 46
+    ANNOT       skift, og gå til tilstand 60
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '('         skift, og gå til tilstand 32
+
+    $default  reducér med regel 43 (empty)
+
+    body1   gå til tilstand 61
+    body2e  gå til tilstand 38
+    body2   gå til tilstand 39
+    body3   gå til tilstand 40
+    body4   gå til tilstand 41
+    empty   gå til tilstand 42
+
+
+tilstand 53
+
+   29 body1: body2 '+' . body4e
+
+    IDENTIFIER  skift, og gå til tilstand 46
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '('         skift, og gå til tilstand 32
+
+    $default  reducér med regel 43 (empty)
+
+    body4e  gå til tilstand 62
+    body4   gå til tilstand 63
+    empty   gå til tilstand 64
+
+
+tilstand 54
+
+   28 body1: body2 '*' . body4e
+
+    IDENTIFIER  skift, og gå til tilstand 46
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '('         skift, og gå til tilstand 32
+
+    $default  reducér med regel 43 (empty)
+
+    body4e  gå til tilstand 65
+    body4   gå til tilstand 63
+    empty   gå til tilstand 64
+
+
+tilstand 55
+
+   33 body2: body2 body3 .
+
+    $default  reducér med regel 33 (body2)
+
+
+tilstand 56
+
+   35 body3: body4 '?' .
+
+    $default  reducér med regel 35 (body3)
+
+
+tilstand 57
+
+   21 rule: IDENTIFIER ':' $@3 . body
+
+    IDENTIFIER  skift, og gå til tilstand 46
+    ANNOT       skift, og gå til tilstand 29
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '('         skift, og gå til tilstand 32
+
+    $default  reducér med regel 43 (empty)
+
+    body    gå til tilstand 66
+    body0   gå til tilstand 36
+    body1   gå til tilstand 37
+    body2e  gå til tilstand 38
+    body2   gå til tilstand 39
+    body3   gå til tilstand 40
+    body4   gå til tilstand 41
+    empty   gå til tilstand 42
+
+
+tilstand 58
+
+   39 body4: '(' body0 ')' .
+
+    $default  reducér med regel 39 (body4)
+
+
+tilstand 59
+
+   16 rules: rules ';' rule .
+
+    $default  reducér med regel 16 (rules)
+
+
+tilstand 60
+
+   24 body0: body0 '|' ANNOT . body1
+
+    IDENTIFIER  skift, og gå til tilstand 46
+    RAILCR      skift, og gå til tilstand 30
+    STRING      skift, og gå til tilstand 31
+    '('         skift, og gå til tilstand 32
+
+    $default  reducér med regel 43 (empty)
+
+    body1   gå til tilstand 67
+    body2e  gå til tilstand 38
+    body2   gå til tilstand 39
+    body3   gå til tilstand 40
+    body4   gå til tilstand 41
+    empty   gå til tilstand 42
+
+
+tilstand 61
+
+   25 body0: body0 '|' body1 .
+
+    $default  reducér med regel 25 (body0)
+
+
+tilstand 62
+
+   29 body1: body2 '+' body4e .
+
+    $default  reducér med regel 29 (body1)
+
+
+tilstand 63
+
+   37 body4e: body4 .
+
+    $default  reducér med regel 37 (body4e)
+
+
+tilstand 64
+
+   38 body4e: empty .
+
+    $default  reducér med regel 38 (body4e)
+
+
+tilstand 65
+
+   28 body1: body2 '*' body4e .
+
+    $default  reducér med regel 28 (body1)
+
+
+tilstand 66
+
+   21 rule: IDENTIFIER ':' $@3 body .
+
+    $default  reducér med regel 21 (rule)
+
+
+tilstand 67
+
+   24 body0: body0 '|' ANNOT body1 .
+
+    $default  reducér med regel 24 (body0)

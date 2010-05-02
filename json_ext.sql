@@ -23,6 +23,7 @@ create or replace package json_ext as
   
   /* This package contains extra methods to lookup types and
      an easy way of adding date values in json - without changing the structure */
+  function parsePath(json_path varchar2) return json_list;
   
   --JSON Path getters
   function get_json_value(obj json, v_path varchar2) return json_value;
@@ -69,6 +70,12 @@ create or replace package json_ext as
 end json_ext;
 /
 create or replace package body json_ext as
+  scanner_exception exception;
+  pragma exception_init(scanner_exception, -20100);
+  parser_exception exception;
+  pragma exception_init(parser_exception, -20101);
+  jext_exception exception;
+  pragma exception_init(jext_exception, -20110);
   
   --extra function checks if number has no fraction
   function is_integer(v json_value) return boolean as
@@ -111,67 +118,137 @@ create or replace package body json_ext as
     when others then
       raise_application_error(-20110, 'Anydata did not contain a date on the format: '||format_string);
   end;
-
-  --JSON Path getters
-  function get_json_value(obj json, v_path varchar2) return json_value as
-    path varchar2(32767);
-    t_obj json;
-    returndata json_value := null;
+  
+  --Json Path parser
+  function parsePath(json_path varchar2) return json_list as
+    build_path varchar2(4000) := '[';
+    buf varchar2(4);
+    endstring varchar2(1);
+    indx number := 1;
     
-    s_indx number := 1;
-    e_indx number := 1;
-    subpath varchar2(32676);
-
-    function get_data(obj json, subpath varchar2) return json_value as
-      s_bracket number;
-      e_bracket number;
-      list_indx number;
-      innerlist json_list;
-      list_elem json_value;
+    procedure next_char as
     begin
-      s_bracket := instr(subpath,'[');
-      e_bracket := instr(subpath,']');
-      if(s_bracket != 0) then
-        innerlist := json_list(obj.get(substr(subpath, 1, s_bracket-1)));
-        while (s_bracket != 0) loop
-          list_indx := to_number(substr(subpath, s_bracket+1, e_bracket-s_bracket-1));
-          list_elem := innerlist.get_elem(list_indx);
-          s_bracket := instr(subpath,'[', e_bracket);
-          e_bracket := instr(subpath,']', s_bracket);
-          if(s_bracket != 0) then
-            innerlist := json_list(list_elem);
-          end if;
-        end loop;
-        return list_elem;
+      if(indx <= length(json_path)) then
+        buf := substr(json_path, indx, 1);
+        indx := indx + 1;
       else 
-        return obj.get(subpath);
+        buf := null;
       end if;
-    end get_data;
-
+    end;  
+    --skip ws
+    procedure skipws as begin while(buf in (chr(9),chr(10),chr(13),' ')) loop next_char; end loop; end;
+  
   begin
-    t_obj := obj;
-    --until e_indx = 0 read to next .
-    if(v_path is null) then return obj.to_json_value; end if;
-    path := regexp_replace(v_path, '(\s)*\[(\s)*"', '.');
-    path := regexp_replace(path, '"(\s)*\](\s)*', '');
-    if(substr(path, 1, 1) = '.') then path := substr(path, 2); end if;
-    while (e_indx != 0) loop
-      e_indx := instr(path,'.',s_indx,1);
-      if(e_indx = 0) then subpath := substr(path, s_indx);
-      else subpath := substr(path, s_indx, e_indx-s_indx); end if;
---      dbms_output.put_line(s_indx||' to '||e_indx||' : '||subpath);
-      s_indx := e_indx+1;  
-      returndata := get_data(t_obj, subpath);
-      if(e_indx != 0) then
-        t_obj := json(returndata);
+    next_char();
+    while(buf is not null) loop
+      if(buf = '.') then
+        next_char();
+        if(buf is null) then raise_application_error(-20110, 'JSON Path parse error: . is not a valid json_path end'); end if;
+        if(not regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) then
+          raise_application_error(-20110, 'JSON Path parse error: alpha-numeric character or space expected at position '||indx);
+        end if;
+        
+        if(build_path != '[') then build_path := build_path || ','; end if;
+        build_path := build_path || '"';
+        while(regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) loop
+          build_path := build_path || buf;
+          next_char();
+        end loop;
+        build_path := build_path || '"';
+      elsif(buf = '[') then
+        next_char();
+        skipws();
+        if(buf is null) then raise_application_error(-20110, 'JSON Path parse error: [ is not a valid json_path end'); end if;
+        if(buf in ('1','2','3','4','5','6','7','8','9')) then
+          if(build_path != '[') then build_path := build_path || ','; end if;
+          while(buf in ('0','1','2','3','4','5','6','7','8','9')) loop
+            build_path := build_path || buf;
+            next_char();
+          end loop;      
+        elsif (regexp_like(buf, '^(\"|\'')', 'c')) then
+          endstring := buf;
+          if(build_path != '[') then build_path := build_path || ','; end if;
+          build_path := build_path || '"';
+          next_char();
+          if(buf is null) then raise_application_error(-20110, 'JSON Path parse error: premature json_path end'); end if;
+          while(buf != endstring) loop
+            build_path := build_path || buf;
+            next_char();
+            if(buf is null) then raise_application_error(-20110, 'JSON Path parse error: premature json_path end'); end if;
+            if(buf = '\') then 
+              next_char(); 
+              build_path := build_path || '\' || buf; 
+              next_char(); 
+            end if;
+          end loop;
+          build_path := build_path || '"';
+          next_char(); 
+        else
+          raise_application_error(-20110, 'JSON Path parse error: expected a string or an positive integer at '||indx);
+        end if;
+        skipws();
+        if(buf is null) then raise_application_error(-20110, 'JSON Path parse error: premature json_path end'); end if;
+        if(buf != ']') then raise_application_error(-20110, 'JSON Path parse error: no array ending found. found: '|| buf); end if;
+        next_char();
+        skipws();
+      elsif(build_path = '[') then
+        if(not regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) then
+          raise_application_error(-20110, 'JSON Path parse error: alpha-numeric character or space expected at position '||indx);
+        end if;
+        build_path := build_path || '"';
+        while(regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) loop
+          build_path := build_path || buf;
+          next_char();
+        end loop;
+        build_path := build_path || '"';
+      else 
+        raise_application_error(-20110, 'JSON Path parse error: expected . or [ found '|| buf || ' at position '|| indx);
+      end if;
+        
+    end loop;
+  
+    build_path := build_path || ']';
+    build_path := replace(replace(replace(replace(replace(build_path, chr(9), '\t'), chr(10), '\n'), chr(13), '\f'), chr(8), '\b'), chr(14), '\r');
+    return json_list(build_path);
+  end parsePath;
+    
+  --JSON Path getters
+  function get_json_value(obj json, v_path varchar2) return json_value as 
+    path json_list;
+    ret json_value; 
+    o json; l json_list;
+  begin
+    path := parsePath(v_path);
+    ret := obj.to_json_value;
+    if(path.count = 0) then return ret; end if;
+    
+    for i in 1 .. path.count loop
+      if(path.get_elem(i).is_string()) then
+        --string fetch only on json
+        o := json(ret);
+        ret := o.get(path.get_elem(i).get_string());
+      else
+        --number fetch on json and json_list
+        if(ret.is_array()) then
+          l := json_list(ret);
+          ret := l.get_elem(path.get_elem(i).get_number());
+        else 
+          o := json(ret);
+          l := o.get_values();
+          ret := l.get_elem(path.get_elem(i).get_number());
+        end if;
       end if;
     end loop;
-   
-    return returndata;
+    
+    return ret;
   exception
+    when scanner_exception then raise;
+    when parser_exception then raise;
+    when jext_exception then raise;
     when others then return null;
-  end;
-
+  end get_json_value;
+  
+  --JSON Path getters
   function get_string(obj json, path varchar2) return varchar2 as 
     temp json_value;
   begin 
@@ -239,231 +316,142 @@ create or replace package body json_ext as
   end;
   
   /* JSON Path putter internal function */
-  /* I know the code is crap - feel free to rewrite it */ 
-  procedure put_internal(obj in out nocopy json, v_path varchar2, elem json_value, del boolean default false) as
-    path varchar2(32767);
-    -- variables 
-    type indekses is table of number(38) index by pls_integer;
-    build json;
-    s_build varchar2(32000) := '{"';
-    e_build varchar2(32000) := '}';
-    tok varchar2(4);
-    i number := 1;
-    startnum number;
-    inarray boolean := false;
-    levels number := 0;
-    indxs indekses;
-    indx_indx number := 1;
-    str VARCHAR2(32000);
-    dot boolean := false;
-    v_del boolean := del;
-    -- creates a simple json with nulls 
-    function fix_indxs(node json_value, indxs indekses, indx number) return json_value as
-      j_node json;
-      j_list json_list;
-      num number;
-      savename varchar2(4000);
-    begin
-      if(indxs.count < indx) then return node; end if;
-      if(node.is_object) then
---        dbms_output.put_line('A');
---        node.print;
-        j_node := json(node);
-        savename := j_node.json_data(1).mapname;
---        dbms_output.put_line('SN'||savename);
-        j_node.json_data(1) := fix_indxs(j_node.json_data(1), indxs, indx);
---        dbms_output.put_line('B');
---        j_node.print;
-        j_node.json_data(1).mapname := savename;
-        j_node.json_data(1).mapindx := 1;
---        dbms_output.put_line('C');
---        j_node.print;
-        return j_node.to_json_value;
-      elsif(node.is_array) then
-        j_list := json_list(node);
-        num := indxs(indx);
-        for i in 1 .. (num-1) loop
-          j_list.add_elem(json_value.makenull, 1);
-        end loop;
-        j_list.list_data(num) := fix_indxs(j_list.list_data(num), indxs, indx+1);
-        return j_list.to_json_value;
-      else
-        dbms_output.put_line('Should never come here!');
-        null;
-      end if;
-    end;
+  procedure put_internal(obj in out nocopy json, v_path varchar2, elem json_value) as
+    val json_value := elem;
+    path json_list;
+    backreference json_list := json_list();
     
-    -- Join the data 
-    function join_data(o_node json_value, n_node json_value, levels number) return json_value as
-      o_obj json; o_list json_list;
-      n_obj json; n_list json_list;
-      savename varchar2(4000);
-    begin
-      -- code used for remove start
-      if(levels = 1 and v_del = true) then
-        --dbms_output.put_line('delete here');
-        if(o_node.is_object) then
-          o_obj := json(o_node);   
-          n_obj := json(n_node);   
-          o_obj.remove(n_obj.json_data(1).mapname);
-          return o_obj.to_json_value;
-        elsif(o_node.is_array) then
-          o_list := json_list(o_node);
-          n_list := json_list(n_node);
-          o_list.remove_elem(n_list.count);
-          return o_list.to_json_value;
-        else 
-          dbms_output.put_line('error here');
-          return o_node;
-        end if;  
-      -- code used for remove end 
-      elsif(o_node.typeval = n_node.typeval and levels > 0) then
-        if(n_node.is_object) then
-          o_obj := json(o_node);   
-          n_obj := json(n_node);   
---          dbms_output.put_line('Here');
-          savename := n_obj.json_data(1).mapname;
-          if(o_obj.exist(n_obj.json_data(1).mapname)) then
-            --join the subtrees
-  --          dbms_output.put_line('SN'||savename);
-            n_obj.json_data(1) := join_data(o_obj.get(n_obj.json_data(1).mapname), 
-                                                        n_obj.json_data(1), levels-1);
-          end if;
-          n_obj.json_data(1).mapname := savename;                                                        
-          n_obj.json_data(1).mapindx := 1;
-            --add the new tree
-          --dbms_output.put_line('putting in tree '||n_obj.json_data(1).mapname);
---          dbms_output.put_line('aname '||savename);
---          n_obj.json_data(1).print;
---          o_obj.print;
---          dbms_output.put_line('adata '||n_obj.json_data(1).to_char(false));
-          o_obj.put(n_obj.json_data(1).mapname, n_obj.json_data(1));
-          
---          dbms_output.put_line('b '||savename);
-          return o_obj.to_json_value;
-        elsif(n_node.is_array) then
-          o_list := json_list(o_node);
-          n_list := json_list(n_node);
-                  
-          if(n_list.count > o_list.count) then
-            for i in o_list.count+1 .. n_list.count loop
-              o_list.add_elem(n_list.get_elem(i));
-            end loop;
-          else 
-            o_list.list_data(n_list.count) := join_data(o_list.list_data(n_list.count),
-                                                                     n_list.list_data(n_list.count), levels-1);
-          end if;
-          --return the modified list;
-          return o_list.to_json_value;
-        else 
-          return n_node; --simple node
-        end if;
-      else
-        return n_node;
-      end if;
-    end join_data;
-  
-    -- fix then join 
-    function join_json_value(o1 json_value, o2 json_value, indxs indekses, levels number) return json_value as
-      temp json_value;
-    begin
-      temp := fix_indxs(o2, indxs, 1);
-      if(o1 is null or o1.typeval != o2.typeval) then
-        --replace o1 with o2
---        dbms_output.put_line('Temp o1 null');
---        temp.print;
-        return temp;
-      else 
---        dbms_output.put_line('Temp before');
---        temp.print;
-        temp := join_data(o1, temp, levels); 
---        dbms_output.put_line('Temp after');
---        temp.print;
-        return temp;
-      end if;
-    end;
-    
-    -- process the two jsons 
-    function join_jsons(obj in out nocopy json, build json, indxs indekses, levels number) return json as
-      m_name varchar2(4000);
-      edit json_value;
-    begin
-      m_name := build.json_data(1).mapname;
-      edit := join_json_value(obj.get(m_name), build.get(m_name), indxs, levels);
-      if(v_del = true and levels = 0) then
-        obj.remove(m_name);
-      else 
-        obj.put(m_name, edit);        
-      end if;
-      return obj;
-    end;
-  
+    keyval json_value; keynum number; keystring varchar2(4000);
+    temp json_value := obj.to_json_value;
+    obj_temp  json;
+    list_temp json_list;
+    inserter json_value;
   begin
-    if(substr(v_path, 1, 1) = '.') then raise_application_error(-20110, 'Path error: . not a valid start'); end if;  
-    if(v_path is null) then raise_application_error(-20110, 'Path error: no path'); end if;  
-    path := regexp_replace(v_path, '(\s)*\[(\s)*"', '.');
-    path := regexp_replace(path, '"(\s)*\](\s)*', '');
-    if(substr(path, 1, 1) = '.') then path := substr(path, 2); end if;
-    --dbms_output.put_line('PATH: '||path);
-    while (i <= length(path)) loop
-      tok := substr(path, i, 1);  
-      if(tok = '.') then 
-        if(dot) then raise_application_error(-20110, 'Path error: .. not allowed'); end if;
-        dot := true;
-        if(inarray) then 
-          s_build := s_build || '{"';
-        else 
-          s_build := s_build || '":{"';
+    path := json_ext.parsePath(v_path);
+    if(path.count = 0) then raise_application_error(-20110, 'JSON_EXT put error: cannot put with empty string.'); end if;
+  
+    --build backreference
+    for i in 1 .. path.count loop
+      --backreference.print(false);
+      keyval := path.get_elem(i);
+      if (keyval.is_number()) then
+        --nummer index
+        keynum := keyval.get_number();
+        if((not temp.is_object()) and (not temp.is_array())) then
+          if(val is null) then return; end if;
+          backreference.remove_last;
+          temp := json_list().to_json_value();
+          backreference.add_elem(temp);
         end if;
-        inarray := false;
-        e_build := '}' || e_build;
-        levels := levels + 1;
-      elsif (tok = '[') then
-        dot := false;
-        if(inarray) then s_build := s_build || '[';
-        else s_build := s_build || '":['; end if;
-        e_build := ']' || e_build;
-        startnum := i+1;
-        i := instr(path, ']', i);
-        indxs(indx_indx) := to_number(substr(path, startnum, i-startnum));      
-        indx_indx := indx_indx + 1;
-        inarray := true;
-        levels := levels + 1;
+  
+        if(temp.is_object()) then 
+          obj_temp := json(temp);
+          if(obj_temp.count < keynum) then 
+            if(val is null) then return; end if;
+            raise_application_error(-20110, 'JSON_EXT put error: access object with to few members.'); 
+          end if;
+          temp := obj_temp.get(keynum);
+        else 
+          list_temp := json_list(temp);
+          if(list_temp.count < keynum) then 
+            if(val is null) then return; end if;
+            --raise error or quit if val is null
+            for i in list_temp.count+1 .. keynum loop
+              list_temp.add_elem(json_value.makenull);
+            end loop;
+            backreference.remove_last;
+            backreference.add_elem(list_temp);
+          end if;
+  
+          temp := list_temp.get_elem(keynum);
+        end if;
       else 
-        dot := false;
-        inarray := false;
-        s_build := s_build || tok;
+        --streng index
+        keystring := keyval.get_string();
+        if(not temp.is_object()) then 
+          --backreference.print;
+          if(val is null) then return; end if;
+          backreference.remove_last;
+          temp := json().to_json_value();
+          backreference.add_elem(temp);
+          --raise_application_error(-20110, 'JSON_ext put error: trying to access a non object with a string.'); 
+        end if;
+        obj_temp := json(temp);
+        temp := obj_temp.get(keystring);
       end if;
-      i := i + 1;
+  
+      if(temp is null) then 
+        if(val is null) then return; end if;
+        --what to expect?
+        keyval := path.get_elem(i+1);
+        if(keyval is not null and keyval.is_number()) then
+          temp := json_list().to_json_value; 
+        else 
+          temp := json().to_json_value; 
+        end if;
+      end if;
+      backreference.add_elem(temp);
     end loop;
-    if(dot) then raise_application_error(-20110, 'Path error: . not a proper ending'); end if;
-    if(not inarray) then s_build := s_build||'":'; end if;
-    if(elem.is_string) then s_build := s_build || '"'; e_build := '"'||e_build; end if;
-    str := s_build|| json_printer.pretty_print_any(elem) ||e_build;
-    --dbms_output.put_line(str);
-    begin
-      build := json(str);
-      --build.print;
-    exception
-      when others then raise_application_error(-20110, 'Path error: consult the documentation');
-    end;
-    --dbms_output.put_line(levels);
-    
-    --build is ok - now put the right index on the lists  
-    for i in 1 .. indxs.count loop
-      if(indxs(i) < 1) then
-        raise_application_error(-20110, 'Path error: index should be positive integers');
+      
+  --  backreference.print(false);
+  --  path.print(false);
+      
+    --use backreference and path together
+    inserter := val;  
+    for i in reverse 1 .. backreference.count loop
+  --    inserter.print(false);
+      if( i = 1 ) then
+        keyval := path.get_elem(1);
+        if(keyval.is_string()) then
+          keystring := keyval.get_string();
+        else 
+          keynum := keyval.get_number();
+          declare
+            t1 json_value := obj.get(keynum);
+          begin
+            keystring := t1.mapname;
+          end;
+        end if;
+        if(inserter is null) then obj.remove(keystring); else obj.put(keystring, inserter); end if;
+      else
+        temp := backreference.get_elem(i-1);
+        if(temp.is_object()) then
+          keyval := path.get_elem(i);
+          obj_temp := json(temp);
+          if(keyval.is_string()) then
+            keystring := keyval.get_string();
+          else 
+            keynum := keyval.get_number();
+            declare
+              t1 json_value := obj_temp.get(keynum);
+            begin
+              keystring := t1.mapname;
+            end;
+          end if;
+          if(inserter is null) then 
+            obj_temp.remove(keystring); 
+            if(obj_temp.count > 0) then inserter := obj_temp.to_json_value; end if;
+          else 
+            obj_temp.put(keystring, inserter);
+            inserter := obj_temp.to_json_value; 
+          end if;
+        else 
+          --array only number
+          keynum := path.get_elem(i).get_number();
+          list_temp := json_list(temp);
+          list_temp.remove_elem(keynum);
+          if(not inserter is null) then 
+            list_temp.add_elem(inserter, keynum);
+            inserter := list_temp.to_json_value; 
+          else 
+            if(list_temp.count > 0) then inserter := list_temp.to_json_value; end if;
+          end if; 
+        end if;    
       end if;
-      --dbms_output.put_line(indxs(i));
+      
     end loop;
 
---    dbms_output.put_line('obj bef');
---    obj.print(false);
-    obj := join_jsons(obj, build, indxs, levels);
---    dbms_output.put_line('obj aft');
---    obj.print(false);
   end put_internal;
-  /* JSON Path putter internal end */  
 
   /* JSON Path putters */  
   procedure put(obj in out nocopy json, path varchar2, elem varchar2) as
@@ -498,7 +486,7 @@ create or replace package body json_ext as
   procedure put(obj in out nocopy json, path varchar2, elem json_value) as
   begin 
     if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, json_value);
+    put_internal(obj, path, elem);
   end;
 
   procedure put(obj in out nocopy json, path varchar2, elem date) as
@@ -509,9 +497,9 @@ create or replace package body json_ext as
 
   procedure remove(obj in out nocopy json, path varchar2) as
   begin
-    if(json_ext.get_json_value(obj,path) is not null) then
-      json_ext.put_internal(obj,path,json_value('delete me'), true);
-    end if;
+    json_ext.put_internal(obj,path,null);
+--    if(json_ext.get_json_value(obj,path) is not null) then
+--    end if;
   end remove;
 
     --Pretty print with JSON Path
@@ -522,7 +510,7 @@ create or replace package body json_ext as
     if(json_part is null) then 
       return ''; 
     else 
-      return json_printer.pretty_print_any(json_part); 
+      return json_printer.pretty_print_any(json_part); --escapes a possible internal string
     end if;
   end pp;
   

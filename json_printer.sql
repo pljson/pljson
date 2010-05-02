@@ -37,6 +37,42 @@ end json_printer;
 create or replace
 package body "JSON_PRINTER" as
 
+  function escapeString(str varchar2) return varchar2 as
+    sb varchar2(32676) := '';
+    buf varchar2(40);
+    num number;
+  begin
+    if(str is null) then return '""'; end if;
+    for i in 1 .. length(str) loop
+      buf := substr(str, i, 1);
+      --backspace b = U+0008
+      --formfeed  f = U+000C
+      --newline   n = U+000A
+      --carret    r = U+000D
+      --tabulator t = U+0009
+      case buf
+      when chr( 8) then buf := '\b';
+      when chr( 9) then buf := '\t';
+      when chr(10) then buf := '\n';
+      when chr(13) then buf := '\f';
+      when chr(14) then buf := '\r';
+      when chr(34) then buf := '\"';
+      when chr(47) then buf := '\/';
+      when chr(92) then buf := '\\';
+      else 
+        if(ascii(buf) < 32) then
+          buf := '\u'||replace(substr(to_char(ascii(buf), 'XXXX'),2,4), ' ', '0');
+        else 
+          buf := replace(asciistr(buf), '\', '\u');
+        end if;
+      end case;      
+      
+      sb := sb || buf;
+    end loop;
+  
+    return '"'||sb||'"';
+  end escapeString;
+
   function newline(spaces boolean) return varchar2 as
   begin
     if(spaces) then return newline_char; else return ''; end if;
@@ -63,9 +99,9 @@ package body "JSON_PRINTER" as
   function getMemName(mem json_value, spaces boolean) return varchar2 as
   begin
     if(spaces) then
-      return '"' || mem.mapname || '" : ';
+      return escapeString(mem.mapname) || ' : ';
     else 
-      return '"' || mem.mapname || '":';
+      return escapeString(mem.mapname) || ':';
     end if;
   end;
 
@@ -98,7 +134,11 @@ package body "JSON_PRINTER" as
         when 'number' then 
           add_to_clob(buf, buf_str, to_char(elem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
         when 'string' then 
-          add_to_clob(buf, buf_str, '"' || elem.get_string || '"');
+          if(elem.num = 1) then 
+            add_to_clob(buf, buf_str, escapeString(elem.get_string));
+          else 
+            add_to_clob(buf, buf_str, elem.get_string);
+          end if;
         when 'bool' then
           if(elem.get_bool) then 
             add_to_clob(buf, buf_str, 'true');
@@ -127,7 +167,11 @@ package body "JSON_PRINTER" as
       when 'number' then 
         add_to_clob(buf, buf_str, to_char(mem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
       when 'string' then 
-        add_to_clob(buf, buf_str, '"' || mem.get_string || '"');
+        if(mem.num = 1) then 
+          add_to_clob(buf, buf_str, escapeString(mem.get_string));
+        else 
+          add_to_clob(buf, buf_str, mem.get_string);
+        end if;
       when 'bool' then
         if(mem.get_bool) then 
           add_to_clob(buf, buf_str, 'true');
@@ -183,7 +227,11 @@ package body "JSON_PRINTER" as
       when 'number' then 
         add_to_clob(buf, buf_str, to_char(json_part.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
       when 'string' then 
-        add_to_clob(buf, buf_str, json_part.get_string);
+        if(json_part.num = 1) then 
+          add_to_clob(buf, buf_str, escapeString(json_part.get_string));
+        else 
+          add_to_clob(buf, buf_str, json_part.get_string);
+        end if;
       when 'bool' then
 	      if(json_part.get_bool) then
           add_to_clob(buf, buf_str, 'true');
@@ -220,7 +268,11 @@ package body "JSON_PRINTER" as
         when 'number' then 
           buf := buf || to_char(elem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
         when 'string' then 
-          buf := buf || '"' || elem.get_string || '"';
+          if(elem.num = 1) then 
+            buf := buf || escapeString(elem.get_string);
+          else 
+            buf := buf || elem.get_string;
+          end if;
         when 'bool' then
           if(elem.get_bool) then           
             buf := buf || 'true';
@@ -249,7 +301,11 @@ package body "JSON_PRINTER" as
       when 'number' then 
         buf := buf || to_char(mem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
       when 'string' then 
-        buf := buf || '"' || mem.get_string || '"';
+        if(mem.num = 1) then 
+          buf := buf || escapeString(mem.get_string);
+        else 
+          buf := buf || mem.get_string;
+        end if;
       when 'bool' then
         if(mem.get_bool) then 
           buf := buf || 'true';
@@ -301,9 +357,13 @@ package body "JSON_PRINTER" as
       when 'number' then 
         buf := to_char(json_part.get_number(), 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
       when 'string' then 
-        buf := json_part.get_string();
+        if(json_part.num = 1) then 
+          buf := buf || escapeString(json_part.get_string);
+        else 
+          buf := buf || json_part.get_string;
+        end if;
       when 'bool' then
-	if(json_part.get_bool) then buf := 'true'; else buf := 'false'; end if;
+      	if(json_part.get_bool) then buf := 'true'; else buf := 'false'; end if;
       when 'null' then
         buf := 'null';
       when 'array' then

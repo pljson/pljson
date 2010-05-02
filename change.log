@@ -20,6 +20,17 @@ This software has been released under the MIT license:
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 
+      Version: 0.9.1
+        Strings are now stored unescaped. Escaped when using to_char.
+        Parser extended with names grammar, singlequote strings and /**/ comments.
+        Addons modules are: json_ml, json_dyn, json_util_pkg
+        JSON PATH rewritten with formal grammar. 
+        Path selector in JSON and JSON_LIST
+        New method valueof can emit unescaped content to a string.
+        Empty strings can be used as a key in JSON.
+        Documentation.
+        Option of not to escape a string - enables the printer to emit javascript functions
+        More examples.
       Version: 0.9.0
 	WARNING: You cannot do an easy upgrade because of changes in the API
         Rewrote the API to increase speed and simplicity

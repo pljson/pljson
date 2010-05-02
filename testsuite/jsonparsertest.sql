@@ -57,6 +57,7 @@ declare
   end;
 
 begin
+  json_parser.json_strict := true;
   dbms_output.put_line('Scanner testing:');
   --number start with 0-9
   assertFail('{ "a": .23 }','number test A');
