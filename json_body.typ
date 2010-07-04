@@ -302,6 +302,53 @@ create or replace type body json as
     return json_ext.get_json_value(self, json_path);
   end path;
 
+  /* json path_put */
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_value) as
+  begin
+    json_ext.put(self, json_path, elem);
+  end path_put;
+  
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem varchar2) as
+  begin
+    json_ext.put(self, json_path, elem);
+  end path_put;
+  
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem number) as
+  begin
+    if(elem is null) then 
+      json_ext.put(self, json_path, json_value());
+    else 
+      json_ext.put(self, json_path, elem);
+    end if;
+  end path_put;
+
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem boolean) as
+  begin
+    if(elem is null) then 
+      json_ext.put(self, json_path, json_value());
+    else 
+      json_ext.put(self, json_path, elem);
+    end if;
+  end path_put;
+
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_list) as
+  begin
+    if(elem is null) then 
+      json_ext.put(self, json_path, json_value());
+    else 
+      json_ext.put(self, json_path, elem);
+    end if;
+  end path_put;
+
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json) as
+  begin
+    if(elem is null) then 
+      json_ext.put(self, json_path, json_value());
+    else 
+      json_ext.put(self, json_path, elem);
+    end if;
+  end path_put;
+
   /* Thanks to Matt Nolan */
   member function get_keys return json_list as
     keys json_list;

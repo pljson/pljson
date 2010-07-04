@@ -35,6 +35,12 @@ create or replace type json_list as object (
   /* deprecated putter use json_value */
   member procedure add_elem(self in out nocopy json_list, elem json_list, position pls_integer default null),
 
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_value),
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem varchar2),
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem number),
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem boolean),
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_list),
+
   member function count return number,
   member procedure remove_elem(self in out nocopy json_list, position pls_integer),
   member procedure remove_first(self in out nocopy json_list),
@@ -42,12 +48,19 @@ create or replace type json_list as object (
   member function get_elem(position pls_integer) return json_value,
   member function get_first return json_value,
   member function get_last return json_value,
+
   member function to_char(spaces boolean default true) return varchar2,
   member procedure to_clob(self in json_list, buf in out nocopy clob, spaces boolean default false),
   member procedure print(self in json_list, spaces boolean default true),
 
   /* json path */
   member function path(json_path varchar2) return json_value,
+  /* json path_put */
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_value),
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem varchar2),
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem number),
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem boolean),
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_list),
 
   member function to_json_value return json_value
 );

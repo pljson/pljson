@@ -20,10 +20,11 @@ create or replace package json_printer as
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-  indent_string varchar2(10) := '  '; --chr(9); for tab
-  newline_char varchar2(2) := chr(13)||chr(10); -- Windows style
+  indent_string varchar2(10 char) := '  '; --chr(9); for tab
+  newline_char varchar2(2 char) := chr(13)||chr(10); -- Windows style
   --newline_char varchar2(2) := chr(10); -- Mac style
   --newline_char varchar2(2) := chr(13); -- Linux style
+  ascii_output boolean := true;
 
   function pretty_print(obj json, spaces boolean default true) return varchar2;
   function pretty_print_list(obj json_list, spaces boolean default true) return varchar2;
@@ -38,7 +39,7 @@ create or replace
 package body "JSON_PRINTER" as
 
   function escapeString(str varchar2) return varchar2 as
-    sb varchar2(32676) := '';
+    sb varchar2(32767) := '';
     buf varchar2(40);
     num number;
   begin
@@ -62,7 +63,7 @@ package body "JSON_PRINTER" as
       else 
         if(ascii(buf) < 32) then
           buf := '\u'||replace(substr(to_char(ascii(buf), 'XXXX'),2,4), ' ', '0');
-        else 
+        elsif (ascii_output) then 
           buf := replace(asciistr(buf), '\', '\u');
         end if;
       end case;      

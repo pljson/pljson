@@ -332,6 +332,23 @@ begin
     when others then fail(str);
   end;
 
+  str := 'json_list set_elem test';
+  declare
+    obj json_list := json_list('[4,5,6]');
+  begin
+    obj.set_elem(1, 1);
+    obj.set_elem(2, 2);
+    obj.set_elem(3, 3);
+    assertTrue(obj.to_char(false) = '[1,2,3]');
+    obj.set_elem(-10, 3);
+    assertTrue(obj.to_char(false) = '[1,2,3]');
+    obj.set_elem(210, 4);
+    assertTrue(obj.to_char(false) = '[1,2,3,4]');
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
     'List testing', pass_count,fail_count,total_count,'json_list_test.sql';

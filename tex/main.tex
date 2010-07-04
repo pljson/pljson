@@ -52,7 +52,7 @@
 \footskip 0.8in
 
 
-\title{PL/JSON Reference Guide (version 0.9.1)}
+\title{PL/JSON Reference Guide (version 0.9.2)}
 \subtitle{For Oracle 10g and 11g}
 \author{Jonas Krogsbøll}
 \date{}
@@ -129,7 +129,7 @@ You can tweak the behaviour of PL/JSON by setting various variables in the packa
 In the printer package you can edit the line break method to linux, windows or mac style. You can also change the indentation to the tabular char, or change the number of spaces. 
 
 \subsection*{JSON\_PARSER}
-The parser is extended to accept more than just pure JSON. The variable "json\_strict" is defaulted to false and can be set to true to force PL/JSON to only accept proper JSON. The current implementation allows input to contain comments with the /* */  notation. Furthermore it extends the definition of a string to allow singlequotes and converts names into strings. The railrod diagram below shows the grammar for names accepted by PL/JSON:
+The parser is extended to accept more than just pure JSON. The variable "json\_strict" is defaulted to false and can be set to true to force PL/JSON to only accept proper JSON. The current implementation allows input to contain comments with the /* */  notation. Furthermore it extends the definition of a string to allow singlequotes and converts names into strings. The railroad diagram below shows the grammar for names accepted by PL/JSON:
 \begin{rail}
 name     : (letter) ((letter| digits | us)*);
 \end{rail}
@@ -224,7 +224,25 @@ end;
 true
 3
 \end{verbatim}
-The example files 8 to 10 provides a more detailed explaination.
+The example files 8 to 10 provides a more detailed explaination.\\
+\\
+In the 0.9.2 release, it is also possible to use path to modify objects and arrays:
+\begin{verbatim}
+declare
+  v_obj json := json('{a:true}');
+  v_list json_list := json_list('[1,2,[3,4]]');
+begin
+  v_obj.path_put('a[2]', json_list('[true, true]'));
+  v_obj.print;
+  v_list.path_put('[3][1]', 'test');
+  v_list.print;
+end;
+----------
+{
+  "a" : [null, [true, true]]
+}
+[1, 2, ["test", 4]]
+\end{verbatim}
 
 \section{BEHAVIOR \& ERROR HANDLING}
 Input to the parser is expected to be in the charset of the database. The objects that are generated contains unescaped values that will be escaped when emitted through the printer. To ensure correct JSON output, even from non-UTF databases, only ASCII chars are emitted. All the characters which are not part of ASCII will be escaped. 

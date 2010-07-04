@@ -27,10 +27,10 @@ create or replace package json_parser as
     type_name VARCHAR2(6),
     line PLS_INTEGER,
     col PLS_INTEGER,
-    data VARCHAR2(4000)); -- limit a string to 4000 characters
+    data VARCHAR2(4000)); -- limit a string to 4000 bytes
 
   type lTokens is table of rToken index by pls_integer;
-  type json_src is record (len number, offset number, src varchar2(16000), s_clob clob); 
+  type json_src is record (len number, offset number, src varchar2(32767), s_clob clob); 
 
   json_strict boolean := false;
 
@@ -49,6 +49,7 @@ create or replace package json_parser as
   function parse_list(str clob) return json_list;
   function parse_any(str clob) return json_value;
   procedure remove_duplicates(obj in out nocopy json);
+  function get_version return varchar2;
   
 end json_parser;
 /
@@ -625,8 +626,9 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
           if(tok.type_name = '}') then --premature exit
             p_error('Premature exit in json object', tok);
           end if;
+        elsif(tok.type_name != '}') then
+           p_error('A comma seperator is probably missing', tok);
         end if;
-
       when '}' then
         obj := json();
         obj.json_data := arr;
@@ -793,7 +795,11 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     
     obj := validated;  
   end;
-
+  
+  function get_version return varchar2 as
+  begin
+    return 'PL/JSON v0.9.1';
+  end get_version;
 
 end json_parser;
 /

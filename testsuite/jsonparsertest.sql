@@ -131,6 +131,17 @@ begin
   --start parser
   assertFail(' "a" ','{ missing');
   assertFail('{','} missing');
+  assertFail('{ "a": 1 "b": 2 }',', missing');
+  
+  assertFail('{
+    "abcdefghijklmnopqrstuvxyzabcdefghijklmnopqrstuvxyz" : 52,
+    "abcdefghijklmnopqrstuvxyzabcdefghijklmnopqrstuvxyz" : 52
+  }', 'Duplicate 1');
+
+  assertPass('{
+    "abcdefghijklmnopqrstuvxyzabcdefghijklmnopqrstuvxyz1" : 53,
+    "abcdefghijklmnopqrstuvxyzabcdefghijklmnopqrstuvxyz2" : 53
+  }', 'Duplicate 2');
  
   dbms_output.put_line('');
   dbms_output.put_line('Passed '||pass_count||' of '||total_count||' tests.');

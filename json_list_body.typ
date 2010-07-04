@@ -106,6 +106,53 @@ create or replace type body json_list as
     end if;
   end;
   
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_value) as
+    insert_value json_value := NVL(elem, json_value);
+    indx number;
+  begin
+    if(position > self.count) then --end of list
+      indx := self.count + 1;
+      self.list_data.extend(1);
+      self.list_data(indx) := insert_value;
+    elsif(position < 1) then --maybe an error message here
+      null;
+    else
+      self.list_data(position) := insert_value;
+    end if;
+  end;
+  
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem varchar2) as
+  begin
+    set_elem(position, json_value(elem));
+  end;
+  
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem number) as
+  begin
+    if(elem is null) then
+      set_elem(position, json_value());
+    else
+      set_elem(position, json_value(elem));
+    end if;
+  end;
+  
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem boolean) as 
+  begin
+    if(elem is null) then
+      set_elem(position, json_value());
+    else
+      set_elem(position, json_value(elem));
+    end if;
+  end;
+  
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_list) as 
+  begin
+    if(elem is null) then
+      set_elem(position, json_value());
+    else
+      set_elem(position, elem.to_json_value);
+    end if;
+  end;
+  
   member function count return number as
   begin
     return self.list_data.count;
@@ -190,6 +237,54 @@ create or replace type body json_list as
   begin
     return json_ext.get_json_value(json(cp), json_path);
   end path;
+
+  /* json path_put */
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_value) as
+    objlist json := json(self);
+  begin
+    json_ext.put(objlist, json_path, elem);
+    self := objlist.get_values;
+  end path_put;
+  
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem varchar2) as
+    objlist json := json(self);
+  begin
+    json_ext.put(objlist, json_path, elem);
+    self := objlist.get_values;
+  end path_put;
+  
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem number) as
+    objlist json := json(self);
+  begin
+    if(elem is null) then 
+      json_ext.put(objlist, json_path, json_value);
+    else 
+      json_ext.put(objlist, json_path, elem);
+    end if;
+    self := objlist.get_values;
+  end path_put;
+
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem boolean) as
+    objlist json := json(self);
+  begin
+    if(elem is null) then 
+      json_ext.put(objlist, json_path, json_value);
+    else 
+      json_ext.put(objlist, json_path, elem);
+    end if;
+    self := objlist.get_values;
+  end path_put;
+
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_list) as
+    objlist json := json(self);
+  begin
+    if(elem is null) then 
+      json_ext.put(objlist, json_path, json_value);
+    else 
+      json_ext.put(objlist, json_path, elem);
+    end if;
+    self := objlist.get_values;
+  end path_put;
 
   member function to_json_value return json_value as
   begin

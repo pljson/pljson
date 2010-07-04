@@ -51,7 +51,7 @@ create or replace package json_ext as
   --extra function checks if number has no fraction
   function is_integer(v json_value) return boolean;
   
-  format_string varchar2(30) := 'yyyy-mm-dd hh24:mi:ss';
+  format_string varchar2(30 char) := 'yyyy-mm-dd hh24:mi:ss';
   --extension enables json to store dates without comprimising the implementation
   function to_json_value(d date) return json_value;
   --notice that a date type in json is also a varchar2
@@ -121,7 +121,7 @@ create or replace package body json_ext as
   
   --Json Path parser
   function parsePath(json_path varchar2) return json_list as
-    build_path varchar2(4000) := '[';
+    build_path varchar2(32767) := '[';
     buf varchar2(4);
     endstring varchar2(1);
     indx number := 1;

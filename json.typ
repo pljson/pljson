@@ -59,6 +59,14 @@ create or replace type json as object (
   /* json path */
   member function path(json_path varchar2) return json_value,
 
+  /* json path_put */
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_value),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem varchar2),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem number),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem boolean),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_list),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json),
+
   /* map functions */
   member function get_values return json_list,
   member function get_keys return json_list
