@@ -279,9 +279,9 @@ begin
     obj json := json();
   begin
     obj.put(null, 'test');
-    fail(str);
+    pass(str); -- new behavior
   exception
-    when others then pass(str);
+    when others then fail(str);
   end;
 
   begin

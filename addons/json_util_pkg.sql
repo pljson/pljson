@@ -30,6 +30,10 @@ end json_util_pkg;
 /
 create or replace package body json_util_pkg
 as
+  scanner_exception exception;
+  pragma exception_init(scanner_exception, -20100);
+  parser_exception exception;
+  pragma exception_init(parser_exception, -20101);
 
   /*
 
@@ -303,9 +307,31 @@ begin
   end if;
 
   l_returnvalue := dbms_xmlgen.convert (l_returnvalue, dbms_xmlgen.entity_decode);
-
-  return json_list(json(l_returnvalue).get('ROWSET'));
-
+  
+  if(l_num_rows = 0) then
+    return json_list();
+  else 
+    if(l_num_rows = 1) then
+      declare ret json_list := json_list();
+      begin
+        ret.add_elem(json(l_returnvalue).get('ROWSET'));
+        return ret;
+      end;
+    else 
+      return json_list(json(l_returnvalue).get('ROWSET'));
+    end if;
+  end if;
+  
+exception
+  when scanner_exception then
+    dbms_output.put('Scanner problem with the following input: ');
+    dbms_output.put_line(l_returnvalue);
+    raise;
+  when parser_exception then
+    dbms_output.put('Parser problem with the following input: ');
+    dbms_output.put_line(l_returnvalue);
+    raise;
+  when others then raise;  
 end ref_cursor_to_json;
 
 function sql_to_json (p_sql in varchar2,

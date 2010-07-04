@@ -1,4 +1,4 @@
 #!/bin/sh
-latex main.tex
+pdflatex main.tex
 ./rail main
-latex main.tex
+pdflatex main.tex
