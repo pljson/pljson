@@ -33,7 +33,8 @@ create or replace package json_dyn authid current_user as
 end json_dyn;
 /
 
-create or replace package body json_dyn as
+create or replace
+package body json_dyn as
 
   /* list with objects */
   function executeList(stmt varchar2) return json_list as
@@ -51,7 +52,11 @@ create or replace package body json_dyn as
     dbms_sql.parse(l_cur, stmt, dbms_sql.native);
     dbms_sql.describe_columns(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
-      dbms_sql.define_column(l_cur,i,l_val,4000);
+      if(l_dtbl(i).col_type = 12) then
+        dbms_sql.define_column(l_cur,i,read_date);
+      else 
+        dbms_sql.define_column(l_cur,i,l_val,4000);
+      end if;
     end loop;
     l_status := dbms_sql.execute(l_cur);
     
@@ -89,8 +94,7 @@ create or replace package body json_dyn as
           -- dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'number ' ||l_dtbl(i).col_type);
         when 12 then -- date
           if(include_dates) then
-            dbms_sql.column_value(l_cur,i,l_val);
-            read_date := l_val;
+            dbms_sql.column_value(l_cur,i,read_date);
             inner_obj.put(l_dtbl(i).col_name, json_ext.to_json_value(read_date));
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'date ' ||l_dtbl(i).col_type);
@@ -121,7 +125,11 @@ create or replace package body json_dyn as
     dbms_sql.parse(l_cur, stmt, dbms_sql.native);
     dbms_sql.describe_columns(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
-      dbms_sql.define_column(l_cur,i,l_val,4000);
+      if(l_dtbl(i).col_type = 12) then
+        dbms_sql.define_column(l_cur,i,read_date);
+      else 
+        dbms_sql.define_column(l_cur,i,l_val,4000);
+      end if;
     end loop;
     l_status := dbms_sql.execute(l_cur);
     
@@ -169,8 +177,7 @@ create or replace package body json_dyn as
           -- dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'number ' ||l_dtbl(i).col_type);
         when 12 then -- date
           if(include_dates) then
-            dbms_sql.column_value(l_cur,i,l_val);
-            read_date := l_val;
+            dbms_sql.column_value(l_cur,i,read_date);
             data_list.add_elem(json_ext.to_json_value(read_date));
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'date ' ||l_dtbl(i).col_type);

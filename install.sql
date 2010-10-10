@@ -1,7 +1,7 @@
 /*
 This software has been released under the MIT license:
 
-  Copyright (c) 2009 Jonas Krogsboell inspired by code from Lewis R Cunningham
+  Copyright (c) 2010 Jonas Krogsboell inspired by code from Lewis R Cunningham
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal

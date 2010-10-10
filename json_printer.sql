@@ -1,6 +1,6 @@
 create or replace package json_printer as
   /*
-  Copyright (c) 2009 Jonas Krogsboell
+  Copyright (c) 2010 Jonas Krogsboell
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -127,13 +127,21 @@ package body "JSON_PRINTER" as
   procedure ppEA(input json_list, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
     elem json_value; 
     arr json_value_array := input.list_data;
+    numbuf varchar2(4000);
   begin
     for y in 1 .. arr.count loop
       elem := arr(y);
       if(elem is not null) then
       case elem.get_type
         when 'number' then 
-          add_to_clob(buf, buf_str, to_char(elem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
+          if (elem.get_number < 1 and elem.get_number > 0) then numbuf := '0'; end if;
+          if (elem.get_number < 0 and elem.get_number > -1) then 
+            numbuf := '-0'; 
+            numbuf := numbuf || substr(to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
+          else
+            numbuf := numbuf || to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
+          end if;
+          add_to_clob(buf, buf_str, numbuf);
         when 'string' then 
           if(elem.num = 1) then 
             add_to_clob(buf, buf_str, escapeString(elem.get_string));
@@ -162,11 +170,19 @@ package body "JSON_PRINTER" as
   end ppEA;
 
   procedure ppMem(mem json_value, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
+    numbuf varchar2(4000);
   begin
     add_to_clob(buf, buf_str, tab(indent, spaces) || getMemName(mem, spaces));
     case mem.get_type
       when 'number' then 
-        add_to_clob(buf, buf_str, to_char(mem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
+        if (mem.get_number < 1 and mem.get_number > 0) then numbuf := '0'; end if;
+        if (mem.get_number < 0 and mem.get_number > -1) then 
+          numbuf := '-0'; 
+          numbuf := numbuf || substr(to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
+        else
+          numbuf := numbuf || to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
+        end if;
+        add_to_clob(buf, buf_str, numbuf);
       when 'string' then 
         if(mem.num = 1) then 
           add_to_clob(buf, buf_str, escapeString(mem.get_string));
@@ -223,10 +239,18 @@ package body "JSON_PRINTER" as
 
   procedure pretty_print_any(json_part json_value, spaces boolean default true, buf in out nocopy clob) as
     buf_str varchar2(32767) := '';
+    numbuf varchar2(4000);
   begin
     case json_part.get_type
       when 'number' then 
-        add_to_clob(buf, buf_str, to_char(json_part.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,'''));
+        if (json_part.get_number < 1 and json_part.get_number > 0) then numbuf := '0'; end if;
+        if (json_part.get_number < 0 and json_part.get_number > -1) then 
+          numbuf := '-0'; 
+          numbuf := numbuf || substr(to_char(json_part.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
+        else
+          numbuf := numbuf || to_char(json_part.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
+        end if;
+        add_to_clob(buf, buf_str, numbuf);
       when 'string' then 
         if(json_part.num = 1) then 
           add_to_clob(buf, buf_str, escapeString(json_part.get_string));
@@ -267,7 +291,13 @@ package body "JSON_PRINTER" as
       if(elem is not null) then
       case elem.get_type
         when 'number' then 
-          buf := buf || to_char(elem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
+          if (elem.get_number < 1 and elem.get_number > 0) then buf := buf || '0'; end if;
+          if (elem.get_number < 0 and elem.get_number > -1) then 
+            buf := buf || '-0'; 
+            buf := buf || substr(to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
+          else
+            buf := buf || to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
+          end if;
         when 'string' then 
           if(elem.num = 1) then 
             buf := buf || escapeString(elem.get_string);
@@ -300,7 +330,13 @@ package body "JSON_PRINTER" as
     buf := buf || tab(indent, spaces) || getMemName(mem, spaces);
     case mem.get_type
       when 'number' then 
-        buf := buf || to_char(mem.get_number, 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
+        if (mem.get_number < 1 and mem.get_number > 0) then buf := buf || '0'; end if;
+        if (mem.get_number < 0 and mem.get_number > -1) then 
+          buf := buf || '-0'; 
+          buf := buf || substr(to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
+        else
+          buf := buf || to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
+        end if;
       when 'string' then 
         if(mem.num = 1) then 
           buf := buf || escapeString(mem.get_string);
@@ -356,7 +392,13 @@ package body "JSON_PRINTER" as
   begin
     case json_part.get_type
       when 'number' then 
-        buf := to_char(json_part.get_number(), 'TM', 'NLS_NUMERIC_CHARACTERS=''.,''');
+        if (json_part.get_number() < 1 and json_part.get_number() > 0) then buf := buf || '0'; end if;
+        if (json_part.get_number() < 0 and json_part.get_number() > -1) then 
+          buf := buf || '-0'; 
+          buf := buf || substr(to_char(json_part.get_number(), 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
+        else
+          buf := buf || to_char(json_part.get_number(), 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
+        end if;
       when 'string' then 
         if(json_part.num = 1) then 
           buf := buf || escapeString(json_part.get_string);

@@ -58,7 +58,7 @@ type json_value as object
   
   member function value_of(self in json_value) return varchar2
   
-);
+) not final;
 /
 
 create or replace type json_value_array as table of json_value;

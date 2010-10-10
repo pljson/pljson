@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2009 Jonas Krogsboell
+  Copyright (c) 2010 Jonas Krogsboell
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -106,7 +106,7 @@ create or replace type body json_list as
     end if;
   end;
   
-  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_value) as
+ member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_value) as
     insert_value json_value := NVL(elem, json_value);
     indx number;
   begin
@@ -152,7 +152,7 @@ create or replace type body json_list as
       set_elem(position, elem.to_json_value);
     end if;
   end;
-  
+
   member function count return number as
   begin
     return self.list_data.count;
@@ -238,6 +238,7 @@ create or replace type body json_list as
     return json_ext.get_json_value(json(cp), json_path);
   end path;
 
+
   /* json path_put */
   member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_value) as
     objlist json := json(self);
@@ -285,7 +286,7 @@ create or replace type body json_list as
     end if;
     self := objlist.get_values;
   end path_put;
-
+  
   member function to_json_value return json_value as
   begin
     return json_value(anydata.convertobject(self));
