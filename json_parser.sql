@@ -1,6 +1,6 @@
 create or replace package json_parser as
   /*
-  Copyright (c) 2009 Jonas Krogsboell
+  Copyright (c) 2010 Jonas Krogsboell
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -798,7 +798,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
   
   function get_version return varchar2 as
   begin
-    return 'PL/JSON v0.9.1';
+    return 'PL/JSON v0.9.3';
   end get_version;
 
 end json_parser;

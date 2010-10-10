@@ -71,7 +71,7 @@ create or replace type json as object (
   member function get_values return json_list,
   member function get_keys return json_list
 
-);
+) not final;
 /
 sho err
 

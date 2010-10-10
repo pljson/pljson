@@ -63,7 +63,7 @@ create or replace type json_list as object (
   member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_list),
 
   member function to_json_value return json_value
-);
+) not final;
 /
 
 sho err
