@@ -104,27 +104,43 @@ type body json_value as
   member function is_bool return boolean as begin return self.typeval = 5; end;
   member function is_null return boolean as begin return self.typeval = 6; end;
 
-  member function to_char(spaces boolean default true) return varchar2 as
+  /* Output methods */  
+  member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2 as
   begin
-    if(spaces is null) then	
-      return json_printer.pretty_print_any(self);
+    if(spaces is null) then
+      return json_printer.pretty_print_any(self, line_length => chars_per_line);
     else 
-      return json_printer.pretty_print_any(self, spaces);
-    end if;
-  end;
-  
-  member procedure to_clob(self in json_value, buf in out nocopy clob, spaces boolean default false) as
-  begin
-    if(spaces is null) then	
-      json_printer.pretty_print_any(self, false, buf);
-    else 
-      json_printer.pretty_print_any(self, spaces, buf);
+      return json_printer.pretty_print_any(self, spaces, line_length => chars_per_line);
     end if;
   end;
 
-  member procedure print(self in json_value, spaces boolean default true) as
+  member procedure to_clob(self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0) as
   begin
-    dbms_output.put_line(self.to_char(spaces));
+    if(spaces is null) then	
+      json_printer.pretty_print_any(self, false, buf, line_length => chars_per_line);
+    else 
+      json_printer.pretty_print_any(self, spaces, buf, line_length => chars_per_line);
+    end if;
+  end;
+
+  member procedure print(self in json_value, spaces boolean default true, chars_per_line number default 8192) as --32512 is the real maximum in sqldeveloper
+    my_clob clob;
+  begin
+    my_clob := empty_clob();
+    dbms_lob.createtemporary(my_clob, true);
+    json_printer.pretty_print_any(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
+    json_printer.dbms_output_clob(my_clob, json_printer.newline_char);
+    dbms_lob.freetemporary(my_clob);  
+  end;
+  
+  member procedure htp(self in json_value, spaces boolean default false, chars_per_line number default 0) as 
+    my_clob clob;
+  begin
+    my_clob := empty_clob();
+    dbms_lob.createtemporary(my_clob, true);
+    json_printer.pretty_print_any(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
+    json_printer.htp_output_clob(my_clob);
+    dbms_lob.freetemporary(my_clob);  
   end;
 
   member function value_of(self in json_value) return varchar2 as
