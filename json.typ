@@ -51,11 +51,14 @@ create or replace type json as object (
   member function get(position pls_integer) return json_value,
   member function index_of(pair_name varchar2) return number,
   member function exist(pair_name varchar2) return boolean,
-  member function to_char(spaces boolean default true) return varchar2,
-  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false),
-  member procedure print(self in json, spaces boolean default true),
-  member function to_json_value return json_value,
 
+  /* Output methods */ 
+  member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
+  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0),
+  member procedure print(self in json, spaces boolean default true, chars_per_line number default 8192), --32512 is maximum
+  member procedure htp(self in json, spaces boolean default false, chars_per_line number default 0),
+  
+  member function to_json_value return json_value,
   /* json path */
   member function path(json_path varchar2) return json_value,
 

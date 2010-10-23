@@ -43,7 +43,7 @@ create or replace package json_ext as
 
   procedure remove(obj in out nocopy json, path varchar2);
   
-  --Pretty print with JSON Path
+  --Pretty print with JSON Path - obsolete in 0.9.4 - obj.path(v_path).(to_char,print,htp)
   function pp(obj json, v_path varchar2) return varchar2; 
   procedure pp(obj json, v_path varchar2); --using dbms_output.put_line
   procedure pp_htp(obj json, v_path varchar2); --using htp.print

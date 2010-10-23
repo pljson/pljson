@@ -19,6 +19,12 @@ This software has been released under the MIT license:
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
+      Version: 0.9.4
+        Bug fix: clob list og numbers was not formatted correctly
+        Added printer option to escape solidus (default is false)
+        Added a max_chars_per_line option to the printer functions (to_char, to_clob, print)
+        Changed print procedures to use clob instead of varchar2
+        Added a htp function to json, json_list and json_value
       Version: 0.9.3
         Bug fix: incorrect json emitted when facing a number between -1 and 1 (not 0)
         Added support for inheritance.

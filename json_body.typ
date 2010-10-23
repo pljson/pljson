@@ -268,29 +268,45 @@ create or replace type body json as
     return (self.get(pair_name) is not null);
   end;
   
-  member function to_char(spaces boolean default true) return varchar2 as
+  /* Output methods */  
+  member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2 as
   begin
-    if(spaces is null) then	
-      return json_printer.pretty_print(self);
+    if(spaces is null) then
+      return json_printer.pretty_print(self, line_length => chars_per_line);
     else 
-      return json_printer.pretty_print(self, spaces);
-    end if;
-  end;
-  
-  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false) as
-  begin
-    if(spaces is null) then	
-      json_printer.pretty_print(self, false, buf);
-    else 
-      json_printer.pretty_print(self, spaces, buf);
+      return json_printer.pretty_print(self, spaces, line_length => chars_per_line);
     end if;
   end;
 
-  member procedure print(self in json, spaces boolean default true) as
+  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0) as
   begin
-    dbms_output.put_line(self.to_char(spaces));
+    if(spaces is null) then	
+      json_printer.pretty_print(self, false, buf, line_length => chars_per_line);
+    else 
+      json_printer.pretty_print(self, spaces, buf, line_length => chars_per_line);
+    end if;
+  end;
+
+  member procedure print(self in json, spaces boolean default true, chars_per_line number default 8192) as --32512 is the real maximum in sqldeveloper
+    my_clob clob;
+  begin
+    my_clob := empty_clob();
+    dbms_lob.createtemporary(my_clob, true);
+    json_printer.pretty_print(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
+    json_printer.dbms_output_clob(my_clob, json_printer.newline_char);
+    dbms_lob.freetemporary(my_clob);  
   end;
   
+  member procedure htp(self in json, spaces boolean default false, chars_per_line number default 0) as 
+    my_clob clob;
+  begin
+    my_clob := empty_clob();
+    dbms_lob.createtemporary(my_clob, true);
+    json_printer.pretty_print(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
+    json_printer.htp_output_clob(my_clob);
+    dbms_lob.freetemporary(my_clob);  
+  end;
+
   member function to_json_value return json_value as
   begin
     return json_value(anydata.convertobject(self));

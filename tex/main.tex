@@ -52,7 +52,7 @@
 \footskip 0.8in
 
 
-\title{PL/JSON Reference Guide (version 0.9.3)}
+\title{PL/JSON Reference Guide (version 0.9.4)}
 \subtitle{For Oracle 10g and 11g}
 \author{Jonas Krogsbøll}
 \date{}
@@ -126,7 +126,7 @@ You can also ask questions in the support forum (http://sourceforge.net/projects
 \section{TWEAKS}
 You can tweak the behaviour of PL/JSON by setting various variables in the packages. Here comes a description of the possible adjustments you can do. 
 \subsection*{JSON\_PRINTER}
-In the printer package you can edit the line break method to linux, windows or mac style. You can also change the indentation to the tabular char, or change the number of spaces. 
+In the printer package you can edit the line break method to linux, windows or mac style. You can also change the indentation to the tabular char, or change the number of spaces.
 
 \subsection*{JSON\_PARSER}
 The parser is extended to accept more than just pure JSON. The variable "json\_strict" is defaulted to false and can be set to true to force PL/JSON to only accept proper JSON. The current implementation allows input to contain comments with the /* */  notation. Furthermore it extends the definition of a string to allow singlequotes and converts names into strings. The railroad diagram below shows the grammar for names accepted by PL/JSON:
