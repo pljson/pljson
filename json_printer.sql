@@ -34,8 +34,8 @@ create or replace package json_printer as
   procedure pretty_print_list(obj json_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0);
   procedure pretty_print_any(json_part json_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0);
   
-  procedure dbms_output_clob(my_clob clob, delim varchar2);
-  procedure htp_output_clob(my_clob clob);
+  procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null);
+  procedure htp_output_clob(my_clob clob, jsonp varchar2 default null);
 end json_printer;
 /
 
@@ -450,13 +450,14 @@ package body "JSON_PRINTER" as
     return buf;
   end;
   
-  procedure dbms_output_clob(my_clob clob, delim varchar2) as 
+  procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as 
     prev number := 1;
     indx number := 1;
-    size_of_nl number := length(json_printer.newline_char);
+    size_of_nl number := length(delim);
   begin
+    if(jsonp is not null) then dbms_output.put_line(jsonp||'('); end if;
     while (indx != 0) loop
-      indx := dbms_lob.instr(my_clob, json_printer.newline_char, prev+1);
+      indx := dbms_lob.instr(my_clob, delim, prev+1);
       --dbms_output.put_line(prev || ' to ' || indx);
       if(indx = 0) then 
         dbms_output.put_line(dbms_lob.substr(my_clob, dbms_lob.getlength(my_clob)-prev+size_of_nl, prev));
@@ -465,19 +466,22 @@ package body "JSON_PRINTER" as
       end if;
       prev := indx+size_of_nl;
     end loop;
+    if(jsonp is not null) then dbms_output.put_line(')'); end if;
   end;
   
-  procedure htp_output_clob(my_clob clob) as 
+  procedure htp_output_clob(my_clob clob, jsonp varchar2 default null) as 
     amount number := 8192;
     pos number := 1;
     len number;
   begin
+    if(jsonp is not null) then htp.prn(jsonp||'('); end if;
     len := dbms_lob.getlength(my_clob);
     while(pos < len) loop
       htp.prn(dbms_lob.substr(my_clob, amount, pos)); 
       --dbms_output.put_line(dbms_lob.substr(my_clob, amount, pos)); 
       pos := pos + amount;
     end loop;
+    if(jsonp is not null) then htp.prn(')'); end if;
   end;
 
 end json_printer;

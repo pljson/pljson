@@ -55,8 +55,8 @@ type json_value as object
   /* Output methods */ 
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
   member procedure to_clob(self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0),
-  member procedure print(self in json_value, spaces boolean default true, chars_per_line number default 8192), --32512 is maximum
-  member procedure htp(self in json_value, spaces boolean default false, chars_per_line number default 0),
+  member procedure print(self in json_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null), --32512 is maximum
+  member procedure htp(self in json_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
   
   member function value_of(self in json_value) return varchar2
   

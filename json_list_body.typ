@@ -226,23 +226,23 @@ create or replace type body json_list as
     end if;
   end;
 
-  member procedure print(self in json_list, spaces boolean default true, chars_per_line number default 8192) as --32512 is the real maximum in sqldeveloper
+  member procedure print(self in json_list, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null) as --32512 is the real maximum in sqldeveloper
     my_clob clob;
   begin
     my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
     json_printer.pretty_print_list(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
-    json_printer.dbms_output_clob(my_clob, json_printer.newline_char);
+    json_printer.dbms_output_clob(my_clob, json_printer.newline_char, jsonp);
     dbms_lob.freetemporary(my_clob);  
   end;
   
-  member procedure htp(self in json_list, spaces boolean default false, chars_per_line number default 0) as 
+  member procedure htp(self in json_list, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null) as 
     my_clob clob;
   begin
     my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
     json_printer.pretty_print_list(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
-    json_printer.htp_output_clob(my_clob);
+    json_printer.htp_output_clob(my_clob, jsonp);
     dbms_lob.freetemporary(my_clob);  
   end;
 

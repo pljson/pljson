@@ -52,8 +52,8 @@ create or replace type json_list as object (
   /* Output methods */ 
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
   member procedure to_clob(self in json_list, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0),
-  member procedure print(self in json_list, spaces boolean default true, chars_per_line number default 8192), --32512 is maximum
-  member procedure htp(self in json_list, spaces boolean default false, chars_per_line number default 0),
+  member procedure print(self in json_list, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null), --32512 is maximum
+  member procedure htp(self in json_list, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
 
   /* json path */
   member function path(json_path varchar2) return json_value,
