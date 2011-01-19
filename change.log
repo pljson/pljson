@@ -19,6 +19,10 @@ This software has been released under the MIT license:
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
+      Version: 0.9.5
+        Bug fix: In addon json_util_pkg - fixed number issue, new stylesheet added.
+        Added a script to create synonyms and grants.
+        Added support for outputting JSONP - @James Sumners
       Version: 0.9.4
         Bug fix: clob list og numbers was not formatted correctly
         Added printer option to escape solidus (default is false)

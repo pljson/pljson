@@ -34,6 +34,8 @@ PROMPT -----------------------------------;
 @@json_ext.sql --extra helper functions
 @@json_body.typ
 @@json_list_body.typ
+--@@grantsandsynonyms.sql --grants to core API
+
 PROMPT ------------------------------------------;
 PROMPT -- Adding optional packages for PL/JSON --;
 PROMPT -------------------------------------------;
