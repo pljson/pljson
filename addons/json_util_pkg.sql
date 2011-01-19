@@ -1,4 +1,4 @@
-set define off
+set define off;
 create or replace package json_util_pkg authid current_user as
 
   /*
@@ -12,6 +12,7 @@ create or replace package json_util_pkg authid current_user as
   ------  ----------  -------------------------------------
   MBR     30.01.2010  Created
   JKR     01.05.2010  Edited to fit in PL/JSON
+  JKR     19.01.2011  Newest stylesheet + bugfix handling
   
   */
 
@@ -69,10 +70,10 @@ begin
   */
 
 
-  return '<?xml version="1.0" encoding="UTF-8"?>
+  return q'^<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <!--
-  Copyright (c) 2006, Doeke Zanstra
+  Copyright (c) 2006,2008 Doeke Zanstra
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification, 
@@ -83,10 +84,6 @@ begin
   form must reproduce the above copyright notice, this list of conditions and the 
   following disclaimer in the documentation and/or other materials provided with 
   the distribution.
-
-  Neither the name of the dzLib nor the names of its contributors may be used to 
-  endorse or promote products derived from this software without specific prior 
-  written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
@@ -101,7 +98,7 @@ begin
 -->
 
   <xsl:output indent="no" omit-xml-declaration="yes" method="text" encoding="UTF-8" media-type="text/x-json"/>
-  <xsl:strip-space elements="*"/>
+        <xsl:strip-space elements="*"/>
   <!--contant-->
   <xsl:variable name="d">0123456789</xsl:variable>
 
@@ -130,12 +127,12 @@ begin
   <xsl:template name="escape-bs-string">
     <xsl:param name="s"/>
     <xsl:choose>
-      <xsl:when test="contains($s,''\'')">
+      <xsl:when test="contains($s,'\')">
         <xsl:call-template name="escape-quot-string">
-          <xsl:with-param name="s" select="concat(substring-before($s,''\''),''\\'')"/>
+          <xsl:with-param name="s" select="concat(substring-before($s,'\'),'\\')"/>
         </xsl:call-template>
         <xsl:call-template name="escape-bs-string">
-          <xsl:with-param name="s" select="substring-after($s,''\'')"/>
+          <xsl:with-param name="s" select="substring-after($s,'\')"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
@@ -150,12 +147,12 @@ begin
   <xsl:template name="escape-quot-string">
     <xsl:param name="s"/>
     <xsl:choose>
-      <xsl:when test="contains($s,''&quot;'')">
+      <xsl:when test="contains($s,'&quot;')">
         <xsl:call-template name="encode-string">
-          <xsl:with-param name="s" select="concat(substring-before($s,''&quot;''),''\&quot;'')"/>
+          <xsl:with-param name="s" select="concat(substring-before($s,'&quot;'),'\&quot;')"/>
         </xsl:call-template>
         <xsl:call-template name="escape-quot-string">
-          <xsl:with-param name="s" select="substring-after($s,''&quot;'')"/>
+          <xsl:with-param name="s" select="substring-after($s,'&quot;')"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
@@ -166,53 +163,48 @@ begin
     </xsl:choose>
   </xsl:template>
   
-  <!-- Replace tab, line feed and/or carriage return by its matching escape code. Can''t escape backslash
-       or double quote here, because they don''t replace characters (&#x0; becomes \t), but they prefix 
+  <!-- Replace tab, line feed and/or carriage return by its matching escape code. Can't escape backslash
+       or double quote here, because they don't replace characters (&#x0; becomes \t), but they prefix 
        characters (\ becomes \\). Besides, backslash should be seperate anyway, because it should be 
-       processed first. This function can''t do that. -->
+       processed first. This function can't do that. -->
   <xsl:template name="encode-string">
     <xsl:param name="s"/>
     <xsl:choose>
       <!-- tab -->
-      <xsl:when test="contains($s,''&#x9;'')">
+      <xsl:when test="contains($s,'&#x9;')">
         <xsl:call-template name="encode-string">
-          <xsl:with-param name="s" select="concat(substring-before($s,''&#x9;''),''\t'',substring-after($s,''&#x9;''))"/>
+          <xsl:with-param name="s" select="concat(substring-before($s,'&#x9;'),'\t',substring-after($s,'&#x9;'))"/>
         </xsl:call-template>
       </xsl:when>
       <!-- line feed -->
-      <xsl:when test="contains($s,''&#xA;'')">
+      <xsl:when test="contains($s,'&#xA;')">
         <xsl:call-template name="encode-string">
-          <xsl:with-param name="s" select="concat(substring-before($s,''&#xA;''),''\n'',substring-after($s,''&#xA;''))"/>
+          <xsl:with-param name="s" select="concat(substring-before($s,'&#xA;'),'\n',substring-after($s,'&#xA;'))"/>
         </xsl:call-template>
       </xsl:when>
       <!-- carriage return -->
-      <xsl:when test="contains($s,''&#xD;'')">
+      <xsl:when test="contains($s,'&#xD;')">
         <xsl:call-template name="encode-string">
-          <xsl:with-param name="s" select="concat(substring-before($s,''&#xD;''),''\r'',substring-after($s,''&#xD;''))"/>
+          <xsl:with-param name="s" select="concat(substring-before($s,'&#xD;'),'\r',substring-after($s,'&#xD;'))"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise><xsl:value-of select="$s"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
-  <!-- number (no support for javascript mantise) -->
-  <xsl:template match="text()[not(string(number())=''NaN'')]">
+  <!-- number (no support for javascript mantissa) -->
+  <xsl:template match="text()[not(string(number())='NaN' or
+                      (starts-with(.,'0' ) and . != '0' and
+not(starts-with(.,'0.' ))) or
+                      (starts-with(.,'-0' ) and . != '-0' and
+not(starts-with(.,'-0.' )))
+                      )]">
     <xsl:value-of select="."/>
   </xsl:template>
 
   <!-- boolean, case-insensitive -->
-  <xsl:template match="text()[translate(.,''TRUE'',''true'')=''true'']">true</xsl:template>
-  <xsl:template match="text()[translate(.,''FALSE'',''false'')=''false'']">false</xsl:template>
-
-  <!-- item:null -->
-  <xsl:template match="*[count(child::node())=0]">
-    <xsl:call-template name="escape-string">
-      <xsl:with-param name="s" select="local-name()"/>
-    </xsl:call-template>
-    <xsl:text>:null</xsl:text>
-    <xsl:if test="following-sibling::*">,</xsl:if>
-    <xsl:if test="not(following-sibling::*)">}</xsl:if> <!-- MBR 30.01.2010: added this line as it appeared to be missing from stylesheet --> 
-  </xsl:template>
+  <xsl:template match="text()[translate(.,'TRUE','true')='true']">true</xsl:template>
+  <xsl:template match="text()[translate(.,'FALSE','false')='false']">false</xsl:template>
 
   <!-- object -->
   <xsl:template match="*" name="base">
@@ -221,7 +213,16 @@ begin
       <xsl:with-param name="s" select="name()"/>
     </xsl:call-template>
     <xsl:text>:</xsl:text>
-    <xsl:apply-templates select="child::node()"/>
+    <!-- check type of node -->
+    <xsl:choose>
+      <!-- null nodes -->
+      <xsl:when test="count(child::node())=0">null</xsl:when>
+      <!-- other nodes -->
+      <xsl:otherwise>
+        <xsl:apply-templates select="child::node()"/>
+      </xsl:otherwise>
+    </xsl:choose>
+    <!-- end of type check -->
     <xsl:if test="following-sibling::*">,</xsl:if>
     <xsl:if test="not(following-sibling::*)">}</xsl:if>
   </xsl:template>
@@ -246,7 +247,7 @@ begin
     <xsl:apply-templates select="node()"/>
   </xsl:template>
     
-</xsl:stylesheet>';
+</xsl:stylesheet>^';
 
 end get_xml_to_json_stylesheet;
 
