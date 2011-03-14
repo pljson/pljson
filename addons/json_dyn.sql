@@ -25,19 +25,54 @@ create or replace package json_dyn authid current_user as
   include_dates          boolean := true;  --date
   
   /* list with objects */
-  function executeList(stmt varchar2) return json_list;
+  function executeList(stmt varchar2, bindvar json default null) return json_list;
   
   /* object with lists */
-  function executeObject(stmt varchar2) return json;
-  
+  function executeObject(stmt varchar2, bindvar json default null) return json;
+
+
+  /* usage example:
+   * declare
+   *   res json_list;
+   * begin
+   *   res := json_dyn.executeList(
+   *            'select :bindme as one, :lala as two from dual where dummy in :arraybind',
+   *            json('{bindme:"4", lala:123, arraybind:[1,2,3,"X"]}')
+   *          );
+   *   res.print;
+   * end;
+   */
+
 end json_dyn;
 /
 
 create or replace
 package body json_dyn as
 
+  procedure bind_json(l_cur number, bindvar json) as
+    keylist json_list := bindvar.get_keys();
+  begin
+    for i in 1 .. keylist.count loop
+      if(bindvar.get(i).get_type = 'number') then
+        dbms_sql.bind_variable(l_cur, ':'||keylist.get_elem(i).get_string, bindvar.get(i).get_number);
+      elsif(bindvar.get(i).get_type = 'array') then
+        declare
+          v_bind dbms_sql.varchar2_table;
+          v_arr  json_list := json_list(bindvar.get(i));
+        begin
+          for j in 1 .. v_arr.count loop
+            v_bind(j) := v_arr.get_elem(j).value_of;
+          end loop;
+          dbms_sql.bind_array(l_cur, ':'||keylist.get_elem(i).get_string, v_bind);
+        end;
+      else
+        dbms_sql.bind_variable(l_cur, ':'||keylist.get_elem(i).get_string, bindvar.get(i).value_of());
+      end if;
+    end loop;
+  end bind_json;
+
   /* list with objects */
-  function executeList(stmt varchar2) return json_list as
+  function executeList(stmt varchar2, bindvar json) return json_list as
     l_cur number;
     l_dtbl dbms_sql.desc_tab;
     l_cnt number;
@@ -50,6 +85,7 @@ package body json_dyn as
   begin
     l_cur := dbms_sql.open_cursor;
     dbms_sql.parse(l_cur, stmt, dbms_sql.native);
+    if(bindvar is not null) then bind_json(l_cur, bindvar); end if;
     dbms_sql.describe_columns(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
       if(l_dtbl(i).col_type = 12) then
@@ -108,7 +144,7 @@ package body json_dyn as
   end executeList;
 
   /* object with lists */
-  function executeObject(stmt varchar2) return json as
+  function executeObject(stmt varchar2, bindvar json) return json as
     l_cur number;
     l_dtbl dbms_sql.desc_tab;
     l_cnt number;
@@ -123,6 +159,7 @@ package body json_dyn as
   begin
     l_cur := dbms_sql.open_cursor;
     dbms_sql.parse(l_cur, stmt, dbms_sql.native);
+    if(bindvar is not null) then bind_json(l_cur, bindvar); end if;
     dbms_sql.describe_columns(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
       if(l_dtbl(i).col_type = 12) then
