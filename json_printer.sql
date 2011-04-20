@@ -128,7 +128,7 @@ package body "JSON_PRINTER" as
 /* Clob method start here */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
-    if(length(str) > 32767 - length(buf_str)) then
+    if(lengthb(str) > 32767 - lengthb(buf_str)) then
       dbms_lob.append(buf_lob, buf_str);
       buf_str := str;
     else
@@ -453,7 +453,7 @@ package body "JSON_PRINTER" as
   procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as 
     prev number := 1;
     indx number := 1;
-    size_of_nl number := length(delim);
+    size_of_nl number := lengthb(delim);
   begin
     if(jsonp is not null) then dbms_output.put_line(jsonp||'('); end if;
     while (indx != 0) loop
