@@ -58,6 +58,9 @@ typedef union {
 	RULETYPE *rule;	/* rule */
 } YYSTYPE;
 
+#define YYSTYPE_IS_DECLARED 1
+#define YYSTYPE_IS_TRIVIAL 0
+
 extern unsigned line;
 extern int copy;
 

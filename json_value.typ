@@ -26,13 +26,13 @@ type json_value as object
   typeval number(1), /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
   str varchar2(4000),
   num number, /* store 1 as true, 0 as false */
-  object_or_array anydata, /* object or array in here */
+  object_or_array sys.anydata, /* object or array in here */
   
   /* mapping */
   mapname varchar2(4000),
   mapindx number(32),  
   
-  constructor function json_value(object_or_array anydata) return self as result,
+  constructor function json_value(object_or_array sys.anydata) return self as result,
   constructor function json_value(str varchar2, esc boolean default true) return self as result,
   constructor function json_value(num number) return self as result,
   constructor function json_value(b boolean) return self as result,
@@ -54,7 +54,7 @@ type json_value as object
   
   /* Output methods */ 
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
-  member procedure to_clob(self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0),
+  member procedure to_clob(self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),
   member procedure print(self in json_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null), --32512 is maximum
   member procedure htp(self in json_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
   

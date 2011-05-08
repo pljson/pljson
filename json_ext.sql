@@ -23,25 +23,25 @@ create or replace package json_ext as
   
   /* This package contains extra methods to lookup types and
      an easy way of adding date values in json - without changing the structure */
-  function parsePath(json_path varchar2) return json_list;
+  function parsePath(json_path varchar2, base number default 1) return json_list;
   
   --JSON Path getters
-  function get_json_value(obj json, v_path varchar2) return json_value;
-  function get_string(obj json, path varchar2) return varchar2;
-  function get_number(obj json, path varchar2) return number;
-  function get_json(obj json, path varchar2) return json;
-  function get_json_list(obj json, path varchar2) return json_list;
-  function get_bool(obj json, path varchar2) return boolean;
+  function get_json_value(obj json, v_path varchar2, base number default 1) return json_value;
+  function get_string(obj json, path varchar2,       base number default 1) return varchar2;
+  function get_number(obj json, path varchar2,       base number default 1) return number;
+  function get_json(obj json, path varchar2,         base number default 1) return json;
+  function get_json_list(obj json, path varchar2,    base number default 1) return json_list;
+  function get_bool(obj json, path varchar2,         base number default 1) return boolean;
 
   --JSON Path putters
-  procedure put(obj in out nocopy json, path varchar2, elem varchar2);
-  procedure put(obj in out nocopy json, path varchar2, elem number);
-  procedure put(obj in out nocopy json, path varchar2, elem json);
-  procedure put(obj in out nocopy json, path varchar2, elem json_list);
-  procedure put(obj in out nocopy json, path varchar2, elem boolean);
-  procedure put(obj in out nocopy json, path varchar2, elem json_value);
+  procedure put(obj in out nocopy json, path varchar2, elem varchar2,   base number default 1);
+  procedure put(obj in out nocopy json, path varchar2, elem number,     base number default 1);
+  procedure put(obj in out nocopy json, path varchar2, elem json,       base number default 1);
+  procedure put(obj in out nocopy json, path varchar2, elem json_list,  base number default 1);
+  procedure put(obj in out nocopy json, path varchar2, elem boolean,    base number default 1);
+  procedure put(obj in out nocopy json, path varchar2, elem json_value, base number default 1);
 
-  procedure remove(obj in out nocopy json, path varchar2);
+  procedure remove(obj in out nocopy json, path varchar2, base number default 1);
   
   --Pretty print with JSON Path - obsolete in 0.9.4 - obj.path(v_path).(to_char,print,htp)
   function pp(obj json, v_path varchar2) return varchar2; 
@@ -60,8 +60,8 @@ create or replace package json_ext as
   --(json_ext.to_date will not work along with the normal to_date function - any fix will be appreciated)
   function to_date2(v json_value) return date;
   --JSON Path with date
-  function get_date(obj json, path varchar2) return date;
-  procedure put(obj in out nocopy json, path varchar2, elem date);
+  function get_date(obj json, path varchar2, base number default 1) return date;
+  procedure put(obj in out nocopy json, path varchar2, elem date, base number default 1);
   
   --experimental support of binary data with base64
   function base64(binarydata blob) return json_list;
@@ -120,11 +120,12 @@ create or replace package body json_ext as
   end;
   
   --Json Path parser
-  function parsePath(json_path varchar2) return json_list as
+  function parsePath(json_path varchar2, base number default 1) return json_list as
     build_path varchar2(32767) := '[';
     buf varchar2(4);
     endstring varchar2(1);
     indx number := 1;
+    ret json_list;
     
     procedure next_char as
     begin
@@ -159,7 +160,7 @@ create or replace package body json_ext as
         next_char();
         skipws();
         if(buf is null) then raise_application_error(-20110, 'JSON Path parse error: [ is not a valid json_path end'); end if;
-        if(buf in ('1','2','3','4','5','6','7','8','9')) then
+        if(buf in ('1','2','3','4','5','6','7','8','9') or buf = base) then
           if(build_path != '[') then build_path := build_path || ','; end if;
           while(buf in ('0','1','2','3','4','5','6','7','8','9')) loop
             build_path := build_path || buf;
@@ -209,16 +210,32 @@ create or replace package body json_ext as
   
     build_path := build_path || ']';
     build_path := replace(replace(replace(replace(replace(build_path, chr(9), '\t'), chr(10), '\n'), chr(13), '\f'), chr(8), '\b'), chr(14), '\r');
-    return json_list(build_path);
+    
+    ret := json_list(build_path);
+    if(base != 1) then
+      --fix base 0 to base 1
+      declare
+        elem json_value;
+      begin
+        for i in 1 .. ret.count loop
+          elem := ret.get_elem(i);
+          if(elem.is_number) then
+            ret.set_elem(i,elem.get_number()+1);
+          end if;
+        end loop;
+      end;
+    end if;
+    
+    return ret;
   end parsePath;
     
   --JSON Path getters
-  function get_json_value(obj json, v_path varchar2) return json_value as 
+  function get_json_value(obj json, v_path varchar2, base number default 1) return json_value as 
     path json_list;
     ret json_value; 
     o json; l json_list;
   begin
-    path := parsePath(v_path);
+    path := parsePath(v_path, base);
     ret := obj.to_json_value;
     if(path.count = 0) then return ret; end if;
     
@@ -249,10 +266,10 @@ create or replace package body json_ext as
   end get_json_value;
   
   --JSON Path getters
-  function get_string(obj json, path varchar2) return varchar2 as 
+  function get_string(obj json, path varchar2, base number default 1) return varchar2 as 
     temp json_value;
   begin 
-    temp := get_json_value(obj, path);
+    temp := get_json_value(obj, path, base);
     if(temp is null or not temp.is_string) then 
       return null; 
     else 
@@ -260,10 +277,10 @@ create or replace package body json_ext as
     end if;
   end;
   
-  function get_number(obj json, path varchar2) return number as 
+  function get_number(obj json, path varchar2, base number default 1) return number as 
     temp json_value;
   begin 
-    temp := get_json_value(obj, path);
+    temp := get_json_value(obj, path, base);
     if(temp is null or not temp.is_number) then 
       return null; 
     else 
@@ -271,10 +288,10 @@ create or replace package body json_ext as
     end if;
   end;
   
-  function get_json(obj json, path varchar2) return json as 
+  function get_json(obj json, path varchar2, base number default 1) return json as 
     temp json_value;
   begin 
-    temp := get_json_value(obj, path);
+    temp := get_json_value(obj, path, base);
     if(temp is null or not temp.is_object) then 
       return null; 
     else 
@@ -282,10 +299,10 @@ create or replace package body json_ext as
     end if;
   end;
   
-  function get_json_list(obj json, path varchar2) return json_list as 
+  function get_json_list(obj json, path varchar2, base number default 1) return json_list as 
     temp json_value;
   begin 
-    temp := get_json_value(obj, path);
+    temp := get_json_value(obj, path, base);
     if(temp is null or not temp.is_array) then 
       return null; 
     else 
@@ -293,10 +310,10 @@ create or replace package body json_ext as
     end if;
   end;
   
-  function get_bool(obj json, path varchar2) return boolean as 
+  function get_bool(obj json, path varchar2, base number default 1) return boolean as 
     temp json_value;
   begin 
-    temp := get_json_value(obj, path);
+    temp := get_json_value(obj, path, base);
     if(temp is null or not temp.is_bool) then 
       return null; 
     else 
@@ -304,10 +321,10 @@ create or replace package body json_ext as
     end if;
   end;
   
-  function get_date(obj json, path varchar2) return date as 
+  function get_date(obj json, path varchar2, base number default 1) return date as 
     temp json_value;
   begin 
-    temp := get_json_value(obj, path);
+    temp := get_json_value(obj, path, base);
     if(temp is null or not is_date(temp)) then 
       return null; 
     else 
@@ -316,7 +333,7 @@ create or replace package body json_ext as
   end;
   
   /* JSON Path putter internal function */
-  procedure put_internal(obj in out nocopy json, v_path varchar2, elem json_value) as
+  procedure put_internal(obj in out nocopy json, v_path varchar2, elem json_value, base number) as
     val json_value := elem;
     path json_list;
     backreference json_list := json_list();
@@ -327,7 +344,7 @@ create or replace package body json_ext as
     list_temp json_list;
     inserter json_value;
   begin
-    path := json_ext.parsePath(v_path);
+    path := json_ext.parsePath(v_path, base);
     if(path.count = 0) then raise_application_error(-20110, 'JSON_EXT put error: cannot put with empty string.'); end if;
   
     --build backreference
@@ -454,50 +471,50 @@ create or replace package body json_ext as
   end put_internal;
 
   /* JSON Path putters */  
-  procedure put(obj in out nocopy json, path varchar2, elem varchar2) as
+  procedure put(obj in out nocopy json, path varchar2, elem varchar2, base number default 1) as
   begin 
-    put_internal(obj, path, json_value(elem));
+    put_internal(obj, path, json_value(elem), base);
   end;
   
-  procedure put(obj in out nocopy json, path varchar2, elem number) as
+  procedure put(obj in out nocopy json, path varchar2, elem number, base number default 1) as
   begin 
     if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, json_value(elem));
+    put_internal(obj, path, json_value(elem), base);
   end;
 
-  procedure put(obj in out nocopy json, path varchar2, elem json) as
+  procedure put(obj in out nocopy json, path varchar2, elem json, base number default 1) as
   begin 
     if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, elem.to_json_value);
+    put_internal(obj, path, elem.to_json_value, base);
   end;
 
-  procedure put(obj in out nocopy json, path varchar2, elem json_list) as
+  procedure put(obj in out nocopy json, path varchar2, elem json_list, base number default 1) as
   begin 
     if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, elem.to_json_value);
+    put_internal(obj, path, elem.to_json_value, base);
   end;
 
-  procedure put(obj in out nocopy json, path varchar2, elem boolean) as
+  procedure put(obj in out nocopy json, path varchar2, elem boolean, base number default 1) as
   begin 
     if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, json_value(elem));
+    put_internal(obj, path, json_value(elem), base);
   end;
 
-  procedure put(obj in out nocopy json, path varchar2, elem json_value) as
+  procedure put(obj in out nocopy json, path varchar2, elem json_value, base number default 1) as
   begin 
     if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, elem);
+    put_internal(obj, path, elem, base);
   end;
 
-  procedure put(obj in out nocopy json, path varchar2, elem date) as
+  procedure put(obj in out nocopy json, path varchar2, elem date, base number default 1) as
   begin 
     if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, json_ext.to_json_value(elem));
+    put_internal(obj, path, json_ext.to_json_value(elem), base);
   end;
 
-  procedure remove(obj in out nocopy json, path varchar2) as
+  procedure remove(obj in out nocopy json, path varchar2, base number default 1) as
   begin
-    json_ext.put_internal(obj,path,null);
+    json_ext.put_internal(obj,path,null,base);
 --    if(json_ext.get_json_value(obj,path) is not null) then
 --    end if;
   end remove;
@@ -605,7 +622,7 @@ create or replace package body json_ext as
   
     v_blob_offset NUMBER := 1;
     v_clob_offset NUMBER := 1;
-    v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
+    v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
     v_warning NUMBER;
     v_amount PLS_INTEGER;
 
@@ -644,13 +661,13 @@ create or replace package body json_ext as
   begin
     dbms_lob.createtemporary(c, TRUE);
     for i in 1 .. l.count loop
-      dbms_lob.append(c, l.get_elem(i).to_char(false));
+      dbms_lob.append(c, l.get_elem(i).get_string());
     end loop;
     v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);
     
     dbms_lob.createtemporary(b, TRUE);
-    DBMS_LOB.CONVERTTOBLOB(b, c, v_amount, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
+    DBMS_LOB.CONVERTTOBLOB(b, c, dbms_lob.lobmaxsize, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
     dbms_lob.freetemporary(c);
     v_amount := DBMS_LOB.GETLENGTH(b);
 --    dbms_output.put_line('L B'||v_amount);

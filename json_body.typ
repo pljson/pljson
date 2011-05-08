@@ -278,12 +278,12 @@ create or replace type body json as
     end if;
   end;
 
-  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0) as
+  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) as
   begin
     if(spaces is null) then	
-      json_printer.pretty_print(self, false, buf, line_length => chars_per_line);
+      json_printer.pretty_print(self, false, buf, line_length => chars_per_line, erase_clob => erase_clob);
     else 
-      json_printer.pretty_print(self, spaces, buf, line_length => chars_per_line);
+      json_printer.pretty_print(self, spaces, buf, line_length => chars_per_line, erase_clob => erase_clob);
     end if;
   end;
 
@@ -309,61 +309,66 @@ create or replace type body json as
 
   member function to_json_value return json_value as
   begin
-    return json_value(anydata.convertobject(self));
+    return json_value(sys.anydata.convertobject(self));
   end;
 
   /* json path */
-  member function path(json_path varchar2) return json_value as
+  member function path(json_path varchar2, base number default 1) return json_value as
   begin
-    return json_ext.get_json_value(self, json_path);
+    return json_ext.get_json_value(self, json_path, base);
   end path;
 
   /* json path_put */
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_value) as
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_value, base number default 1) as
   begin
-    json_ext.put(self, json_path, elem);
+    json_ext.put(self, json_path, elem, base);
   end path_put;
   
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem varchar2) as
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem varchar2, base number default 1) as
   begin
-    json_ext.put(self, json_path, elem);
+    json_ext.put(self, json_path, elem, base);
   end path_put;
   
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem number) as
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem number, base number default 1) as
   begin
     if(elem is null) then 
-      json_ext.put(self, json_path, json_value());
+      json_ext.put(self, json_path, json_value(), base);
     else 
-      json_ext.put(self, json_path, elem);
+      json_ext.put(self, json_path, elem, base);
     end if;
   end path_put;
 
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem boolean) as
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem boolean, base number default 1) as
   begin
     if(elem is null) then 
-      json_ext.put(self, json_path, json_value());
+      json_ext.put(self, json_path, json_value(), base);
     else 
-      json_ext.put(self, json_path, elem);
+      json_ext.put(self, json_path, elem, base);
     end if;
   end path_put;
 
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_list) as
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_list, base number default 1) as
   begin
     if(elem is null) then 
-      json_ext.put(self, json_path, json_value());
+      json_ext.put(self, json_path, json_value(), base);
     else 
-      json_ext.put(self, json_path, elem);
+      json_ext.put(self, json_path, elem, base);
     end if;
   end path_put;
 
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem json) as
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json, base number default 1) as
   begin
     if(elem is null) then 
-      json_ext.put(self, json_path, json_value());
+      json_ext.put(self, json_path, json_value(), base);
     else 
-      json_ext.put(self, json_path, elem);
+      json_ext.put(self, json_path, elem, base);
     end if;
   end path_put;
+  
+  member procedure path_remove(self in out nocopy json, json_path varchar2, base number default 1) as
+  begin 
+    json_ext.remove(self, json_path, base);
+  end path_remove;
 
   /* Thanks to Matt Nolan */
   member function get_keys return json_list as

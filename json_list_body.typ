@@ -217,12 +217,12 @@ create or replace type body json_list as
     end if;
   end;
 
-  member procedure to_clob(self in json_list, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0) as
+  member procedure to_clob(self in json_list, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) as
   begin
     if(spaces is null) then	
-      json_printer.pretty_print_list(self, false, buf, line_length => chars_per_line);
+      json_printer.pretty_print_list(self, false, buf, line_length => chars_per_line, erase_clob => erase_clob);
     else 
-      json_printer.pretty_print_list(self, spaces, buf, line_length => chars_per_line);
+      json_printer.pretty_print_list(self, spaces, buf, line_length => chars_per_line, erase_clob => erase_clob);
     end if;
   end;
 
@@ -247,64 +247,104 @@ create or replace type body json_list as
   end;
 
   /* json path */
-  member function path(json_path varchar2) return json_value as
+  member function path(json_path varchar2, base number default 1) return json_value as
     cp json_list := self;
   begin
-    return json_ext.get_json_value(json(cp), json_path);
+    return json_ext.get_json_value(json(cp), json_path, base);
   end path;
 
 
   /* json path_put */
-  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_value) as
-    objlist json := json(self);
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_value, base number default 1) as
+    objlist json;
+    jp json_list := json_ext.parsePath(json_path, base); 
   begin
-    json_ext.put(objlist, json_path, elem);
+    while(jp.get_elem(1).get_number() > self.count) loop
+      self.add_elem(json_value());
+    end loop;
+    
+    objlist := json(self);
+    json_ext.put(objlist, json_path, elem, base);
     self := objlist.get_values;
   end path_put;
   
-  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem varchar2) as
-    objlist json := json(self);
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem varchar2, base number default 1) as
+    objlist json;
+    jp json_list := json_ext.parsePath(json_path, base); 
   begin
-    json_ext.put(objlist, json_path, elem);
+    while(jp.get_elem(1).get_number() > self.count) loop
+      self.add_elem(json_value());
+    end loop;
+    
+    objlist := json(self);
+    json_ext.put(objlist, json_path, elem, base);
     self := objlist.get_values;
   end path_put;
   
-  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem number) as
-    objlist json := json(self);
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem number, base number default 1) as
+    objlist json;
+    jp json_list := json_ext.parsePath(json_path, base); 
   begin
+    while(jp.get_elem(1).get_number() > self.count) loop
+      self.add_elem(json_value());
+    end loop;
+    
+    objlist := json(self);
+  
     if(elem is null) then 
-      json_ext.put(objlist, json_path, json_value);
+      json_ext.put(objlist, json_path, json_value, base);
     else 
-      json_ext.put(objlist, json_path, elem);
+      json_ext.put(objlist, json_path, elem, base);
     end if;
     self := objlist.get_values;
   end path_put;
 
-  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem boolean) as
-    objlist json := json(self);
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem boolean, base number default 1) as
+    objlist json;
+    jp json_list := json_ext.parsePath(json_path, base); 
   begin
+    while(jp.get_elem(1).get_number() > self.count) loop
+      self.add_elem(json_value());
+    end loop;
+    
+    objlist := json(self);
     if(elem is null) then 
-      json_ext.put(objlist, json_path, json_value);
+      json_ext.put(objlist, json_path, json_value, base);
     else 
-      json_ext.put(objlist, json_path, elem);
+      json_ext.put(objlist, json_path, elem, base);
     end if;
     self := objlist.get_values;
   end path_put;
 
-  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_list) as
-    objlist json := json(self);
+  member procedure path_put(self in out nocopy json_list, json_path varchar2, elem json_list, base number default 1) as
+    objlist json;
+    jp json_list := json_ext.parsePath(json_path, base); 
   begin
+    while(jp.get_elem(1).get_number() > self.count) loop
+      self.add_elem(json_value());
+    end loop;
+    
+    objlist := json(self);
     if(elem is null) then 
-      json_ext.put(objlist, json_path, json_value);
+      json_ext.put(objlist, json_path, json_value, base);
     else 
-      json_ext.put(objlist, json_path, elem);
+      json_ext.put(objlist, json_path, elem, base);
     end if;
     self := objlist.get_values;
   end path_put;
   
+  /* json path_remove */
+  member procedure path_remove(self in out nocopy json_list, json_path varchar2, base number default 1) as
+    objlist json := json(self);
+  begin
+    json_ext.remove(objlist, json_path, base);
+    self := objlist.get_values;
+  end path_remove;
+  
+
   member function to_json_value return json_value as
   begin
-    return json_value(anydata.convertobject(self));
+    return json_value(sys.anydata.convertobject(self));
   end;
  
 end;

@@ -30,9 +30,9 @@ create or replace package json_printer as
   function pretty_print(obj json, spaces boolean default true, line_length number default 0) return varchar2;
   function pretty_print_list(obj json_list, spaces boolean default true, line_length number default 0) return varchar2;
   function pretty_print_any(json_part json_value, spaces boolean default true, line_length number default 0) return varchar2;
-  procedure pretty_print(obj json, spaces boolean default true, buf in out nocopy clob, line_length number default 0);
-  procedure pretty_print_list(obj json_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0);
-  procedure pretty_print_any(json_part json_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0);
+  procedure pretty_print(obj json, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
+  procedure pretty_print_list(obj json_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
+  procedure pretty_print_any(json_part json_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
   
   procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null);
   procedure htp_output_clob(my_clob clob, jsonp varchar2 default null);
@@ -129,7 +129,8 @@ package body "JSON_PRINTER" as
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
     if(lengthb(str) > 32767 - lengthb(buf_str)) then
-      dbms_lob.append(buf_lob, buf_str);
+--      dbms_lob.append(buf_lob, buf_str);
+      dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
       buf_str := str;
     else
       buf_str := buf_str || str;
@@ -138,7 +139,8 @@ package body "JSON_PRINTER" as
 
   procedure flush_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2) as
   begin
-    dbms_lob.append(buf_lob, buf_str);
+--    dbms_lob.append(buf_lob, buf_str);
+    dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
   end flush_clob;
 
   procedure ppObj(obj json, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2);
@@ -241,18 +243,24 @@ package body "JSON_PRINTER" as
     add_to_clob(buf, buf_str, llcheck(tab(indent, spaces)) || llcheck('}')); -- || chr(13);
   end ppObj;
   
-  procedure pretty_print(obj json, spaces boolean default true, buf in out nocopy clob, line_length number default 0) as 
+  procedure pretty_print(obj json, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as 
     buf_str varchar2(32767);
+    amount number := dbms_lob.getlength(buf);
   begin
+    if(erase_clob and amount > 0) then dbms_lob.erase(buf, amount); end if;
+    
     max_line_len := line_length;
     cur_line_len := 0;
     ppObj(obj, 0, buf, spaces, buf_str);  
     flush_clob(buf, buf_str);
   end;
 
-  procedure pretty_print_list(obj json_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0) as 
+  procedure pretty_print_list(obj json_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as 
     buf_str varchar2(32767);
+    amount number := dbms_lob.getlength(buf);
   begin
+    if(erase_clob and amount > 0) then dbms_lob.erase(buf, amount); end if;
+    
     max_line_len := line_length;
     cur_line_len := 0;
     add_to_clob(buf, buf_str, llcheck('['));
@@ -261,10 +269,13 @@ package body "JSON_PRINTER" as
     flush_clob(buf, buf_str);
   end;
 
-  procedure pretty_print_any(json_part json_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0) as
+  procedure pretty_print_any(json_part json_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as
     buf_str varchar2(32767) := '';
     numbuf varchar2(4000);
+    amount number := dbms_lob.getlength(buf);
   begin
+    if(erase_clob and amount > 0) then dbms_lob.erase(buf, amount); end if;
+    
     case json_part.get_type
       when 'number' then 
         if (json_part.get_number < 1 and json_part.get_number > 0) then numbuf := '0'; end if;

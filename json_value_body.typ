@@ -2,7 +2,7 @@
 create or replace
 type body json_value as
 
-  constructor function json_value(object_or_array anydata) return self as result as
+  constructor function json_value(object_or_array sys.anydata) return self as result as
   begin
     case object_or_array.gettypename
       when sys_context('userenv', 'current_schema')||'.JSON_LIST' then self.typeval := 2;
@@ -114,12 +114,12 @@ type body json_value as
     end if;
   end;
 
-  member procedure to_clob(self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0) as
+  member procedure to_clob(self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) as
   begin
     if(spaces is null) then	
-      json_printer.pretty_print_any(self, false, buf, line_length => chars_per_line);
+      json_printer.pretty_print_any(self, false, buf, line_length => chars_per_line, erase_clob => erase_clob);
     else 
-      json_printer.pretty_print_any(self, spaces, buf, line_length => chars_per_line);
+      json_printer.pretty_print_any(self, spaces, buf, line_length => chars_per_line, erase_clob => erase_clob);
     end if;
   end;
 
