@@ -26,7 +26,7 @@ This software has been released under the MIT license:
 set serveroutput on;
 declare 
   obj json_list;
-  binarydata blob := utl_raw.cast_to_raw('Hello World!');
+  binarydata blob := utl_raw.cast_to_raw('ABC');
   getback blob;
 begin
   obj := json_ext.base64(binarydata);

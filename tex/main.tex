@@ -52,7 +52,7 @@
 \footskip 0.8in
 
 
-\title{PL/JSON Reference Guide (version 0.9.5)}
+\title{PL/JSON Reference Guide (version 0.9.6)}
 \subtitle{For Oracle 10g and 11g}
 \author{Jonas Krogsbøll}
 \date{}
@@ -157,6 +157,7 @@ jsonpath : ((alphanum | 'space')*) \\(( '.' ((alphanum | 'space')+) | '[' ('ws')
 string   : (dquote ((unia|esc)*) dquote) | (quote ((unib|esc)*) quote);
 integer  : pdigits (() + digits);
 \end{rail}
+From version 0.9.6 the implementation accepts an extended grammar where you use a zero-indexed JSON Path.\\
 The following examples show how you can use JSON Path to extract from a JSON object.\\\\
 The JSON Object:
 \begin{verbatim}

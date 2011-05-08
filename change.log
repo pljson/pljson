@@ -19,6 +19,15 @@ This software has been released under the MIT license:
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
+      Version: 0.9.6
+        Json_dyn addon can now bind variables
+        Fixed decode base64 error in json_ext
+        Option to erase clob in to_clob methods
+        Better UTF8 support
+        Added base 0 or 1 option in json path implementation 
+        Path_remove added to json and json_list
+        Path_put error in json_list fixed
+        Changed anydata to sys.anydata
       Version: 0.9.5
         Bug fix: In addon json_util_pkg - fixed number issue, new stylesheet added.
         Added a script to create synonyms and grants.

@@ -54,21 +54,24 @@ create or replace type json as object (
 
   /* Output methods */ 
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
-  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0),
+  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),
   member procedure print(self in json, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null), --32512 is maximum
   member procedure htp(self in json, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
   
   member function to_json_value return json_value,
   /* json path */
-  member function path(json_path varchar2) return json_value,
+  member function path(json_path varchar2, base number default 1) return json_value,
 
   /* json path_put */
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_value),
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem varchar2),
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem number),
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem boolean),
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_list),
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem json),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_value, base number default 1),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem varchar2  , base number default 1),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem number    , base number default 1),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem boolean   , base number default 1),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_list , base number default 1),
+  member procedure path_put(self in out nocopy json, json_path varchar2, elem json      , base number default 1),
+
+  /* json path_remove */
+  member procedure path_remove(self in out nocopy json, json_path varchar2, base number default 1),
 
   /* map functions */
   member function get_values return json_list,
