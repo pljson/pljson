@@ -194,9 +194,9 @@ create or replace type body json as
     end if;
   end;
   
-  member procedure check_duplicate(self in out nocopy json, set boolean) as
+  member procedure check_duplicate(self in out nocopy json, v_set boolean) as
   begin
-    if(set) then 
+    if(v_set) then 
       check_for_duplicate := 1;
     else 
       check_for_duplicate := 0;
