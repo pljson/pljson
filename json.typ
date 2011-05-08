@@ -38,7 +38,7 @@ create or replace type json as object (
   member procedure put(self in out nocopy json, pair_name varchar2, pair_value varchar2, position pls_integer default null),
   member procedure put(self in out nocopy json, pair_name varchar2, pair_value number, position pls_integer default null),
   member procedure put(self in out nocopy json, pair_name varchar2, pair_value boolean, position pls_integer default null),
-  member procedure check_duplicate(self in out nocopy json, set boolean),
+  member procedure check_duplicate(self in out nocopy json, v_set boolean),
   member procedure remove_duplicates(self in out nocopy json),
 
   /* deprecated putter use json_value */
