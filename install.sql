@@ -38,7 +38,7 @@ PROMPT -----------------------------------;
 
 PROMPT ------------------------------------------;
 PROMPT -- Adding optional packages for PL/JSON --;
-PROMPT -------------------------------------------;
+PROMPT ------------------------------------------;
 --@@addons/json_dyn.sql --dynamic sql execute 
 --@@addons/jsonml.sql --jsonml (xml to json)
 --@@addons/json_xml.sql --json to xml copied from http://www.json.org/java/org/json/XML.java

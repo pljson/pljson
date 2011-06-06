@@ -89,7 +89,7 @@ package body json_xml as
       v_keys := v_obj.get_keys();
       for i in 1 .. v_keys.count loop
         v_value := v_obj.get(i);
-        key_str := v_keys.get_elem(i).str;
+        key_str := v_keys.get(i).str;
         
         if(key_str = 'content') then
           if(v_value.is_array()) then
@@ -98,7 +98,7 @@ package body json_xml as
             begin
               for j in 1 .. v_l.count loop
                 if(j > 1) then add_to_clob(xmlstr, xmlbuf, chr(13)||chr(10)); end if;
-                add_to_clob(xmlstr, xmlbuf, escapeStr(v_l.get_elem(j).to_char()));
+                add_to_clob(xmlstr, xmlbuf, escapeStr(v_l.get(j).to_char()));
               end loop;
             end;
           else 
@@ -109,7 +109,7 @@ package body json_xml as
             v_l json_list := json_list(v_value);
           begin
             for j in 1 .. v_l.count loop
-              v_value := v_l.get_elem(j);
+              v_value := v_l.get(j);
               if(v_value.is_array()) then 
                 add_to_clob(xmlstr, xmlbuf, '<' || key_str || '>');
                 add_to_clob(xmlstr, xmlbuf, escapeStr(v_value.to_char()));
@@ -130,7 +130,7 @@ package body json_xml as
     elsif (obj.is_array()) then
       v_list := json_list(obj);
       for i in 1 .. v_list.count loop
-        v_value := v_list.get_elem(i);
+        v_value := v_list.get(i);
         toString(v_value, nvl(tagname, 'array'), xmlstr, xmlbuf);   
       end loop;
     else 

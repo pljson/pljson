@@ -49,7 +49,7 @@ begin
   -- like this:
   tempobj := json(obj.get('c'));
   temparray := json_list(tempobj.get('d'));
-  tempobj := json(temparray.get_last);
+  tempobj := json(temparray.last);
   dbms_output.put_line('Got the right inner json?');
   tempobj.print;
   dbms_output.put_line('Yes - now change the value');

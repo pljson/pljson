@@ -35,7 +35,7 @@ begin
   l_obj := j_obj.get_values;
   l_obj.print;
   
-  l_obj.add_elem(true);
+  l_obj.append(true);
   j_obj := json(l_obj);
   
   j_obj.print;

@@ -160,7 +160,7 @@ create or replace package body json_ext as
         next_char();
         skipws();
         if(buf is null) then raise_application_error(-20110, 'JSON Path parse error: [ is not a valid json_path end'); end if;
-        if(buf in ('1','2','3','4','5','6','7','8','9') or buf = base) then
+        if(buf in ('1','2','3','4','5','6','7','8','9') or (buf = '0' and base = 0)) then
           if(build_path != '[') then build_path := build_path || ','; end if;
           while(buf in ('0','1','2','3','4','5','6','7','8','9')) loop
             build_path := build_path || buf;
@@ -218,9 +218,9 @@ create or replace package body json_ext as
         elem json_value;
       begin
         for i in 1 .. ret.count loop
-          elem := ret.get_elem(i);
+          elem := ret.get(i);
           if(elem.is_number) then
-            ret.set_elem(i,elem.get_number()+1);
+            ret.replace(i,elem.get_number()+1);
           end if;
         end loop;
       end;
@@ -240,19 +240,19 @@ create or replace package body json_ext as
     if(path.count = 0) then return ret; end if;
     
     for i in 1 .. path.count loop
-      if(path.get_elem(i).is_string()) then
+      if(path.get(i).is_string()) then
         --string fetch only on json
         o := json(ret);
-        ret := o.get(path.get_elem(i).get_string());
+        ret := o.get(path.get(i).get_string());
       else
         --number fetch on json and json_list
         if(ret.is_array()) then
           l := json_list(ret);
-          ret := l.get_elem(path.get_elem(i).get_number());
+          ret := l.get(path.get(i).get_number());
         else 
           o := json(ret);
           l := o.get_values();
-          ret := l.get_elem(path.get_elem(i).get_number());
+          ret := l.get(path.get(i).get_number());
         end if;
       end if;
     end loop;
@@ -350,7 +350,7 @@ create or replace package body json_ext as
     --build backreference
     for i in 1 .. path.count loop
       --backreference.print(false);
-      keyval := path.get_elem(i);
+      keyval := path.get(i);
       if (keyval.is_number()) then
         --nummer index
         keynum := keyval.get_number();
@@ -358,7 +358,7 @@ create or replace package body json_ext as
           if(val is null) then return; end if;
           backreference.remove_last;
           temp := json_list().to_json_value();
-          backreference.add_elem(temp);
+          backreference.append(temp);
         end if;
   
         if(temp.is_object()) then 
@@ -374,13 +374,13 @@ create or replace package body json_ext as
             if(val is null) then return; end if;
             --raise error or quit if val is null
             for i in list_temp.count+1 .. keynum loop
-              list_temp.add_elem(json_value.makenull);
+              list_temp.append(json_value.makenull);
             end loop;
             backreference.remove_last;
-            backreference.add_elem(list_temp);
+            backreference.append(list_temp);
           end if;
   
-          temp := list_temp.get_elem(keynum);
+          temp := list_temp.get(keynum);
         end if;
       else 
         --streng index
@@ -390,7 +390,7 @@ create or replace package body json_ext as
           if(val is null) then return; end if;
           backreference.remove_last;
           temp := json().to_json_value();
-          backreference.add_elem(temp);
+          backreference.append(temp);
           --raise_application_error(-20110, 'JSON_ext put error: trying to access a non object with a string.'); 
         end if;
         obj_temp := json(temp);
@@ -400,14 +400,14 @@ create or replace package body json_ext as
       if(temp is null) then 
         if(val is null) then return; end if;
         --what to expect?
-        keyval := path.get_elem(i+1);
+        keyval := path.get(i+1);
         if(keyval is not null and keyval.is_number()) then
           temp := json_list().to_json_value; 
         else 
           temp := json().to_json_value; 
         end if;
       end if;
-      backreference.add_elem(temp);
+      backreference.append(temp);
     end loop;
       
   --  backreference.print(false);
@@ -418,7 +418,7 @@ create or replace package body json_ext as
     for i in reverse 1 .. backreference.count loop
   --    inserter.print(false);
       if( i = 1 ) then
-        keyval := path.get_elem(1);
+        keyval := path.get(1);
         if(keyval.is_string()) then
           keystring := keyval.get_string();
         else 
@@ -431,9 +431,9 @@ create or replace package body json_ext as
         end if;
         if(inserter is null) then obj.remove(keystring); else obj.put(keystring, inserter); end if;
       else
-        temp := backreference.get_elem(i-1);
+        temp := backreference.get(i-1);
         if(temp.is_object()) then
-          keyval := path.get_elem(i);
+          keyval := path.get(i);
           obj_temp := json(temp);
           if(keyval.is_string()) then
             keystring := keyval.get_string();
@@ -454,11 +454,11 @@ create or replace package body json_ext as
           end if;
         else 
           --array only number
-          keynum := path.get_elem(i).get_number();
+          keynum := path.get(i).get_number();
           list_temp := json_list(temp);
-          list_temp.remove_elem(keynum);
+          list_temp.remove(keynum);
           if(not inserter is null) then 
-            list_temp.add_elem(inserter, keynum);
+            list_temp.append(inserter, keynum);
             inserter := list_temp.to_json_value; 
           else 
             if(list_temp.count > 0) then inserter := list_temp.to_json_value; end if;
@@ -603,7 +603,7 @@ create or replace package body json_ext as
       --dbms_output.put_line(v_offset);
       --temp := ;
       --dbms_output.put_line('size: '||length(temp));
-      obj.add_elem(dbms_lob.SUBSTR(c, 4000,v_clob_offset));
+      obj.append(dbms_lob.SUBSTR(c, 4000,v_clob_offset));
       v_clob_offset := v_clob_offset + 4000;
     end loop;
     dbms_lob.freetemporary(benc);
@@ -661,7 +661,7 @@ create or replace package body json_ext as
   begin
     dbms_lob.createtemporary(c, TRUE);
     for i in 1 .. l.count loop
-      dbms_lob.append(c, l.get_elem(i).get_string());
+      dbms_lob.append(c, l.get(i).get_string());
     end loop;
     v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);

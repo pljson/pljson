@@ -61,7 +61,7 @@ begin
     if(obj.exist('b')) then
       if(obj.get('b').is_array) then
         temp := json_list(obj.get('b'));
-        tempdata := temp.get_elem(3); --return null on outofbounds
+        tempdata := temp.get(3); --return null on outofbounds
         if(tempdata is not null) then
           if(tempdata.is_number) then
             printme := tempdata.get_number;
@@ -78,7 +78,7 @@ begin
             tempdata := tempobj.get('d');
             if(tempdata.is_array) then
               temp := json_list(tempdata);
-              tempdata := temp.get_elem(3);
+              tempdata := temp.get(3);
               if(tempdata.is_object) then
                 tempobj := json(tempdata);
                 tempdata := tempobj.get('e');
