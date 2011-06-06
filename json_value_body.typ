@@ -23,6 +23,15 @@ type body json_value as
     return;
   end json_value;
 
+  constructor function json_value(str clob, esc boolean default true) return self as result as
+  begin
+    self.typeval := 3;
+    if(esc) then self.num := 1; else self.num := 0; end if; --message to pretty printer
+    object_or_array := sys.anydata.convertclob(str);
+    self.str := substrb(str, 1, 32767);
+    return;
+  end json_value;
+
   constructor function json_value(num number) return self as result as
   begin
     self.typeval := 4;
@@ -65,13 +74,31 @@ type body json_value as
     return 'unknown type';
   end get_type;
 
-  member function get_string return varchar2 as
+  member function get_string(max_byte_size number default null, max_char_size number default null) return varchar2 as
   begin
     if(self.typeval = 3) then 
-      return self.str;
+      if(max_byte_size is not null) then 
+        return substrb(self.str,1,max_byte_size);
+      elsif (max_char_size is not null) then
+        return substr(self.str,1,max_char_size);
+      else
+        return self.str;
+      end if;
     end if;
     return null;
   end get_string;
+  
+  member procedure get_string(buf in out nocopy clob) as
+  begin
+    if(self.typeval = 3) then 
+      if(object_or_array is not null) then
+        dbms_lob.copy(buf, anydata.accessclob(object_or_array), dbms_lob.getlength(anydata.accessclob(object_or_array)));
+      else
+        dbms_lob.writeappend(buf, length(self.str), self.str);      
+      end if;
+    end if;
+  end get_string;
+
 
   member function get_number return number as
   begin
@@ -138,23 +165,22 @@ type body json_value as
   begin
     my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
-    json_printer.pretty_print_any(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
+    json_printer.pretty_print_any(self, spaces, my_clob, chars_per_line);
     json_printer.htp_output_clob(my_clob, jsonp);
     dbms_lob.freetemporary(my_clob);  
   end;
 
-  member function value_of(self in json_value) return varchar2 as
+  member function value_of(self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2 as
   begin
     case self.typeval
     when 1 then return 'json object';
     when 2 then return 'json array';
-    when 3 then return self.get_string();
+    when 3 then return self.get_string(max_byte_size,max_char_size);
     when 4 then return self.get_number();
     when 5 then if(self.get_bool()) then return 'true'; else return 'false'; end if;
     else return null;
     end case;
   end;
-
 
 end;
 /

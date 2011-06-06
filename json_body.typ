@@ -302,7 +302,7 @@ create or replace type body json as
   begin
     my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
-    json_printer.pretty_print(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
+    json_printer.pretty_print(self, spaces, my_clob, chars_per_line);
     json_printer.htp_output_clob(my_clob, jsonp);
     dbms_lob.freetemporary(my_clob);  
   end;
@@ -379,7 +379,7 @@ create or replace type body json as
     indx := json_data.first;
     loop
       exit when indx is null;
-      keys.add_elem(json_data(indx).mapname);
+      keys.append(json_data(indx).mapname);
       indx := json_data.next(indx);
     end loop;
     return keys;

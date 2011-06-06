@@ -48,7 +48,7 @@ create or replace type body json_list as
   end;
 
 
-  member procedure add_elem(self in out nocopy json_list, elem json_value, position pls_integer default null) as
+  member procedure append(self in out nocopy json_list, elem json_value, position pls_integer default null) as
     indx pls_integer;
     insert_value json_value := NVL(elem, json_value);
   begin
@@ -74,39 +74,39 @@ create or replace type body json_list as
 
   end;
 
-  member procedure add_elem(self in out nocopy json_list, elem varchar2, position pls_integer default null) as
+  member procedure append(self in out nocopy json_list, elem varchar2, position pls_integer default null) as
   begin
-    add_elem(json_value(elem), position);
+    append(json_value(elem), position);
   end;
   
-  member procedure add_elem(self in out nocopy json_list, elem number, position pls_integer default null) as
+  member procedure append(self in out nocopy json_list, elem number, position pls_integer default null) as
   begin
     if(elem is null) then
-      add_elem(json_value(), position);
+      append(json_value(), position);
     else
-      add_elem(json_value(elem), position);
+      append(json_value(elem), position);
     end if;
   end;
   
-  member procedure add_elem(self in out nocopy json_list, elem boolean, position pls_integer default null) as
+  member procedure append(self in out nocopy json_list, elem boolean, position pls_integer default null) as
   begin
     if(elem is null) then
-      add_elem(json_value(), position);
+      append(json_value(), position);
     else
-      add_elem(json_value(elem), position);
+      append(json_value(elem), position);
     end if;
   end;
 
-  member procedure add_elem(self in out nocopy json_list, elem json_list, position pls_integer default null) as
+  member procedure append(self in out nocopy json_list, elem json_list, position pls_integer default null) as
   begin
     if(elem is null) then
-      add_elem(json_value(), position);
+      append(json_value(), position);
     else
-      add_elem(elem.to_json_value, position);
+      append(elem.to_json_value, position);
     end if;
   end;
   
- member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_value) as
+ member procedure replace(self in out nocopy json_list, position pls_integer, elem json_value) as
     insert_value json_value := NVL(elem, json_value);
     indx number;
   begin
@@ -121,35 +121,35 @@ create or replace type body json_list as
     end if;
   end;
   
-  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem varchar2) as
+  member procedure replace(self in out nocopy json_list, position pls_integer, elem varchar2) as
   begin
-    set_elem(position, json_value(elem));
+    replace(position, json_value(elem));
   end;
   
-  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem number) as
+  member procedure replace(self in out nocopy json_list, position pls_integer, elem number) as
   begin
     if(elem is null) then
-      set_elem(position, json_value());
+      replace(position, json_value());
     else
-      set_elem(position, json_value(elem));
+      replace(position, json_value(elem));
     end if;
   end;
   
-  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem boolean) as 
+  member procedure replace(self in out nocopy json_list, position pls_integer, elem boolean) as 
   begin
     if(elem is null) then
-      set_elem(position, json_value());
+      replace(position, json_value());
     else
-      set_elem(position, json_value(elem));
+      replace(position, json_value(elem));
     end if;
   end;
   
-  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_list) as 
+  member procedure replace(self in out nocopy json_list, position pls_integer, elem json_list) as 
   begin
     if(elem is null) then
-      set_elem(position, json_value());
+      replace(position, json_value());
     else
-      set_elem(position, elem.to_json_value);
+      replace(position, elem.to_json_value);
     end if;
   end;
 
@@ -158,7 +158,7 @@ create or replace type body json_list as
     return self.list_data.count;
   end;
   
-  member procedure remove_elem(self in out nocopy json_list, position pls_integer) as
+  member procedure remove(self in out nocopy json_list, position pls_integer) as
   begin
     if(position is null or position < 1 or position > self.count) then return; end if;
     for x in (position+1) .. self.count loop
@@ -184,7 +184,7 @@ create or replace type body json_list as
     end if;
   end;
   
-  member function get_elem(position pls_integer) return json_value as
+  member function get(position pls_integer) return json_value as
   begin
     if(self.count >= position and position > 0) then
       return self.list_data(position);
@@ -192,7 +192,7 @@ create or replace type body json_list as
     return null; -- do not throw error, just return null
   end;
   
-  member function get_first return json_value as
+  member function head return json_value as
   begin
     if(self.count > 0) then
       return self.list_data(self.list_data.first);
@@ -200,12 +200,22 @@ create or replace type body json_list as
     return null; -- do not throw error, just return null
   end;
   
-  member function get_last return json_value as
+  member function last return json_value as
   begin
     if(self.count > 0) then
       return self.list_data(self.list_data.last);
     end if;
     return null; -- do not throw error, just return null
+  end;
+  
+  member function tail return json_list as
+    t json_list;
+  begin
+    if(self.count > 0) then
+      t := json_list(self.list_data);
+      t.remove(1);
+      return t;
+    else return json_list(); end if;
   end;
 
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2 as
@@ -241,7 +251,7 @@ create or replace type body json_list as
   begin
     my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
-    json_printer.pretty_print_list(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
+    json_printer.pretty_print_list(self, spaces, my_clob, chars_per_line);
     json_printer.htp_output_clob(my_clob, jsonp);
     dbms_lob.freetemporary(my_clob);  
   end;
@@ -259,8 +269,8 @@ create or replace type body json_list as
     objlist json;
     jp json_list := json_ext.parsePath(json_path, base); 
   begin
-    while(jp.get_elem(1).get_number() > self.count) loop
-      self.add_elem(json_value());
+    while(jp.head().get_number() > self.count) loop
+      self.append(json_value());
     end loop;
     
     objlist := json(self);
@@ -272,8 +282,8 @@ create or replace type body json_list as
     objlist json;
     jp json_list := json_ext.parsePath(json_path, base); 
   begin
-    while(jp.get_elem(1).get_number() > self.count) loop
-      self.add_elem(json_value());
+    while(jp.head().get_number() > self.count) loop
+      self.append(json_value());
     end loop;
     
     objlist := json(self);
@@ -285,8 +295,8 @@ create or replace type body json_list as
     objlist json;
     jp json_list := json_ext.parsePath(json_path, base); 
   begin
-    while(jp.get_elem(1).get_number() > self.count) loop
-      self.add_elem(json_value());
+    while(jp.head().get_number() > self.count) loop
+      self.append(json_value());
     end loop;
     
     objlist := json(self);
@@ -303,8 +313,8 @@ create or replace type body json_list as
     objlist json;
     jp json_list := json_ext.parsePath(json_path, base); 
   begin
-    while(jp.get_elem(1).get_number() > self.count) loop
-      self.add_elem(json_value());
+    while(jp.head().get_number() > self.count) loop
+      self.append(json_value());
     end loop;
     
     objlist := json(self);
@@ -320,8 +330,8 @@ create or replace type body json_list as
     objlist json;
     jp json_list := json_ext.parsePath(json_path, base); 
   begin
-    while(jp.get_elem(1).get_number() > self.count) loop
-      self.add_elem(json_value());
+    while(jp.head().get_number() > self.count) loop
+      self.append(json_value());
     end loop;
     
     objlist := json(self);
@@ -346,6 +356,25 @@ create or replace type body json_list as
   begin
     return json_value(sys.anydata.convertobject(self));
   end;
+
+  /*--backwards compatibility
+  member procedure add_elem(self in out nocopy json_list, elem json_value, position pls_integer default null) as begin append(elem,position); end;
+  member procedure add_elem(self in out nocopy json_list, elem varchar2, position pls_integer default null) as begin append(elem,position); end;
+  member procedure add_elem(self in out nocopy json_list, elem number, position pls_integer default null) as begin append(elem,position); end;
+  member procedure add_elem(self in out nocopy json_list, elem boolean, position pls_integer default null) as begin append(elem,position); end;
+  member procedure add_elem(self in out nocopy json_list, elem json_list, position pls_integer default null) as begin append(elem,position); end;
+
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_value) as begin replace(position,elem); end;
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem varchar2) as begin replace(position,elem); end;
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem number) as begin replace(position,elem); end;
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem boolean) as begin replace(position,elem); end;
+  member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_list) as begin replace(position,elem); end;
+  
+  member procedure remove_elem(self in out nocopy json_list, position pls_integer) as begin remove(position); end;
+  member function get_elem(position pls_integer) return json_value as begin return get(position); end;
+  member function get_first return json_value as begin return head(); end;
+  member function get_last return json_value as begin return last(); end;
+--  */
  
 end;
 /

@@ -54,19 +54,19 @@ package body json_dyn as
   begin
     for i in 1 .. keylist.count loop
       if(bindvar.get(i).get_type = 'number') then
-        dbms_sql.bind_variable(l_cur, ':'||keylist.get_elem(i).get_string, bindvar.get(i).get_number);
+        dbms_sql.bind_variable(l_cur, ':'||keylist.get(i).get_string, bindvar.get(i).get_number);
       elsif(bindvar.get(i).get_type = 'array') then
         declare
           v_bind dbms_sql.varchar2_table;
           v_arr  json_list := json_list(bindvar.get(i));
         begin
           for j in 1 .. v_arr.count loop
-            v_bind(j) := v_arr.get_elem(j).value_of;
+            v_bind(j) := v_arr.get(1).value_of;
           end loop;
-          dbms_sql.bind_array(l_cur, ':'||keylist.get_elem(i).get_string, v_bind);
+          dbms_sql.bind_array(l_cur, ':'||keylist.get(i).get_string, v_bind);
         end;
       else
-        dbms_sql.bind_variable(l_cur, ':'||keylist.get_elem(i).get_string, bindvar.get(i).value_of());
+        dbms_sql.bind_variable(l_cur, ':'||keylist.get(i).get_string, bindvar.get(i).value_of());
       end if;
     end loop;
   end bind_json;
@@ -137,7 +137,7 @@ package body json_dyn as
         else null; --discard other types
         end case;
       end loop;
-      outer_list.add_elem(inner_obj.to_json_value);
+      outer_list.append(inner_obj.to_json_value);
     end loop;
     dbms_sql.close_cursor(l_cur);
     return outer_list;
@@ -173,9 +173,9 @@ package body json_dyn as
     --build up name_list
     for i in 1..l_cnt loop
       case l_dtbl(i).col_type
-        when 1 then inner_list_names.add_elem(l_dtbl(i).col_name);
-        when 2 then inner_list_names.add_elem(l_dtbl(i).col_name);
-        when 12 then if(include_dates) then inner_list_names.add_elem(l_dtbl(i).col_name); end if;
+        when 1 then inner_list_names.append(l_dtbl(i).col_name);
+        when 2 then inner_list_names.append(l_dtbl(i).col_name);
+        when 12 then if(include_dates) then inner_list_names.append(l_dtbl(i).col_name); end if;
         else null;
       end case;
     end loop;
@@ -191,18 +191,18 @@ package body json_dyn as
           dbms_sql.column_value(l_cur,i,l_val);
           if(l_val is null) then
             if(null_as_empty_string) then 
-              data_list.add_elem(''); --treatet as emptystring?
+              data_list.append(''); --treatet as emptystring?
             else 
-              data_list.add_elem(json_value.makenull); --null
+              data_list.append(json_value.makenull); --null
             end if;
           else
             declare 
               v json_value;
             begin
               v := json_parser.parse_any('"'||l_val||'"');
-              data_list.add_elem(v); --null
+              data_list.append(v); --null
             exception when others then
-              data_list.add_elem(json_value.makenull); --null
+              data_list.append(json_value.makenull); --null
             end;
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'varchar2' ||l_dtbl(i).col_type);
@@ -210,18 +210,18 @@ package body json_dyn as
         when 2 then -- number
           dbms_sql.column_value(l_cur,i,l_val);
           conv := l_val;
-          data_list.add_elem(conv);
+          data_list.append(conv);
           -- dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'number ' ||l_dtbl(i).col_type);
         when 12 then -- date
           if(include_dates) then
             dbms_sql.column_value(l_cur,i,read_date);
-            data_list.add_elem(json_ext.to_json_value(read_date));
+            data_list.append(json_ext.to_json_value(read_date));
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'date ' ||l_dtbl(i).col_type);
         else null; --discard other types
         end case;
       end loop;
-      inner_list_data.add_elem(data_list);
+      inner_list_data.append(data_list);
     end loop;
     
     outer_obj.put('names', inner_list_names.to_json_value);

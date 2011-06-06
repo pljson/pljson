@@ -744,7 +744,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       p_error('] should end the JSON List object', tokens(indx));
     end if;
     
-    return obj.get_elem(1);
+    return obj.head();
   end parse_any;
 
   function parse_any(str clob) return json_value as
@@ -761,7 +761,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       p_error('] should end the JSON List object', tokens(indx));
     end if;
     
-    return obj.get_elem(1);
+    return obj.head();
   end parse_any;
 
   /* last entry is the one to keep */
@@ -798,7 +798,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
   
   function get_version return varchar2 as
   begin
-    return 'PL/JSON v0.9.6';
+    return 'PL/JSON v1.0.0';
   end get_version;
 
 end json_parser;
