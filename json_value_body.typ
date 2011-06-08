@@ -27,8 +27,8 @@ type body json_value as
   begin
     self.typeval := 3;
     if(esc) then self.num := 1; else self.num := 0; end if; --message to pretty printer
-    object_or_array := sys.anydata.convertclob(str);
-    self.str := substrb(str, 1, 32767);
+    extended_str := str;
+    self.str := substr(str, 1, 32767);
     return;
   end json_value;
 
@@ -88,11 +88,11 @@ type body json_value as
     return null;
   end get_string;
   
-  member procedure get_string(buf in out nocopy clob) as
+  member procedure get_string(self in json_value, buf in out nocopy clob) as
   begin
     if(self.typeval = 3) then 
-      if(object_or_array is not null) then
-        dbms_lob.copy(buf, anydata.accessclob(object_or_array), dbms_lob.getlength(anydata.accessclob(object_or_array)));
+      if(extended_str is not null) then
+        dbms_lob.copy(buf, extended_str, dbms_lob.getlength(extended_str));
       else
         dbms_lob.writeappend(buf, length(self.str), self.str);      
       end if;

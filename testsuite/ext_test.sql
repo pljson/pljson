@@ -39,12 +39,12 @@ begin
     mylist json_list; --im lazy
   begin
     mylist := json_list('["abc", 23, {}, [], true, null]');
-    assertTrue(mylist.get_elem(1).is_string);
-    assertTrue(mylist.get_elem(2).is_number);
-    assertTrue(mylist.get_elem(3).is_object);
-    assertTrue(mylist.get_elem(4).is_array);
-    assertTrue(mylist.get_elem(5).is_bool);
-    assertTrue(mylist.get_elem(6).is_null);
+    assertTrue(mylist.get(1).is_string);
+    assertTrue(mylist.get(2).is_number);
+    assertTrue(mylist.get(3).is_object);
+    assertTrue(mylist.get(4).is_array);
+    assertTrue(mylist.get(5).is_bool);
+    assertTrue(mylist.get(6).is_null);
     pass(str);
   exception
     when others then fail(str);
@@ -55,17 +55,17 @@ begin
     mylist json_list; --im lazy
   begin
     mylist := json_list('[23, 2.1, 0.0, 120, 0.00000001]');
-    assertTrue(mylist.get_elem(1).is_number);
-    assertTrue(mylist.get_elem(2).is_number);
-    assertTrue(mylist.get_elem(3).is_number);
-    assertTrue(mylist.get_elem(4).is_number);
-    assertTrue(mylist.get_elem(5).is_number);
+    assertTrue(mylist.get(1).is_number);
+    assertTrue(mylist.get(2).is_number);
+    assertTrue(mylist.get(3).is_number);
+    assertTrue(mylist.get(4).is_number);
+    assertTrue(mylist.get(5).is_number);
 
-    assertTrue(json_ext.is_integer(mylist.get_elem(1)));
-    assertFalse(json_ext.is_integer(mylist.get_elem(2)));
-    assertTrue(json_ext.is_integer(mylist.get_elem(3)));
-    assertTrue(json_ext.is_integer(mylist.get_elem(4)));
-    assertFalse(json_ext.is_integer(mylist.get_elem(5)));
+    assertTrue(json_ext.is_integer(mylist.get(1)));
+    assertFalse(json_ext.is_integer(mylist.get(2)));
+    assertTrue(json_ext.is_integer(mylist.get(3)));
+    assertTrue(json_ext.is_integer(mylist.get(4)));
+    assertFalse(json_ext.is_integer(mylist.get(5)));
     pass(str);
   exception
     when others then fail(str);
@@ -78,13 +78,13 @@ begin
   begin
     json_ext.format_string := 'yyyy-mm-dd hh24:mi:ss';
     mylist := json_list('["2009-07-01 00:22:33", "2007-04-04hulubalulu", "09-07-08", "2009-07-01", "2007/Jan/03" ]');
-    assertFalse(mylist.get_elem(1).is_number); --why not
+    assertFalse(mylist.get(1).is_number); --why not
     
-    assertTrue(json_ext.is_date(mylist.get_elem(1)));
-    assertFalse(json_ext.is_date(mylist.get_elem(2)));
-    assertTrue(json_ext.is_date(mylist.get_elem(3))); --the format_string accept many formats
-    assertTrue(json_ext.is_date(mylist.get_elem(4)));
-    assertTrue(json_ext.is_date(mylist.get_elem(5))); --too many
+    assertTrue(json_ext.is_date(mylist.get(1)));
+    assertFalse(json_ext.is_date(mylist.get(2)));
+    assertTrue(json_ext.is_date(mylist.get(3))); --the format_string accept many formats
+    assertTrue(json_ext.is_date(mylist.get(4)));
+    assertTrue(json_ext.is_date(mylist.get(5))); --too many
         
     pass(str);
     json_ext.format_string := old_format_string;
@@ -103,16 +103,16 @@ begin
     json_ext.format_string := 'yyyy-mm-dd hh24:mi:ss';
     mylist := json_list('["2009-07-01 00:22:33", "2007-04-04hulubalulu", "09-07-08", "2009-07-01", "2007/Jan/03" ]');
     --correct the dates
-    mylist.add_elem(json_ext.to_json_value(json_ext.to_date2(mylist.get_elem(1))), 1);
-    mylist.remove_elem(2); --remove the old
-    mylist.add_elem(json_ext.to_json_value(newinsert), 2);
-    mylist.remove_elem(3); --remove the old falsy one
-    mylist.add_elem(json_ext.to_json_value(json_ext.to_date2(mylist.get_elem(3))), 3);
-    mylist.remove_elem(4); --remove the old
-    mylist.add_elem(json_ext.to_json_value(json_ext.to_date2(mylist.get_elem(4))), 4);
-    mylist.remove_elem(5); --remove the old
-    mylist.add_elem(json_ext.to_json_value(json_ext.to_date2(mylist.get_elem(5))), 5);
-    mylist.remove_elem(6); --remove the old
+    mylist.append(json_ext.to_json_value(json_ext.to_date2(mylist.get(1))), 1);
+    mylist.remove(2); --remove the old
+    mylist.append(json_ext.to_json_value(newinsert), 2);
+    mylist.remove(3); --remove the old falsy one
+    mylist.append(json_ext.to_json_value(json_ext.to_date2(mylist.get(3))), 3);
+    mylist.remove(4); --remove the old
+    mylist.append(json_ext.to_json_value(json_ext.to_date2(mylist.get(4))), 4);
+    mylist.remove(5); --remove the old
+    mylist.append(json_ext.to_json_value(json_ext.to_date2(mylist.get(5))), 5);
+    mylist.remove(6); --remove the old
     
     assertTrue(mylist.to_char = '["2009-07-01 00:22:33", "2009-08-08 00:00:00", "0009-07-08 00:00:00", "2009-07-01 00:00:00", "2007-01-03 00:00:00"]');
     --we can see that 09-07-08 isn't a good idea when format_string doesn't match

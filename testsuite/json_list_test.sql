@@ -50,7 +50,7 @@ begin
     l json_list;
   begin
     l := json_list();
-    l.remove_elem(3);
+    l.remove(3);
     l.remove_first;
     l.remove_last;
     assertTrue(l.count = 0);
@@ -64,7 +64,7 @@ begin
     l json_list;
   begin
     l := json_list();
-    l.add_elem('MyElem');
+    l.append('MyElem');
     assertTrue(l.count = 1);
     pass(str);
   exception
@@ -78,15 +78,15 @@ begin
     l := json_list('[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]');
     assertTrue(15 = l.count);
     for i in 1 .. l.count loop
-      assertTrue(i = l.get_elem(i).get_number);
+      assertTrue(i = l.get(i).get_number);
     end loop;
     l := json_list('[1, [], {"nest":true}]');
     assertTrue(l.count = 3);
-    assertTrue(1 = l.get_elem(1).get_number);
-    obj := json(l.get_elem(3));
+    assertTrue(1 = l.get(1).get_number);
+    obj := json(l.get(3));
     assertTrue(obj.exist('nest'));
     assertTrue(obj.count = 1);
-    l := json_list(l.get_elem(2));
+    l := json_list(l.get(2));
     assertTrue(l.count = 0);
     pass(str);
   exception
@@ -108,16 +108,16 @@ begin
     l json_list; elem json_value;
   begin
     l := json_list(); 
-    l.add_elem('varchar2');
-    l.add_elem(13);
-    l.add_elem(json_value(false));
-    l.add_elem(json_value.makenull);
-    l.add_elem(json_list('[1,2,3]'));
+    l.append('varchar2');
+    l.append(13);
+    l.append(json_value(false));
+    l.append(json_value.makenull);
+    l.append(json_list('[1,2,3]'));
     assertTrue(l.count = 5);
-    l.add_elem(l.get_first);
+    l.append(l.head);
     l.remove_first;
     for i in 1 .. l.count loop
-      elem := l.get_first;
+      elem := l.head;
       assertFalse(elem is null);
       l.remove_first;
     end loop;
@@ -132,12 +132,12 @@ begin
     l json_list; 
   begin
     l := json_list(); 
-    l.add_elem('1', 2); --should not throw an error
-    l.add_elem('3', 2); 
-    l.add_elem('2', 2); 
-    l.add_elem('0', 1); 
-    l.add_elem('-1', -11); 
-    l.add_elem('4', 6); 
+    l.append('1', 2); --should not throw an error
+    l.append('3', 2); 
+    l.append('2', 2); 
+    l.append('0', 1); 
+    l.append('-1', -11); 
+    l.append('4', 6);
     assertTrue(l.to_char = '["-1", "0", "1", "2", "3", "4"]'); --pretty printer must work this way
     pass(str);
   exception
@@ -150,17 +150,17 @@ begin
   begin
     l := json_list('["-1", "0", "1", "2", "3", "4"]'); 
     assertTrue(l.to_char = '["-1", "0", "1", "2", "3", "4"]');
-    l.remove_elem(5);
+    l.remove(5);
     assertTrue(l.to_char = '["-1", "0", "1", "2", "4"]');
-    l.remove_elem(5);
+    l.remove(5);
     assertTrue(l.to_char = '["-1", "0", "1", "2"]');
-    l.remove_elem(5);
+    l.remove(5);
     assertTrue(l.to_char = '["-1", "0", "1", "2"]');
-    l.remove_elem(-5);
+    l.remove(-5);
     assertTrue(l.to_char = '["-1", "0", "1", "2"]');
-    l.remove_elem(1);
+    l.remove(1);
     assertTrue(l.to_char = '["0", "1", "2"]');
-    l.remove_elem(2);
+    l.remove(2);
     assertTrue(l.to_char = '["0", "2"]');
     pass(str);
   exception
@@ -220,15 +220,15 @@ begin
     l json_list; 
   begin
     l := json_list('["-1", "0", "1", "2", "3", "4"]'); 
-    assertTrue(l.get_elem(-1) is null);
-    assertTrue(l.get_elem(0) is null);
-    assertFalse(l.get_elem(1) is null);
-    assertFalse(l.get_elem(2) is null);
-    assertFalse(l.get_elem(3) is null);
-    assertFalse(l.get_elem(4) is null);
-    assertFalse(l.get_elem(5) is null);
-    assertTrue(l.get_elem(6) is not null);
-    assertTrue(l.get_elem(7) is null);
+    assertTrue(l.get(-1) is null);
+    assertTrue(l.get(0) is null);
+    assertFalse(l.get(1) is null);
+    assertFalse(l.get(2) is null);
+    assertFalse(l.get(3) is null);
+    assertFalse(l.get(4) is null);
+    assertFalse(l.get(5) is null);
+    assertTrue(l.get(6) is not null);
+    assertTrue(l.get(7) is null);
     assertTrue(l.count = 6);
     pass(str);
   exception
@@ -240,18 +240,18 @@ begin
     l json_list; n json_value;
   begin
     l := json_list(); 
-    assertTrue(l.get_first is null);
-    assertTrue(l.get_last is null);
+    assertTrue(l.head is null);
+    assertTrue(l.last is null);
     l := json_list('[]'); 
-    assertTrue(l.get_first is null);
-    assertTrue(l.get_last is null);
+    assertTrue(l.head is null);
+    assertTrue(l.last is null);
     l := json_list('[2]'); 
-    assertFalse(l.get_first is null);
-    assertFalse(l.get_last is null);
+    assertFalse(l.head is null);
+    assertFalse(l.last is null);
     l := json_list('[1,2]'); 
-    n := l.get_first;
+    n := l.head;
     assertTrue(1 = n.get_number);
-    n := l.get_last;
+    n := l.last;
     assertTrue(2 = n.get_number);
     pass(str);
   exception
@@ -264,8 +264,8 @@ begin
     x number := null;
     n json_value;
   begin
-    obj.add_elem(x);
-    n := obj.get_first;
+    obj.append(x);
+    n := obj.head;
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
@@ -279,11 +279,11 @@ begin
     x2 varchar2(20) := '';
     n json_value;
   begin
-    obj.add_elem(x1);
-    obj.add_elem(x2);
-    --n := obj.get_first;
-    x1 := obj.get_first().get_string;
-    n := obj.get_last;
+    obj.append(x1);
+    obj.append(x2);
+    --n := obj.head;
+    x1 := obj.head().get_string;
+    n := obj.last;
     x2 := n.get_string;
     pass(str);
   exception
@@ -296,8 +296,8 @@ begin
     x boolean := null;
     n json_value;
   begin
-    obj.add_elem(x);
-    n := obj.get_first;
+    obj.append(x);
+    n := obj.head;
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
@@ -310,8 +310,8 @@ begin
     x json_value := null;
     n json_value;
   begin
-    obj.add_elem(x);
-    n := obj.get_first;
+    obj.append(x);
+    n := obj.head;
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
@@ -324,25 +324,25 @@ begin
     x json_list := null;
     n json_value;
   begin
-    obj.add_elem(x);
-    n := obj.get_first;
+    obj.append(x);
+    n := obj.head;
     assertFalse(n is null); --may seam odd -- but initialized vars are best! 
     pass(str);
   exception
     when others then fail(str);
   end;
 
-  str := 'json_list set_elem test';
+  str := 'json_list replace test';
   declare
     obj json_list := json_list('[4,5,6]');
   begin
-    obj.set_elem(1, 1);
-    obj.set_elem(2, 2);
-    obj.set_elem(3, 3);
+    obj.replace(1, 1);
+    obj.replace(2, 2);
+    obj.replace(3, 3);
     assertTrue(obj.to_char(false) = '[1,2,3]');
-    obj.set_elem(-10, 3);
+    obj.replace(-10, 3);
     assertTrue(obj.to_char(false) = '[1,2,3]');
-    obj.set_elem(210, 4);
+    obj.replace(210, 4);
     assertTrue(obj.to_char(false) = '[1,2,3,4]');
     pass(str);
   exception
