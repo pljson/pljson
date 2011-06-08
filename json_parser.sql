@@ -24,10 +24,11 @@ create or replace package json_parser as
     '{', '}', ',', ':', '[', ']', STRING, NUMBER, TRUE, FALSE, NULL 
   */
   type rToken IS RECORD (
-    type_name VARCHAR2(6),
+    type_name VARCHAR2(7),
     line PLS_INTEGER,
     col PLS_INTEGER,
-    data VARCHAR2(4000)); -- limit a string to 4000 bytes
+    data VARCHAR2(32767),
+    data_overflow clob); -- max_string_size
 
   type lTokens is table of rToken index by pls_integer;
   type json_src is record (len number, offset number, src varchar2(32767), s_clob clob); 
@@ -211,7 +212,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
   
   -- [a-zA-Z]([a-zA-Z0-9])*
   function lexName(jsrc in out nocopy json_src, tok in out nocopy rToken, indx in out nocopy pls_integer) return pls_integer as
-    varbuf varchar2(4000) := '';
+    varbuf varchar2(32767) := '';
     buf varchar(4);
     num number;
   begin
@@ -233,8 +234,14 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     tok.data := varbuf;
     return indx-1;
   end lexName;
+  
+  procedure updateClob(v_extended in out nocopy clob, v_str varchar2) as
+  begin
+    dbms_lob.writeappend(v_extended, length(v_str), v_str);
+  end updateClob;
 
   function lexString(jsrc in out nocopy json_src, tok in out nocopy rToken, indx in out nocopy pls_integer, endChar char) return pls_integer as
+    v_extended clob := null; v_count number := 0;
     varbuf varchar2(32767) := '';
     buf varchar(4);
     wrong boolean;
@@ -242,6 +249,15 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     indx := indx +1;
     buf := next_char(indx, jsrc); 
     while(buf != endChar) loop
+      --clob control
+      if(v_count > 8191) then --crazy oracle error (16383 is the highest working length with unistr - 8192 choosen to be safe)
+        if(v_extended is null) then 
+          v_extended := empty_clob();
+          dbms_lob.createtemporary(v_extended, true); 
+        end if;
+        updateClob(v_extended, unistr(varbuf));
+        varbuf := ''; v_count := 0;
+      end if;
       if(buf = Chr(13) or buf = CHR(9) or buf = CHR(10)) then
         s_error('Control characters not allowed (CHR(9),CHR(10)CHR(13))', tok);
       end if;
@@ -251,16 +267,16 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
         buf := next_char(indx, jsrc);  
         case
           when buf in ('\') then
-            varbuf := varbuf || buf || buf;
+            varbuf := varbuf || buf || buf; v_count := v_count + 2;
             indx := indx + 1;
             buf := next_char(indx, jsrc);  
           when buf in ('"', '/') then
-            varbuf := varbuf || buf;
+            varbuf := varbuf || buf; v_count := v_count + 1;
             indx := indx + 1;
             buf := next_char(indx, jsrc);  
           when buf = '''' then
             if(json_strict = false) then 
-              varbuf := varbuf || buf;
+              varbuf := varbuf || buf; v_count := v_count + 1;
               indx := indx + 1;
               buf := next_char(indx, jsrc);  
             else 
@@ -280,6 +296,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
             when 't' then varbuf := varbuf || chr(9);
             end case;            
             --varbuf := varbuf || buf;
+            v_count := v_count + 1;
             indx := indx + 1;
             buf := next_char(indx, jsrc);  
           when buf = 'u' then
@@ -298,6 +315,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
               end if;
 --              varbuf := varbuf || buf || four;
               varbuf := varbuf || '\'||four;--chr(to_number(four,'XXXX'));
+               v_count := v_count + 5;
               indx := indx + 5;
               buf := next_char(indx, jsrc); 
               end;
@@ -305,7 +323,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
             s_error('expected: " \ / b f n r t u ', tok);
         end case;
       else
-        varbuf := varbuf || buf;
+        varbuf := varbuf || buf; v_count := v_count + 1;
         indx := indx + 1;
         buf := next_char(indx, jsrc); 
       end if;
@@ -318,7 +336,13 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
 
     --debug(varbuf);
     --dbms_output.put_line(varbuf);
-    tok.data := unistr(varbuf);
+    if(v_extended is not null) then 
+      updateClob(v_extended, unistr(varbuf));
+      tok.data_overflow := v_extended;
+      tok.data := dbms_lob.substr(v_extended, 1, 32767);
+    else 
+      tok.data := unistr(varbuf);
+    end if;
     return indx;
   end lexString;
   
@@ -419,22 +443,55 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
         when buf = '''' and json_strict = false then --number
           tokens(tok_indx) := mt('STRING', lin_no, col_no, null); 
           indx := lexString(jsrc, tokens(tok_indx), indx, '''');
-          col_no := col_no + length(tokens(tok_indx).data) + 1;
+          col_no := col_no + length(tokens(tok_indx).data) + 1; --hovsa her
           tok_indx := tok_indx + 1; 
         when json_strict = false and REGEXP_LIKE(buf, '^[[:alpha:]]$', 'i') then
           tokens(tok_indx) := mt('STRING', lin_no, col_no, null); 
           indx := lexName(jsrc, tokens(tok_indx), indx);
-          col_no := col_no + length(tokens(tok_indx).data) + 1;
+          if(tokens(tok_indx).data_overflow is not null) then
+            col_no := col_no + dbms_lob.getlength(tokens(tok_indx).data_overflow) + 1;
+          else 
+            col_no := col_no + length(tokens(tok_indx).data) + 1;
+          end if;
           tok_indx := tok_indx + 1; 
         when json_strict = false and buf||next_char(indx+1, jsrc) = '/*' then --strip comments
-          indx := indx + 1;
-          loop
+          declare
+            saveindx number := indx;
+            un_esc clob;
+          begin
             indx := indx + 1;
-            buf := next_char(indx, jsrc)||next_char(indx+1, jsrc);
-            exit when buf = '*/';
-            exit when buf is null;
-          end loop;
-          indx := indx + 1;
+            loop
+              indx := indx + 1;
+              buf := next_char(indx, jsrc)||next_char(indx+1, jsrc);
+              exit when buf = '*/';
+              exit when buf is null;
+            end loop;
+            
+            if(indx = saveindx+2) then 
+              --enter unescaped mode
+              --dbms_output.put_line('Entering unescaped mode');
+              un_esc := empty_clob();
+              dbms_lob.createtemporary(un_esc, true); 
+              indx := indx + 1;
+              loop
+                indx := indx + 1;
+                buf := next_char(indx, jsrc)||next_char(indx+1, jsrc)||next_char(indx+2, jsrc)||next_char(indx+3, jsrc);
+                exit when buf = '/**/';
+                if buf is null then
+                  s_error('Unexpected sequence /**/ to end unescaped data: '||buf, lin_no, col_no);
+                end if;
+                buf := next_char(indx, jsrc);
+                dbms_lob.writeappend(un_esc, length(buf), buf);
+              end loop;
+              tokens(tok_indx) := mt('ESTRING', lin_no, col_no, null);     
+              tokens(tok_indx).data_overflow := un_esc;
+              col_no := col_no + dbms_lob.getlength(un_esc) + 1; --note: line count won't work properly
+              tok_indx := tok_indx + 1; 
+              indx := indx + 2;
+            end if;
+            
+            indx := indx + 1;
+          end;
         when buf = ' ' then null; --space
         else 
           s_error('Unexpected char: '||buf, lin_no, col_no);
@@ -472,7 +529,8 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
         when 'TRUE' then e_arr(v_count) := json_value(true);
         when 'FALSE' then e_arr(v_count) := json_value(false);
         when 'NULL' then e_arr(v_count) := json_value;
-        when 'STRING' then e_arr(v_count) := json_value(tok.data);
+        when 'STRING' then e_arr(v_count) := case when tok.data_overflow is not null then json_value(tok.data_overflow) else json_value(tok.data) end;
+        when 'ESTRING' then e_arr(v_count) := json_value(tok.data_overflow, false);
         when 'NUMBER' then 
           declare rev varchar2(10); begin
             --stupid countries with , as decimal point
@@ -523,7 +581,8 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       when 'TRUE' then mem := json_value(true);
       when 'FALSE' then mem := json_value(false);
       when 'NULL' then mem := json_value;
-      when 'STRING' then mem := json_value( tok.data );
+      when 'STRING' then mem := case when tok.data_overflow is not null then json_value(tok.data_overflow) else json_value(tok.data) end;
+      when 'ESTRING' then mem := json_value(tok.data_overflow, false);
       when 'NUMBER' then 
         declare rev varchar2(10); begin
           --stupid countries with , as decimal point - like my own
@@ -581,7 +640,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       case tok.type_name 
       when 'STRING' then
         --member 
-        mem_name := tok.data;
+        mem_name := substr(tok.data, 1, 4000);
         begin
           if(mem_name is null) then
             if(nullelemfound) then          

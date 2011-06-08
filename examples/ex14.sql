@@ -21,7 +21,7 @@ This software has been released under the MIT license:
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* Experimental binary support */
+/* Base64 binary support */
 
 set serveroutput on;
 declare 
@@ -33,6 +33,16 @@ begin
   obj.print;
   getback := json_ext.base64(obj);
   dbms_output.put_line(utl_raw.cast_to_varchar2(getback));
-
+end;
+/
+declare 
+  obj json_value;
+  binarydata blob := utl_raw.cast_to_raw('ABC');
+  getback blob;
+begin
+  obj := json_ext.encode(binarydata);
+  obj.print;
+  getback := json_ext.decode(obj);
+  dbms_output.put_line(utl_raw.cast_to_varchar2(getback));
 end;
 /

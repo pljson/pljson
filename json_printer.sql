@@ -61,7 +61,7 @@ package body "JSON_PRINTER" as
     buf varchar2(40);
     num number;
   begin
-    if(str is null) then return '""'; end if;
+    if(str is null) then return ''; end if;
     for i in 1 .. length(str) loop
       buf := substr(str, i, 1);
       --backspace b = U+0008
@@ -89,7 +89,7 @@ package body "JSON_PRINTER" as
       sb := sb || buf;
     end loop;
   
-    return '"'||sb||'"';
+    return sb;
   end escapeString;
 
   function newline(spaces boolean) return varchar2 as
@@ -119,9 +119,9 @@ package body "JSON_PRINTER" as
   function getMemName(mem json_value, spaces boolean) return varchar2 as
   begin
     if(spaces) then
-      return llcheck(escapeString(mem.mapname)) || llcheck(' : ');
+      return llcheck('"'||escapeString(mem.mapname)||'"') || llcheck(' : ');
     else 
-      return llcheck(escapeString(mem.mapname)) || llcheck(':');
+      return llcheck('"'||escapeString(mem.mapname)||'"') || llcheck(':');
     end if;
   end;
 
@@ -165,10 +165,30 @@ package body "JSON_PRINTER" as
           end if;
           add_to_clob(buf, buf_str, llcheck(numbuf));
         when 'string' then 
-          if(elem.num = 1) then 
-            add_to_clob(buf, buf_str, llcheck(escapeString(elem.get_string)));
-          else 
-            add_to_clob(buf, buf_str, llcheck(elem.get_string));
+          if(elem.extended_str is not null) then --clob implementation
+            add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
+            declare
+              offset number := 1;
+              v_str varchar(32767);
+              amount number := 32767;
+            begin
+              while(offset <= dbms_lob.getlength(elem.extended_str)) loop
+                dbms_lob.read(elem.extended_str, amount, offset, v_str);
+                if(elem.num = 1) then 
+                  add_to_clob(buf, buf_str, escapeString(v_str));
+                else 
+                  add_to_clob(buf, buf_str, v_str);
+                end if;
+                offset := offset + amount;
+              end loop;
+            end;
+            add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end || newline_char);
+          else
+            if(elem.num = 1) then 
+              add_to_clob(buf, buf_str, llcheck('"'||escapeString(elem.get_string)||'"'));
+            else 
+              add_to_clob(buf, buf_str, llcheck('/**/'||elem.get_string||'/**/'));
+            end if;
           end if;
         when 'bool' then
           if(elem.get_bool) then 
@@ -206,10 +226,34 @@ package body "JSON_PRINTER" as
         end if;
         add_to_clob(buf, buf_str, llcheck(numbuf));
       when 'string' then 
-        if(mem.num = 1) then 
-          add_to_clob(buf, buf_str, llcheck(escapeString(mem.get_string)));
+        if(mem.extended_str is not null) then --clob implementation
+          add_to_clob(buf, buf_str, case when mem.num = 1 then '"' else '/**/' end);
+          declare
+            offset number := 1;
+            v_str varchar(32767);
+            amount number := 32767;
+          begin
+--            dbms_output.put_line('SIZE:'||dbms_lob.getlength(mem.extended_str));
+            while(offset <= dbms_lob.getlength(mem.extended_str)) loop
+--            dbms_output.put_line('OFFSET:'||offset);
+ --             v_str := dbms_lob.substr(mem.extended_str, 8192, offset);
+              dbms_lob.read(mem.extended_str, amount, offset, v_str);
+--            dbms_output.put_line('VSTR_SIZE:'||length(v_str));
+              if(mem.num = 1) then 
+                add_to_clob(buf, buf_str, escapeString(v_str));
+              else 
+                add_to_clob(buf, buf_str, v_str);
+              end if;
+              offset := offset + amount;
+            end loop;
+          end;
+          add_to_clob(buf, buf_str, case when mem.num = 1 then '"' else '/**/' end || newline_char);
         else 
-          add_to_clob(buf, buf_str, llcheck(mem.get_string));
+          if(mem.num = 1) then 
+            add_to_clob(buf, buf_str, llcheck('"'||escapeString(mem.get_string)||'"'));
+          else 
+            add_to_clob(buf, buf_str, llcheck('/**/'||mem.get_string||'/**/'));
+          end if;
         end if;
       when 'bool' then
         if(mem.get_bool) then 
@@ -247,7 +291,7 @@ package body "JSON_PRINTER" as
     buf_str varchar2(32767);
     amount number := dbms_lob.getlength(buf);
   begin
-    if(erase_clob and amount > 0) then dbms_lob.erase(buf, amount); end if;
+    if(erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
     
     max_line_len := line_length;
     cur_line_len := 0;
@@ -259,7 +303,7 @@ package body "JSON_PRINTER" as
     buf_str varchar2(32767);
     amount number := dbms_lob.getlength(buf);
   begin
-    if(erase_clob and amount > 0) then dbms_lob.erase(buf, amount); end if;
+    if(erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
     
     max_line_len := line_length;
     cur_line_len := 0;
@@ -274,7 +318,7 @@ package body "JSON_PRINTER" as
     numbuf varchar2(4000);
     amount number := dbms_lob.getlength(buf);
   begin
-    if(erase_clob and amount > 0) then dbms_lob.erase(buf, amount); end if;
+    if(erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
     
     case json_part.get_type
       when 'number' then 
@@ -287,10 +331,30 @@ package body "JSON_PRINTER" as
         end if;
         add_to_clob(buf, buf_str, numbuf);
       when 'string' then 
-        if(json_part.num = 1) then 
-          add_to_clob(buf, buf_str, escapeString(json_part.get_string));
+        if(json_part.extended_str is not null) then --clob implementation
+          add_to_clob(buf, buf_str, case when json_part.num = 1 then '"' else '/**/' end);
+          declare
+            offset number := 1;
+            v_str varchar(32767);
+            amount number := 32767;
+          begin
+            while(offset <= dbms_lob.getlength(json_part.extended_str)) loop
+              dbms_lob.read(json_part.extended_str, amount, offset, v_str);
+              if(json_part.num = 1) then 
+                add_to_clob(buf, buf_str, escapeString(v_str));
+              else 
+                add_to_clob(buf, buf_str, v_str);
+              end if;
+              offset := offset + amount;
+            end loop;
+          end;
+          add_to_clob(buf, buf_str, case when json_part.num = 1 then '"' else '/**/' end);
         else 
-          add_to_clob(buf, buf_str, json_part.get_string);
+          if(json_part.num = 1) then 
+            add_to_clob(buf, buf_str, llcheck('"'||escapeString(json_part.get_string)||'"'));
+          else 
+            add_to_clob(buf, buf_str, llcheck('/**/'||json_part.get_string||'/**/'));
+          end if;
         end if;
       when 'bool' then
 	      if(json_part.get_bool) then
@@ -337,9 +401,9 @@ package body "JSON_PRINTER" as
           buf := buf || llcheck(str);
         when 'string' then 
           if(elem.num = 1) then 
-            buf := buf || llcheck(escapeString(elem.get_string));
+            buf := buf || llcheck('"'||escapeString(elem.get_string)||'"');
           else 
-            buf := buf || llcheck(elem.get_string);
+            buf := buf || llcheck('/**/'||elem.get_string||'/**/');
           end if;
         when 'bool' then
           if(elem.get_bool) then           
@@ -377,9 +441,9 @@ package body "JSON_PRINTER" as
         buf := buf || llcheck(str);
       when 'string' then 
         if(mem.num = 1) then 
-          buf := buf || llcheck(escapeString(mem.get_string));
+          buf := buf || llcheck('"'||escapeString(mem.get_string)||'"');
         else 
-          buf := buf || llcheck(mem.get_string);
+          buf := buf || llcheck('/**/'||mem.get_string||'/**/');
         end if;
       when 'bool' then
         if(mem.get_bool) then 
@@ -444,9 +508,9 @@ package body "JSON_PRINTER" as
         end if;
       when 'string' then 
         if(json_part.num = 1) then 
-          buf := buf || escapeString(json_part.get_string);
+          buf := buf || '"'||escapeString(json_part.get_string)||'"';
         else 
-          buf := buf || json_part.get_string;
+          buf := buf || '/**/'||json_part.get_string||'/**/';
         end if;
       when 'bool' then
       	if(json_part.get_bool) then buf := 'true'; else buf := 'false'; end if;
@@ -465,21 +529,108 @@ package body "JSON_PRINTER" as
     prev number := 1;
     indx number := 1;
     size_of_nl number := lengthb(delim);
+    v_str varchar2(32767);
+    amount number := 32767;
+  begin
+    if(jsonp is not null) then dbms_output.put_line(jsonp||'('); end if;
+    while(indx != 0) loop
+      --read every line
+      indx := dbms_lob.instr(my_clob, delim, prev+1);
+ --     dbms_output.put_line(prev || ' to ' || indx);
+      
+      if(indx = 0) then
+        --emit from prev to end;
+        amount := 32767;
+ --       dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
+        loop
+          dbms_lob.read(my_clob, amount, prev, v_str);
+          dbms_output.put_line(v_str);
+          prev := prev+amount-1;
+          exit when prev >= dbms_lob.getlength(my_clob);
+        end loop;
+      else 
+        amount := indx - prev;
+        if(amount > 32767) then 
+          amount := 32767;
+--          dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
+          loop
+            dbms_lob.read(my_clob, amount, prev, v_str);
+            dbms_output.put_line(v_str);
+            prev := prev+amount-1;
+            amount := indx - prev;
+            exit when prev >= indx - 1;
+            if(amount > 32767) then amount := 32767; end if;
+          end loop;
+          prev := indx + size_of_nl;
+        else 
+          dbms_lob.read(my_clob, amount, prev, v_str);
+          dbms_output.put_line(v_str);     
+          prev := indx + size_of_nl;
+        end if;
+      end if;
+    
+    end loop;
+    if(jsonp is not null) then dbms_output.put_line(')'); end if;
+
+/*    while (amount != 0) loop
+      indx := dbms_lob.instr(my_clob, delim, prev+1);
+      
+--      dbms_output.put_line(prev || ' to ' || indx);
+      if(indx = 0) then 
+        indx := dbms_lob.getlength(my_clob)+1;
+      end if;
+
+      if(indx-prev > 32767) then
+        indx := prev+32767;
+      end if;
+--      dbms_output.put_line(prev || ' to ' || indx);
+      --substr doesnt work properly on all platforms! (come on oracle - error on Oracle VM for virtualbox)
+--        dbms_output.put_line(dbms_lob.substr(my_clob, indx-prev, prev));
+      amount := indx-prev;
+--        dbms_output.put_line('amount'||amount);
+      dbms_lob.read(my_clob, amount, prev, v_str);
+      dbms_output.put_line(v_str);
+      prev := indx+size_of_nl;
+      if(amount = 32767) then prev := prev-size_of_nl-1; end if;
+    end loop;
+    if(jsonp is not null) then dbms_output.put_line(')'); end if;*/
+  end;
+
+
+/*  procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as 
+    prev number := 1;
+    indx number := 1;
+    size_of_nl number := lengthb(delim);
+    v_str varchar2(32767);
+    amount number;
   begin
     if(jsonp is not null) then dbms_output.put_line(jsonp||'('); end if;
     while (indx != 0) loop
       indx := dbms_lob.instr(my_clob, delim, prev+1);
-      --dbms_output.put_line(prev || ' to ' || indx);
-      if(indx = 0) then 
-        dbms_output.put_line(dbms_lob.substr(my_clob, dbms_lob.getlength(my_clob)-prev+size_of_nl, prev));
-      else 
-        dbms_output.put_line(dbms_lob.substr(my_clob, indx-prev, prev));
+      
+--      dbms_output.put_line(prev || ' to ' || indx);
+      if(indx-prev > 32767) then
+        indx := prev+32767;
       end if;
+--      dbms_output.put_line(prev || ' to ' || indx);
+      --substr doesnt work properly on all platforms! (come on oracle - error on Oracle VM for virtualbox)
+      if(indx = 0) then 
+--        dbms_output.put_line(dbms_lob.substr(my_clob, dbms_lob.getlength(my_clob)-prev+size_of_nl, prev));
+        amount := dbms_lob.getlength(my_clob)-prev+size_of_nl;
+        dbms_lob.read(my_clob, amount, prev, v_str);
+      else 
+--        dbms_output.put_line(dbms_lob.substr(my_clob, indx-prev, prev));
+        amount := indx-prev;
+--        dbms_output.put_line('amount'||amount);
+        dbms_lob.read(my_clob, amount, prev, v_str);
+      end if;
+      dbms_output.put_line(v_str);
       prev := indx+size_of_nl;
+      if(amount = 32767) then prev := prev-size_of_nl-1; end if;
     end loop;
     if(jsonp is not null) then dbms_output.put_line(')'); end if;
   end;
-  
+*/  
   procedure htp_output_clob(my_clob clob, jsonp varchar2 default null) as 
     amount number := 8192;
     pos number := 1;
@@ -488,7 +639,7 @@ package body "JSON_PRINTER" as
     if(jsonp is not null) then htp.prn(jsonp||'('); end if;
     len := dbms_lob.getlength(my_clob);
     while(pos < len) loop
-      htp.prn(dbms_lob.substr(my_clob, amount, pos)); 
+      htp.prn(dbms_lob.substr(my_clob, amount, pos)); -- should I replace substr with dbms_lob.read?
       --dbms_output.put_line(dbms_lob.substr(my_clob, amount, pos)); 
       pos := pos + amount;
     end loop;
@@ -497,4 +648,3 @@ package body "JSON_PRINTER" as
 
 end json_printer;
 /
-

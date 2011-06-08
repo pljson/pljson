@@ -26,7 +26,8 @@ type json_value as object
   typeval number(1), /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
   str varchar2(32767),
   num number, /* store 1 as true, 0 as false */
-  object_or_array sys.anydata, /* object or array in here (or clob) */
+  object_or_array sys.anydata, /* object or array in here */
+  extended_str clob,
   
   /* mapping */
   mapname varchar2(4000),
@@ -42,7 +43,7 @@ type json_value as object
   
   member function get_type return varchar2,
   member function get_string(max_byte_size number default null, max_char_size number default null) return varchar2,
-  member procedure get_string(buf in out nocopy clob),
+  member procedure get_string(self in json_value, buf in out nocopy clob),
   member function get_number return number,
   member function get_bool return boolean,
   member function get_null return varchar2,
