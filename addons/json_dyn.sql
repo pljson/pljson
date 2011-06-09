@@ -94,13 +94,14 @@ package body json_dyn as
     dbms_sql.describe_columns(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
       col_type := l_dtbl(i).col_type;
+--      dbms_output.put_line(col_type);
       if(col_type = 12) then
         dbms_sql.define_column(l_cur,i,read_date);
       elsif(col_type = 112) then
         dbms_sql.define_column(l_cur,i,read_clob);
       elsif(col_type = 113) then
         dbms_sql.define_column(l_cur,i,read_blob);
-      elsif(col_type in (1,2)) then
+      elsif(col_type in (1,2,96)) then
         dbms_sql.define_column(l_cur,i,l_val,4000);
       end if;
     end loop;
@@ -111,9 +112,9 @@ package body json_dyn as
       inner_obj := json(); --init for each row
       --loop through columns
       for i in 1..l_cnt loop
-        case l_dtbl(i).col_type
+        case true
         --handling string types
-        when 1 then -- varchar2
+        when l_dtbl(i).col_type in (1,96) then -- varchar2
           dbms_sql.column_value(l_cur,i,l_val);
           if(l_val is null) then
             if(null_as_empty_string) then 
@@ -133,23 +134,23 @@ package body json_dyn as
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'varchar2' ||l_dtbl(i).col_type);
         --handling number types
-        when 2 then -- number
+        when l_dtbl(i).col_type = 2 then -- number
           dbms_sql.column_value(l_cur,i,l_val);
           conv := l_val;
           inner_obj.put(l_dtbl(i).col_name, conv);
           -- dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'number ' ||l_dtbl(i).col_type);
-        when 12 then -- date
+        when l_dtbl(i).col_type = 12 then -- date
           if(include_dates) then
             dbms_sql.column_value(l_cur,i,read_date);
             inner_obj.put(l_dtbl(i).col_name, json_ext.to_json_value(read_date));
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'date ' ||l_dtbl(i).col_type);
-        when 112 then --clob
+        when l_dtbl(i).col_type = 112 then --clob
           if(include_clobs) then
             dbms_sql.column_value(l_cur,i,read_clob);
             inner_obj.put(l_dtbl(i).col_name, json_value(read_clob));
           end if;
-        when 113 then --blob
+        when l_dtbl(i).col_type = 113 then --blob
           if(include_blobs) then
             dbms_sql.column_value(l_cur,i,read_blob);
             inner_obj.put(l_dtbl(i).col_name, json_ext.encode(read_blob));
@@ -193,7 +194,7 @@ package body json_dyn as
         dbms_sql.define_column(l_cur,i,read_clob);
       elsif(col_type = 113) then
         dbms_sql.define_column(l_cur,i,read_blob);
-      elsif(col_type in (1,2)) then
+      elsif(col_type in (1,2,96)) then
         dbms_sql.define_column(l_cur,i,l_val,4000);
       end if;
     end loop;
@@ -203,8 +204,11 @@ package body json_dyn as
     for i in 1..l_cnt loop
       case l_dtbl(i).col_type
         when 1 then inner_list_names.append(l_dtbl(i).col_name);
+        when 96 then inner_list_names.append(l_dtbl(i).col_name);
         when 2 then inner_list_names.append(l_dtbl(i).col_name);
         when 12 then if(include_dates) then inner_list_names.append(l_dtbl(i).col_name); end if;
+        when 112 then if(include_clobs) then inner_list_names.append(l_dtbl(i).col_name); end if;
+        when 113 then if(include_blobs) then inner_list_names.append(l_dtbl(i).col_name); end if;
         else null;
       end case;
     end loop;
@@ -214,9 +218,9 @@ package body json_dyn as
       data_list := json_list();
       --loop through columns
       for i in 1..l_cnt loop
-        case l_dtbl(i).col_type
+        case true 
         --handling string types
-        when 1 then -- varchar2
+        when l_dtbl(i).col_type in (1,96) then -- varchar2
           dbms_sql.column_value(l_cur,i,l_val);
           if(l_val is null) then
             if(null_as_empty_string) then 
@@ -236,23 +240,23 @@ package body json_dyn as
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'varchar2' ||l_dtbl(i).col_type);
         --handling number types
-        when 2 then -- number
+        when l_dtbl(i).col_type = 2 then -- number
           dbms_sql.column_value(l_cur,i,l_val);
           conv := l_val;
           data_list.append(conv);
           -- dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'number ' ||l_dtbl(i).col_type);
-        when 12 then -- date
+        when l_dtbl(i).col_type = 12 then -- date
           if(include_dates) then
             dbms_sql.column_value(l_cur,i,read_date);
             data_list.append(json_ext.to_json_value(read_date));
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'date ' ||l_dtbl(i).col_type);
-        when 112 then --clob
+        when l_dtbl(i).col_type = 112 then --clob
           if(include_clobs) then
             dbms_sql.column_value(l_cur,i,read_clob);
             data_list.append(json_value(read_clob));
           end if;
-        when 113 then --blob
+        when l_dtbl(i).col_type = 113 then --blob
           if(include_blobs) then
             dbms_sql.column_value(l_cur,i,read_blob);
             data_list.append(json_ext.encode(read_blob));
