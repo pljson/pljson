@@ -24,11 +24,14 @@ type body json_value as
   end json_value;
 
   constructor function json_value(str clob, esc boolean default true) return self as result as
+    amount number := 32767;
   begin
     self.typeval := 3;
     if(esc) then self.num := 1; else self.num := 0; end if; --message to pretty printer
-    extended_str := str;
-    self.str := substr(str, 1, 32767);
+    if(dbms_lob.getlength(str) > 32767) then
+      extended_str := str;
+    end if;
+    dbms_lob.read(str, amount, 1, self.str);
     return;
   end json_value;
 

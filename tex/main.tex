@@ -52,7 +52,7 @@
 \footskip 0.8in
 
 
-\title{PL/JSON Reference Guide (version 0.9.6)}
+\title{PL/JSON Reference Guide (version 1.0.0)}
 \subtitle{For Oracle 10g and 11g}
 \author{Jonas Krogsbøll}
 \date{}
@@ -94,7 +94,7 @@ Parsing and emitting JSON is done in two packages, but you will rarely need to a
 \item Uninstall script.
 \item 4 new oracle types ready to use in your database.
 \item 3 packages (parser, printer and extension)
-\item A few examples files - *Note* examples do not modify the database.
+\item A few examples files
 \item Some testing scripts - creates and delete a table (JSON\_TESTSUITE)
 \item Optional addons packages.
 \end{itemize}
@@ -147,9 +147,40 @@ Parsed and emitted:
 }
 \end{verbatim}
 
+\subsection*{JSON\_PARSER: Javascript functions}
+Even though javascript functions are not a part of JSON, you might want to emit functions if your receiving client is a browser. This is how you do it:
+\begin{verbatim}
+declare
+  obj json := json();
+begin
+  obj.put('test', json_value('function() {return 1;}', esc => false ));
+  obj.print;
+end;
+\end{verbatim}
+The output is:
+\begin{verbatim}
+{
+  "test": /**/function() {return 1;}/**/
+}
+\end{verbatim}
+Which is not valid JSON but will work in javascript.\\
+The surrounding /**/ is a message to the parser to start and stop building a unescaped json\_value string:
+\begin{verbatim}
+declare
+  obj json := json('{"test": /**/function() {return 1;}/**/}');
+begin
+  obj.print;
+end;
+----
+{
+  "test": /**/function() {return 1;}/**/
+}
+\end{verbatim}
+
 \subsection*{JSON\_EXT}
 The extension package is now mandatory. It contains the path implementation and adds support for dates and binary lob's. Dates is not a part of the JSON standard, so it's up to you to specify how you would like to handle dates. The current implementation specifies a date to be a string that which follows the format: yyyy-mm-dd hh24:mi:ss. If your needs differ from this, then you can rewrite the functions in the package.
 
+\newpage
 \section{JSON PATH}
 A JSON Path is a way to navigate in a JSON object. The implementation is quite simple and does not support all the features that are available in stefan goessners JavaScript, Python and PHP implementation of JSON Path. Actually, all that is does is to add the support for navigation in JSON, that are allready build in into those languages. When navigating with JSON Path in PL/JSON, members of JSON objects are found with the dot operator while elements in lists are found with square brackets. Accepted input in path navigation is formalized with these railroad diagrams (ws is insignificant whitespace):
 \begin{rail}
@@ -269,7 +300,7 @@ end;
 
 \section{KNOWN LIMITATIONS}
 \begin{itemize}
-\item Each string (pair-name or value) is limited to 4000 characters.
+\item key-names are limited to 4000 characters.
 \item The number parsing assumes that oracles number type can contain the input (in most cases it can).
 \end {itemize}
 
