@@ -21,10 +21,10 @@ create or replace package json_dyn authid current_user as
   THE SOFTWARE.
   */
 
-  null_as_empty_string   boolean := true;  --varchar2
-  include_dates          boolean := true;  --date
-  include_clobs          boolean := true;
-  include_blobs          boolean := false;
+  null_as_empty_string   boolean not null := true;  --varchar2
+  include_dates          boolean not null := true;  --date
+  include_clobs          boolean not null := true;
+  include_blobs          boolean not null := false;
   
   /* list with objects */
   function executeList(stmt varchar2, bindvar json default null) return json_list;

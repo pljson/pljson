@@ -21,11 +21,11 @@ create or replace package json_printer as
   THE SOFTWARE.
   */
   indent_string varchar2(10 char) := '  '; --chr(9); for tab
-  newline_char varchar2(2 char) := chr(13)||chr(10); -- Windows style
+  newline_char varchar2(2 char)   := chr(13)||chr(10); -- Windows style
   --newline_char varchar2(2) := chr(10); -- Mac style
   --newline_char varchar2(2) := chr(13); -- Linux style
-  ascii_output boolean := true;
-  escape_solidus boolean := false;
+  ascii_output boolean    not null := true;
+  escape_solidus boolean  not null := false;
 
   function pretty_print(obj json, spaces boolean default true, line_length number default 0) return varchar2;
   function pretty_print_list(obj json_list, spaces boolean default true, line_length number default 0) return varchar2;
