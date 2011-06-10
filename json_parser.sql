@@ -33,7 +33,7 @@ create or replace package json_parser as
   type lTokens is table of rToken index by pls_integer;
   type json_src is record (len number, offset number, src varchar2(32767), s_clob clob); 
 
-  json_strict boolean := false;
+  json_strict boolean not null := false;
 
   function next_char(indx number, s in out nocopy json_src) return varchar2;
   function next_char2(indx number, s in out nocopy json_src, amount number default 1) return varchar2;
