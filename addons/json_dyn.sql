@@ -123,14 +123,7 @@ package body json_dyn as
               inner_obj.put(l_dtbl(i).col_name, json_value.makenull); --null
             end if;
           else
-            declare 
-              v json_value;
-            begin
-              v := json_parser.parse_any('"'||l_val||'"');
-              inner_obj.put(l_dtbl(i).col_name, v); --null
-            exception when others then
-              inner_obj.put(l_dtbl(i).col_name, json_value.makenull); --null
-            end;
+            inner_obj.put(l_dtbl(i).col_name, json_value(l_val)); --null
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'varchar2' ||l_dtbl(i).col_type);
         --handling number types
@@ -229,14 +222,7 @@ package body json_dyn as
               data_list.append(json_value.makenull); --null
             end if;
           else
-            declare 
-              v json_value;
-            begin
-              v := json_parser.parse_any('"'||l_val||'"');
-              data_list.append(v); --null
-            exception when others then
-              data_list.append(json_value.makenull); --null
-            end;
+            data_list.append(json_value(l_val)); --null
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'varchar2' ||l_dtbl(i).col_type);
         --handling number types
