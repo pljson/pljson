@@ -27,10 +27,10 @@ create or replace package json_dyn authid current_user as
   include_blobs          boolean not null := false;
   
   /* list with objects */
-  function executeList(stmt varchar2, bindvar json default null) return json_list;
+  function executeList(stmt varchar2, bindvar json default null, cur_num number default null) return json_list;
   
   /* object with lists */
-  function executeObject(stmt varchar2, bindvar json default null) return json;
+  function executeObject(stmt varchar2, bindvar json default null, cur_num number default null) return json;
 
 
   /* usage example:
@@ -45,11 +45,32 @@ create or replace package json_dyn authid current_user as
    * end;
    */
 
+/* --11g functions
+  function executeList(stmt in out sys_refcursor) return json_list;
+  function executeObject(stmt in out sys_refcursor) return json;
+*/
 end json_dyn;
 /
 
 create or replace
 package body json_dyn as
+/*
+  -- 11gR2 
+  function executeList(stmt in out sys_refcursor) return json_list as
+    l_cur number;
+  begin
+    l_cur := dbms_sql.to_cursor_number(stmt);
+    return json_dyn.executeList(null, null, l_cur);
+  end;
+
+  -- 11gR2 
+  function executeObject(stmt in out sys_refcursor) return json as
+    l_cur number;
+  begin
+    l_cur := dbms_sql.to_cursor_number(stmt);
+    return json_dyn.executeObject(null, null, l_cur);
+  end;
+*/
 
   procedure bind_json(l_cur number, bindvar json) as
     keylist json_list := bindvar.get_keys();
@@ -74,7 +95,7 @@ package body json_dyn as
   end bind_json;
 
   /* list with objects */
-  function executeList(stmt varchar2, bindvar json) return json_list as
+  function executeList(stmt varchar2, bindvar json, cur_num number) return json_list as
     l_cur number;
     l_dtbl dbms_sql.desc_tab;
     l_cnt number;
@@ -88,13 +109,17 @@ package body json_dyn as
     read_blob blob;
     col_type number;
   begin
-    l_cur := dbms_sql.open_cursor;
-    dbms_sql.parse(l_cur, stmt, dbms_sql.native);
-    if(bindvar is not null) then bind_json(l_cur, bindvar); end if;
+    if(cur_num is not null) then 
+      l_cur := cur_num; 
+    else
+      l_cur := dbms_sql.open_cursor;
+      dbms_sql.parse(l_cur, stmt, dbms_sql.native);
+      if(bindvar is not null) then bind_json(l_cur, bindvar); end if;
+    end if;
     dbms_sql.describe_columns(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
       col_type := l_dtbl(i).col_type;
---      dbms_output.put_line(col_type);
+      --dbms_output.put_line(col_type);
       if(col_type = 12) then
         dbms_sql.define_column(l_cur,i,read_date);
       elsif(col_type = 112) then
@@ -105,7 +130,8 @@ package body json_dyn as
         dbms_sql.define_column(l_cur,i,l_val,4000);
       end if;
     end loop;
-    l_status := dbms_sql.execute(l_cur);
+    
+    if(cur_num is null) then l_status := dbms_sql.execute(l_cur); end if;
     
     --loop through rows 
     while ( dbms_sql.fetch_rows(l_cur) > 0 ) loop
@@ -159,7 +185,7 @@ package body json_dyn as
   end executeList;
 
   /* object with lists */
-  function executeObject(stmt varchar2, bindvar json) return json as
+  function executeObject(stmt varchar2, bindvar json, cur_num number) return json as
     l_cur number;
     l_dtbl dbms_sql.desc_tab;
     l_cnt number;
@@ -175,9 +201,13 @@ package body json_dyn as
     read_blob blob;
     col_type number;
   begin
-    l_cur := dbms_sql.open_cursor;
-    dbms_sql.parse(l_cur, stmt, dbms_sql.native);
-    if(bindvar is not null) then bind_json(l_cur, bindvar); end if;
+    if(cur_num is not null) then 
+      l_cur := cur_num; 
+    else
+      l_cur := dbms_sql.open_cursor;
+      dbms_sql.parse(l_cur, stmt, dbms_sql.native);
+      if(bindvar is not null) then bind_json(l_cur, bindvar); end if;
+    end if;
     dbms_sql.describe_columns(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
       col_type := l_dtbl(i).col_type;
@@ -191,7 +221,7 @@ package body json_dyn as
         dbms_sql.define_column(l_cur,i,l_val,4000);
       end if;
     end loop;
-    l_status := dbms_sql.execute(l_cur);
+    if(cur_num is null) then l_status := dbms_sql.execute(l_cur); end if;
     
     --build up name_list
     for i in 1..l_cnt loop

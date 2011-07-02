@@ -78,6 +78,13 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
   THE SOFTWARE.
   */
   
+  decimalpoint varchar2(1 char) := '.';
+  
+  procedure updateDecimalPoint as
+  begin
+    SELECT substr(VALUE,1,1) into decimalpoint FROM NLS_SESSION_PARAMETERS WHERE PARAMETER = 'NLS_NUMERIC_CHARACTERS';
+  end updateDecimalPoint;
+
   /*type json_src is record (len number, offset number, src varchar2(10), s_clob clob); */
   function next_char(indx number, s in out nocopy json_src) return varchar2 as
   begin
@@ -531,16 +538,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
         when 'NULL' then e_arr(v_count) := json_value;
         when 'STRING' then e_arr(v_count) := case when tok.data_overflow is not null then json_value(tok.data_overflow) else json_value(tok.data) end;
         when 'ESTRING' then e_arr(v_count) := json_value(tok.data_overflow, false);
-        when 'NUMBER' then 
-          declare rev varchar2(10); begin
-            --stupid countries with , as decimal point
-            SELECT VALUE into rev FROM NLS_SESSION_PARAMETERS WHERE PARAMETER = 'NLS_NUMERIC_CHARACTERS';
-            if(rev = ',.') then
-              e_arr(v_count) := json_value( to_number(replace(tok.data, '.',',')));
-            else
-              e_arr(v_count) := json_value( to_number(tok.data ));
-            end if;
-          end;
+        when 'NUMBER' then e_arr(v_count) := json_value(to_number(replace(tok.data, '.', decimalpoint))); 
         when '[' then 
           declare e_list json_list; begin
             indx := indx + 1;
@@ -583,16 +581,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
       when 'NULL' then mem := json_value;
       when 'STRING' then mem := case when tok.data_overflow is not null then json_value(tok.data_overflow) else json_value(tok.data) end;
       when 'ESTRING' then mem := json_value(tok.data_overflow, false);
-      when 'NUMBER' then 
-        declare rev varchar2(10); begin
-          --stupid countries with , as decimal point - like my own
-          SELECT VALUE into rev FROM NLS_SESSION_PARAMETERS WHERE PARAMETER = 'NLS_NUMERIC_CHARACTERS';
-          if(rev = ',.') then
-            mem := json_value( to_number(replace(tok.data, '.',',')));
-          else
-            mem := json_value( to_number(tok.data ));
-          end if;
-        end;
+      when 'NUMBER' then mem := json_value(to_number(replace(tok.data, '.', decimalpoint)));
       when '[' then 
         declare
           e_list json_list;
@@ -709,6 +698,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     indx pls_integer := 1;
     jsrc json_src;
   begin
+    updateDecimalPoint();
     jsrc := prepareVarchar2(str);
     tokens := lexer(jsrc); 
     if(tokens(indx).type_name = '{') then
@@ -730,6 +720,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     indx pls_integer := 1;
     jsrc json_src;
   begin
+    updateDecimalPoint();
     jsrc := prepareVarchar2(str);
     tokens := lexer(jsrc); 
     if(tokens(indx).type_name = '[') then
@@ -751,6 +742,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     indx pls_integer := 1;
     jsrc json_src;
   begin
+    updateDecimalPoint();
     jsrc := prepareClob(str);
     tokens := lexer(jsrc); 
     if(tokens(indx).type_name = '[') then
@@ -772,6 +764,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     indx pls_integer := 1;
     jsrc json_src;
   begin
+    updateDecimalPoint();
     --dbms_output.put_line('Using clob');
     jsrc := prepareClob(str);
     tokens := lexer(jsrc); 
@@ -795,6 +788,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     indx pls_integer := 1;
     jsrc json_src;
   begin
+    updateDecimalPoint();
     jsrc := prepareVarchar2(str);
     tokens := lexer(jsrc); 
     tokens(tokens.count+1).type_name := ']';
@@ -857,7 +851,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
   
   function get_version return varchar2 as
   begin
-    return 'PL/JSON v1.0.1';
+    return 'PL/JSON v1.0.2';
   end get_version;
 
 end json_parser;
