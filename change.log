@@ -19,12 +19,15 @@ This software has been released under the MIT license:
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
+      Version: 1.0.3
+        UTF8 fix in json_printer.
+        Small change in json_dyn_sql package.
       Version: 1.0.2
-	Fix for number parsing for various nls settings
-	Enabled sys_refcursor in json_dyn (11g only)
+        Fix for number parsing for various nls settings
+        Enabled sys_refcursor in json_dyn (11g only)
       Version: 1.0.1
         forgot to commit example 18 and 19 to svn
-	fixed escape error in json_dyn package
+        fixed escape error in json_dyn package
       Version: 1.0.0
         json_list api has been changed
         slight changes in json_value api + clob support
