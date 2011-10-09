@@ -632,17 +632,41 @@ package body "JSON_PRINTER" as
   end;
 */  
   procedure htp_output_clob(my_clob clob, jsonp varchar2 default null) as 
-    amount number := 8192;
+    /*amount number := 4096;
     pos number := 1;
     len number;
+    */
+    l_amt    number default 30;
+    l_off   number default 1;
+    l_str   varchar2(4096);
+    
   begin
     if(jsonp is not null) then htp.prn(jsonp||'('); end if;
+    
+    begin
+      loop
+        dbms_lob.read( my_clob, l_amt, l_off, l_str );
+
+        -- it is vital to use htp.PRN to avoid 
+        -- spurious line feeds getting added to your
+        -- document
+        htp.prn( l_str  );
+        l_off := l_off+l_amt;
+        l_amt := 4096;
+      end loop;
+    exception
+      when no_data_found then NULL;
+    end;
+        
+    /*
     len := dbms_lob.getlength(my_clob);
+    
     while(pos < len) loop
       htp.prn(dbms_lob.substr(my_clob, amount, pos)); -- should I replace substr with dbms_lob.read?
       --dbms_output.put_line(dbms_lob.substr(my_clob, amount, pos)); 
       pos := pos + amount;
     end loop;
+    */
     if(jsonp is not null) then htp.prn(')'); end if;
   end;
 

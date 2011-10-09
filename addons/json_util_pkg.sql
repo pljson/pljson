@@ -315,7 +315,11 @@ begin
     if(l_num_rows = 1) then
       declare ret json_list := json_list();
       begin
-        ret.append(json(l_returnvalue).get('ROWSET'));
+        ret.append(
+          json(
+            json(l_returnvalue).get('ROWSET')
+          ).get('ROW')
+        );
         return ret;
       end;
     else 
