@@ -29,6 +29,8 @@ declare begin
   begin execute immediate 'drop package json_ml'; exception when others then null; end;
   begin execute immediate 'drop package json_xml'; exception when others then null; end;
   begin execute immediate 'drop package json_util_pkg'; exception when others then null; end;
+  begin execute immediate 'drop package json_helper'; exception when others then null; end;
+  begin execute immediate 'drop package json_ac'; exception when others then null; end;
   begin execute immediate 'drop type json force'; exception when others then null; end;
   begin execute immediate 'drop type json_member_array force'; exception when others then null; end;
   begin execute immediate 'drop type json_member force'; exception when others then null; end;
