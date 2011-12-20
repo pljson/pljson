@@ -1,6 +1,10 @@
 PROMPT -- Setting optimize level --
-/*ALTER SESSION SET PLSQL_OPTIMIZE_LEVEL = 3;
-ALTER SESSION SET plsql_code_type = 'NATIVE';*/
+
+/*
+11g
+ALTER SESSION SET PLSQL_OPTIMIZE_LEVEL = 3;
+ALTER SESSION SET plsql_code_type = 'NATIVE';
+*/
 ALTER SESSION SET PLSQL_OPTIMIZE_LEVEL = 2;
 
 /*
@@ -40,6 +44,7 @@ PROMPT -----------------------------------;
 @@json_body.typ
 @@json_list_body.typ
 --@@grantsandsynonyms.sql --grants to core API
+@@json_ac.sql --Wrapper to enhance autocompletion
 
 PROMPT ------------------------------------------;
 PROMPT -- Adding optional packages for PL/JSON --;
@@ -48,3 +53,4 @@ PROMPT ------------------------------------------;
 @@addons/jsonml.sql --jsonml (xml to json)
 @@addons/json_xml.sql --json to xml copied from http://www.json.org/java/org/json/XML.java
 @@addons/json_util_pkg.sql --dynamic sql from http://ora-00001.blogspot.com/2010/02/ref-cursor-to-json.html
+@@addons/json_helper.sql --Set operations on JSON and JSON_LIST

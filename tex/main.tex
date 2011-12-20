@@ -52,7 +52,7 @@
 \footskip 0.8in
 
 
-\title{PL/JSON Reference Guide (version 1.0.3)}
+\title{PL/JSON Reference Guide (version 1.0.4)}
 \subtitle{For Oracle 10g and 11g}
 \author{Jonas Krogsbøll}
 \date{}
@@ -321,8 +321,12 @@ Possible errors might get detected and corrected and new features may arrise fro
 \item JSON\_DYN A package that enables you to generate JSON from sql. Nested queries are not supported. See example 16 for more information.
 \item JSON\_ML A package that converts from XML to JSON using a XSLT stylesheet. See www.jsonml.org.
 \item JSON\_XML A package that converts a JSON object to XML. 
+\item JSON\_HELPER Work on JSON with set operations.
 \item JSON\_UTIL\_PKG Written by Morten Braten (http://ora-00001.blogspot.com). Generate JSON from sql using a XSLT stylesheet. 
+\item JSON\_AC Autocomplete package. Some PL/SQL IDE's provide autocompletion when using a package but not when using an object type. This package is a wrapper around the methods on JSON, JSON\_LIST and JSON\_VALUE. Use it if you often forget the methods on those object types.
 \end{itemize}
+
+
 
 \end{document}
 

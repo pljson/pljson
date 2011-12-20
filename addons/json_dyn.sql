@@ -172,7 +172,11 @@ package body json_dyn as
         when l_dtbl(i).col_type = 113 then --blob
           if(include_blobs) then
             dbms_sql.column_value(l_cur,i,read_blob);
-            inner_obj.put(l_dtbl(i).col_name, json_ext.encode(read_blob));
+            if(dbms_lob.getlength(read_blob) > 0) then
+              inner_obj.put(l_dtbl(i).col_name, json_ext.encode(read_blob));
+            else
+              inner_obj.put(l_dtbl(i).col_name, json_value.makenull);
+            end if;
           end if;
         
         else null; --discard other types
@@ -275,7 +279,11 @@ package body json_dyn as
         when l_dtbl(i).col_type = 113 then --blob
           if(include_blobs) then
             dbms_sql.column_value(l_cur,i,read_blob);
-            data_list.append(json_ext.encode(read_blob));
+            if(dbms_lob.getlength(read_blob) > 0) then
+              data_list.append(json_ext.encode(read_blob));
+            else 
+              data_list.append(json_value.makenull);
+            end if; 
           end if;
         else null; --discard other types
         end case;

@@ -851,7 +851,7 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
   
   function get_version return varchar2 as
   begin
-    return 'PL/JSON v1.0.3';
+    return 'PL/JSON v1.0.4';
   end get_version;
 
 end json_parser;
