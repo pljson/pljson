@@ -78,26 +78,27 @@ create or replace package json_ac as
 
   --json_value
   
-  function get_type(p_self in json_value) return varchar2;
-  function get_string(p_self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2;
-  procedure get_string(p_self in json_value, buf in out nocopy clob);
-  function get_number(p_self in json_value) return number;
-  function get_bool(p_self in json_value) return boolean;
-  function get_null(p_self in json_value) return varchar2;
+
+  function jv_get_type(p_self in json_value) return varchar2;
+  function jv_get_string(p_self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2;
+  procedure jv_get_string(p_self in json_value, buf in out nocopy clob);
+  function jv_get_number(p_self in json_value) return number;
+  function jv_get_bool(p_self in json_value) return boolean;
+  function jv_get_null(p_self in json_value) return varchar2;
   
-  function is_object(p_self in json_value) return boolean;
-  function is_array(p_self in json_value) return boolean;
-  function is_string(p_self in json_value) return boolean;
-  function is_number(p_self in json_value) return boolean;
-  function is_bool(p_self in json_value) return boolean;
-  function is_null(p_self in json_value) return boolean;
+  function jv_is_object(p_self in json_value) return boolean;
+  function jv_is_array(p_self in json_value) return boolean;
+  function jv_is_string(p_self in json_value) return boolean;
+  function jv_is_number(p_self in json_value) return boolean;
+  function jv_is_bool(p_self in json_value) return boolean;
+  function jv_is_null(p_self in json_value) return boolean;
   
-  function to_char(p_self in json_value, spaces boolean default true, chars_per_line number default 0) return varchar2;
-  procedure to_clob(p_self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true);
-  procedure print(p_self in json_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null);
-  procedure htp(p_self in json_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null);
+  function jv_to_char(p_self in json_value, spaces boolean default true, chars_per_line number default 0) return varchar2;
+  procedure jv_to_clob(p_self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true);
+  procedure jv_print(p_self in json_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null);
+  procedure jv_htp(p_self in json_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null);
   
-  function value_of(p_self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2;
+  function jv_value_of(p_self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2;
 
 
 end json_ac;
@@ -241,42 +242,42 @@ create or replace package body json_ac as
   --json_value
   
     
-  function get_type(p_self in json_value) return varchar2 as
+  function jv_get_type(p_self in json_value) return varchar2 as
   begin return p_self.get_type; end;
-  function get_string(p_self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2 as
+  function jv_get_string(p_self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2 as
   begin return p_self.get_string(max_byte_size, max_char_size); end;
-  procedure get_string(p_self in json_value, buf in out nocopy clob) as
+  procedure jv_get_string(p_self in json_value, buf in out nocopy clob) as
   begin p_self.get_string(buf); end;
-  function get_number(p_self in json_value) return number as
+  function jv_get_number(p_self in json_value) return number as
   begin return p_self.get_number; end;
-  function get_bool(p_self in json_value) return boolean as
+  function jv_get_bool(p_self in json_value) return boolean as
   begin return p_self.get_bool; end;
-  function get_null(p_self in json_value) return varchar2 as
+  function jv_get_null(p_self in json_value) return varchar2 as
   begin return p_self.get_null; end;
   
-  function is_object(p_self in json_value) return boolean as
+  function jv_is_object(p_self in json_value) return boolean as
   begin return p_self.is_object; end;
-  function is_array(p_self in json_value) return boolean as
+  function jv_is_array(p_self in json_value) return boolean as
   begin return p_self.is_array; end;
-  function is_string(p_self in json_value) return boolean as
+  function jv_is_string(p_self in json_value) return boolean as
   begin return p_self.is_string; end;
-  function is_number(p_self in json_value) return boolean as
+  function jv_is_number(p_self in json_value) return boolean as
   begin return p_self.is_number; end;
-  function is_bool(p_self in json_value) return boolean as
+  function jv_is_bool(p_self in json_value) return boolean as
   begin return p_self.is_bool; end;
-  function is_null(p_self in json_value) return boolean as
+  function jv_is_null(p_self in json_value) return boolean as
   begin return p_self.is_null; end;
   
-  function to_char(p_self in json_value, spaces boolean default true, chars_per_line number default 0) return varchar2 as
+  function jv_to_char(p_self in json_value, spaces boolean default true, chars_per_line number default 0) return varchar2 as
   begin return p_self.to_char(spaces, chars_per_line); end;
-  procedure to_clob(p_self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) as
+  procedure jv_to_clob(p_self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) as
   begin p_self.to_clob(buf, spaces, chars_per_line, erase_clob); end; 
-  procedure print(p_self in json_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null) as
+  procedure jv_print(p_self in json_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null) as
   begin p_self.print(spaces, chars_per_line, jsonp); end;
-  procedure htp(p_self in json_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null) as
+  procedure jv_htp(p_self in json_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null) as
   begin p_self.htp(spaces, chars_per_line, jsonp); end;
   
-  function value_of(p_self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2 as
+  function jv_value_of(p_self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2 as
   begin return p_self.value_of(max_byte_size, max_char_size); end;
 
 end json_ac;
