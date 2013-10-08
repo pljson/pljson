@@ -25,10 +25,10 @@ create or replace package json_dyn authid current_user as
   include_dates          boolean not null := true;  --date
   include_clobs          boolean not null := true;
   include_blobs          boolean not null := false;
-  
+
   /* list with objects */
   function executeList(stmt varchar2, bindvar json default null, cur_num number default null) return json_list;
-  
+
   /* object with lists */
   function executeObject(stmt varchar2, bindvar json default null, cur_num number default null) return json;
 
@@ -55,7 +55,7 @@ end json_dyn;
 create or replace
 package body json_dyn as
 /*
-  -- 11gR2 
+  -- 11gR2
   function executeList(stmt in out sys_refcursor) return json_list as
     l_cur number;
   begin
@@ -63,7 +63,7 @@ package body json_dyn as
     return json_dyn.executeList(null, null, l_cur);
   end;
 
-  -- 11gR2 
+  -- 11gR2
   function executeObject(stmt in out sys_refcursor) return json as
     l_cur number;
   begin
@@ -97,7 +97,7 @@ package body json_dyn as
   /* list with objects */
   function executeList(stmt varchar2, bindvar json, cur_num number) return json_list as
     l_cur number;
-    l_dtbl dbms_sql.desc_tab;
+    l_dtbl dbms_sql.desc_tab2;
     l_cnt number;
     l_status number;
     l_val varchar2(4000);
@@ -109,14 +109,14 @@ package body json_dyn as
     read_blob blob;
     col_type number;
   begin
-    if(cur_num is not null) then 
-      l_cur := cur_num; 
+    if(cur_num is not null) then
+      l_cur := cur_num;
     else
       l_cur := dbms_sql.open_cursor;
       dbms_sql.parse(l_cur, stmt, dbms_sql.native);
       if(bindvar is not null) then bind_json(l_cur, bindvar); end if;
     end if;
-    dbms_sql.describe_columns(l_cur, l_cnt, l_dtbl);
+    dbms_sql.describe_columns2(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
       col_type := l_dtbl(i).col_type;
       --dbms_output.put_line(col_type);
@@ -130,10 +130,10 @@ package body json_dyn as
         dbms_sql.define_column(l_cur,i,l_val,4000);
       end if;
     end loop;
-    
+
     if(cur_num is null) then l_status := dbms_sql.execute(l_cur); end if;
-    
-    --loop through rows 
+
+    --loop through rows
     while ( dbms_sql.fetch_rows(l_cur) > 0 ) loop
       inner_obj := json(); --init for each row
       --loop through columns
@@ -143,9 +143,9 @@ package body json_dyn as
         when l_dtbl(i).col_type in (1,96) then -- varchar2
           dbms_sql.column_value(l_cur,i,l_val);
           if(l_val is null) then
-            if(null_as_empty_string) then 
+            if(null_as_empty_string) then
               inner_obj.put(l_dtbl(i).col_name, ''); --treatet as emptystring?
-            else 
+            else
               inner_obj.put(l_dtbl(i).col_name, json_value.makenull); --null
             end if;
           else
@@ -178,7 +178,7 @@ package body json_dyn as
               inner_obj.put(l_dtbl(i).col_name, json_value.makenull);
             end if;
           end if;
-        
+
         else null; --discard other types
         end case;
       end loop;
@@ -205,8 +205,8 @@ package body json_dyn as
     read_blob blob;
     col_type number;
   begin
-    if(cur_num is not null) then 
-      l_cur := cur_num; 
+    if(cur_num is not null) then
+      l_cur := cur_num;
     else
       l_cur := dbms_sql.open_cursor;
       dbms_sql.parse(l_cur, stmt, dbms_sql.native);
@@ -226,7 +226,7 @@ package body json_dyn as
       end if;
     end loop;
     if(cur_num is null) then l_status := dbms_sql.execute(l_cur); end if;
-    
+
     --build up name_list
     for i in 1..l_cnt loop
       case l_dtbl(i).col_type
@@ -240,19 +240,19 @@ package body json_dyn as
       end case;
     end loop;
 
-    --loop through rows 
+    --loop through rows
     while ( dbms_sql.fetch_rows(l_cur) > 0 ) loop
       data_list := json_list();
       --loop through columns
       for i in 1..l_cnt loop
-        case true 
+        case true
         --handling string types
         when l_dtbl(i).col_type in (1,96) then -- varchar2
           dbms_sql.column_value(l_cur,i,l_val);
           if(l_val is null) then
-            if(null_as_empty_string) then 
+            if(null_as_empty_string) then
               data_list.append(''); --treatet as emptystring?
-            else 
+            else
               data_list.append(json_value.makenull); --null
             end if;
           else
@@ -281,16 +281,16 @@ package body json_dyn as
             dbms_sql.column_value(l_cur,i,read_blob);
             if(dbms_lob.getlength(read_blob) > 0) then
               data_list.append(json_ext.encode(read_blob));
-            else 
+            else
               data_list.append(json_value.makenull);
-            end if; 
+            end if;
           end if;
         else null; --discard other types
         end case;
       end loop;
       inner_list_data.append(data_list);
     end loop;
-    
+
     outer_obj.put('names', inner_list_names.to_json_value);
     outer_obj.put('data', inner_list_data.to_json_value);
     dbms_sql.close_cursor(l_cur);
