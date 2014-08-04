@@ -31,7 +31,10 @@ type body json_value as
     if(dbms_lob.getlength(str) > 32767) then
       extended_str := str;
     end if;
-    dbms_lob.read(str, amount, 1, self.str);
+    -- GHS 20120615: Added IF structure to handle null clobs
+    if dbms_lob.getlength(str) > 0 then
+      dbms_lob.read(str, amount, 1, self.str);
+    end if;
     return;
   end json_value;
 
