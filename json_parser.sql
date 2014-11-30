@@ -297,9 +297,9 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
             --tabulator t = U+0009
             case buf
             when 'b' then varbuf := varbuf || chr(8);
-            when 'f' then varbuf := varbuf || chr(13);
+            when 'f' then varbuf := varbuf || chr(12);
             when 'n' then varbuf := varbuf || chr(10);
-            when 'r' then varbuf := varbuf || chr(14);
+            when 'r' then varbuf := varbuf || chr(13);
             when 't' then varbuf := varbuf || chr(9);
             end case;            
             --varbuf := varbuf || buf;
