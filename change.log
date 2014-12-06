@@ -19,6 +19,8 @@ This software has been released under the MIT license:
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
+      Version: 1.0.5
+        Fixed error with \r and \f in parser and printer
       Version: 1.0.4
         Error with empty_blob in json_dyn
         New optional package: JSON_HELPER - Set operations.

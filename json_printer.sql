@@ -73,8 +73,8 @@ package body "JSON_PRINTER" as
       when chr( 8) then buf := '\b';
       when chr( 9) then buf := '\t';
       when chr(10) then buf := '\n';
-      when chr(13) then buf := '\f';
-      when chr(14) then buf := '\r';
+      when chr(12) then buf := '\f';
+      when chr(13) then buf := '\r';
       when chr(34) then buf := '\"';
       when chr(47) then if(escape_solidus) then buf := '\/'; end if;
       when chr(92) then buf := '\\';
