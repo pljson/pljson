@@ -13,7 +13,7 @@ grunt.initConfig({
 
     prepareRelease: {
       command: 'rm -rf target *.zip && mkdir target && ' +
-      'cp -R src/* testsuite examples tex/doc.pdf change.log readme.txt target'
+      'cp -R src/* testsuite examples tex/doc.pdf *install.sql change.log readme.txt target'
     }
   },
 
