@@ -1,1 +1,10 @@
 *.sublime-workspace
+node_modules/
+target/
+
+*.zip
+tex/*.pdf
+tex/*.aux
+tex/*.log
+tex/*.rai
+tex/*.toc

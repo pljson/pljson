@@ -1,0 +1,34 @@
+{
+  "name": "pljson",
+  "version": "1.0.6",
+  "description": "A PL/SQL object for handling JSON data in Oracle stored procedures and tables.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pljson/pljson.git"
+  },
+  "keywords": [
+    "json",
+    "pl",
+    "plsql"
+  ],
+  "author": "Jonas Krogsbøll",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pljson/pljson/issues"
+  },
+  "homepage": "https://github.com/pljson/pljson",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-shell": "^1.1.1",
+    "grunt-zip": "^0.16.2",
+    "load-grunt-tasks": "^1.0.0"
+  }
+}
