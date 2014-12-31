@@ -6,8 +6,17 @@ var packageJSON = require('./package.json');
 require('load-grunt-tasks')(grunt);
 
 grunt.initConfig({
+  githubPages: {
+    target: {
+      options: {
+        commitMessage: 'Updating site'
+      },
+      src: 'site'
+    }
+  },
+
   panda: {
-    docSite: {
+    docHTML: {
       options: {
         pandocOptions: '-t html5 --section-divs --mathjax -s'
       },
@@ -34,7 +43,11 @@ grunt.initConfig({
   },
 
   shell: {
-    copyDiagramToSite: {
+    buildSite: {
+      command: 'cp -R ./doc/html/* ./site/'
+    },
+
+    copyDiagramToHTML: {
       command: 'cp ./doc/src/visual.jpg ./doc/html/'
     },
 
@@ -54,6 +67,8 @@ grunt.initConfig({
   }
 });
 
-grunt.registerTask('release', ['panda:docSite', 'shell:prepareRelease', 'zip']);
-grunt.registerTask('buildDocSite', ['panda:docSite', 'shell:copyDiagramToSite']);
+grunt.registerTask('release', ['panda:docHTML', 'shell:prepareRelease', 'zip']);
+grunt.registerTask('buildDocHTML', ['panda:docHTML', 'shell:copyDiagramToHTML']);
 grunt.registerTask('buildPDF', ['panda:pdf']);
+grunt.registerTask('buildSite', ['panda:docHTML', 'shell:copyDiagramToHTML', 'shell:buildSite']);
+grunt.registerTask('publishSite', ['panda:docHTML', 'shell:copyDiagramToHTML', 'shell:buildSite', 'githubPages:target']);
