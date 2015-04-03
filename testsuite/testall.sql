@@ -26,7 +26,7 @@ CREATE TABLE "JSON_TESTSUITE" (
   "TOTAL" NUMBER, 
   "FILENAME" VARCHAR2(20 BYTE)
 );  
-/
+
 --run each test here
 @jsonparsertest.sql
 @json_test.sql
@@ -39,4 +39,4 @@ PROMPT Unit-testing of PLJSON implementation:
 select * from json_testsuite;
 --select 'All tests', sum(passed), sum(failed), sum(total), ' ' from json_testsuite;
 drop table json_testsuite;
-/
+
