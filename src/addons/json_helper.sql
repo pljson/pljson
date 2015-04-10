@@ -168,7 +168,7 @@ create or replace package body json_helper as
   function equals(p_v1 json_value, p_v2 varchar2) return boolean as
   begin
     if(p_v2 is null) then
-      return p_v1.is_null;
+      return (p_v1.is_null or p_v1.get_string is null);
     end if;
     
     if(not p_v1.is_string) then
@@ -196,12 +196,13 @@ create or replace package body json_helper as
     
     res := dbms_lob.compare(p_v2, my_clob) = 0;
     dbms_lob.freetemporary(my_clob);
+    return res;
   end;
   
   function equals(p_v1 json_value, p_v2 json_value, exact boolean) return boolean as
   begin
-    if(p_v2 is null) then
-      return p_v1.is_null;
+    if(p_v2 is null or p_v2.is_null) then
+      return (p_v1 is null or p_v1.is_null);
     end if;
     
     if(p_v2.is_number) then return equals(p_v1, p_v2.get_number); end if;
