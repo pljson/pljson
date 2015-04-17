@@ -36,13 +36,28 @@ create or replace package json_printer as
   
   procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null);
   procedure htp_output_clob(my_clob clob, jsonp varchar2 default null);
+  -- made public just for testing/profiling... 
+  function escapeString(str varchar2) return varchar2;
+  
 end json_printer;
 /
-
 create or replace
 package body "JSON_PRINTER" as
   max_line_len number := 0;
   cur_line_len number := 0;
+           
+  
+  -- associative array used inside escapeString to cache the escaped version of every character
+  -- escaped so far  (example: char_map('"') contains the  '\"' string)
+  -- (if the character does not need to be escaped, the character is stored unchanged in the array itself)
+  type Tmap_char_string is table of varchar2(40) index by varchar2(1);                          
+       char_map Tmap_char_string;                    
+       -- since char_map the associative array is a global variable reused across multiple calls to escapeString,
+       -- i need to be able to detect that the escape_solidus or ascii_output global parameters have been changed,
+       -- in order to clear it and avoid using escape sequences that have been cached using the previous values
+       char_map_escape_solidus boolean := escape_solidus;
+       char_map_ascii_output boolean := ascii_output;
+
   
   function llcheck(str in varchar2) return varchar2 as
   begin
@@ -55,40 +70,65 @@ package body "JSON_PRINTER" as
       return str;
     end if;
   end llcheck;  
-
-  function escapeString(str varchar2) return varchar2 as
-    sb varchar2(32767) := '';
-    buf varchar2(40);
-    num number;
+  
+  -- escapes a single character. 
+  function escapeChar(ch char) return varchar2 deterministic is
   begin
-    if(str is null) then return ''; end if;
-    for i in 1 .. length(str) loop
-      buf := substr(str, i, 1);
       --backspace b = U+0008
       --formfeed  f = U+000C
       --newline   n = U+000A
       --carret    r = U+000D
       --tabulator t = U+0009
-      case buf
-      when chr( 8) then buf := '\b';
-      when chr( 9) then buf := '\t';
-      when chr(10) then buf := '\n';
-      when chr(12) then buf := '\f';
-      when chr(13) then buf := '\r';
-      when chr(34) then buf := '\"';
-      when chr(47) then if(escape_solidus) then buf := '\/'; end if;
-      when chr(92) then buf := '\\';
-      else 
-        if(ascii(buf) < 32) then
-          buf := '\u'||replace(substr(to_char(ascii(buf), 'XXXX'),2,4), ' ', '0');
+      case ch
+      when chr( 8) then return '\b';
+      when chr( 9) then return '\t';
+      when chr(10) then return '\n';
+      when chr(12) then return '\f';
+      when chr(13) then return '\r';
+      when chr(34) then return  '\"';
+      when chr(47) then if(escape_solidus) then return '\/'; end if;
+      when chr(92) then return '\\';
+      else if(ascii(ch) < 32) then
+             return '\u'||replace(substr(to_char(ascii(ch), 'XXXX'),2,4), ' ', '0');
         elsif (ascii_output) then 
-          buf := replace(asciistr(buf), '\', '\u');
+             return replace(asciistr(ch), '\', '\u');
         end if;
-      end case;      
+      end case;    
+      return ch;  
+  end;
+
+
+
+  function escapeString(str varchar2) return varchar2 as
+    sb varchar2(32000) := ''; 
+    buf varchar2(40);     
+    ch char(1);
+  begin
+    if(str is null) then return ''; end if;  
+
+    -- clear the cache if global parameters have been changed 
+    if char_map_escape_solidus <> escape_solidus or
+       char_map_ascii_output   <> ascii_output 
+    then                                                 
+       char_map.delete;
+       char_map_escape_solidus := escape_solidus;
+       char_map_ascii_output := ascii_output;
+    end if;
+    
+    for i in 1 .. length(str) loop
+      ch := substr(str, i, 1 ) ;
+
+      begin                    
+         -- it this char has already been processed, I have cached its escaped value
+         buf := char_map(ch); 
+      exception when no_Data_found then
+         -- otherwise, i convert the value and add it to the cache
+         buf := escapeChar(ch);
+         char_map(ch) := buf;
+      end; 
       
       sb := sb || buf;
     end loop;
-  
     return sb;
   end escapeString;
 
