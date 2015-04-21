@@ -73,28 +73,31 @@ package body "JSON_PRINTER" as
   
   -- escapes a single character. 
   function escapeChar(ch char) return varchar2 deterministic is
+     result varchar2(20);
   begin
       --backspace b = U+0008
       --formfeed  f = U+000C
       --newline   n = U+000A
       --carret    r = U+000D
       --tabulator t = U+0009
+      result := ch;
+      
       case ch
-      when chr( 8) then return '\b';
-      when chr( 9) then return '\t';
-      when chr(10) then return '\n';
-      when chr(12) then return '\f';
-      when chr(13) then return '\r';
-      when chr(34) then return  '\"';
-      when chr(47) then if(escape_solidus) then return '\/'; end if;
-      when chr(92) then return '\\';
+      when chr( 8) then result := '\b';
+      when chr( 9) then result := '\t';
+      when chr(10) then result := '\n';
+      when chr(12) then result := '\f';
+      when chr(13) then result := '\r';
+      when chr(34) then result := '\"';
+      when chr(47) then if(escape_solidus) then result := '\/'; end if;
+      when chr(92) then result := '\\';
       else if(ascii(ch) < 32) then
-             return '\u'||replace(substr(to_char(ascii(ch), 'XXXX'),2,4), ' ', '0');
+             result :=  '\u'||replace(substr(to_char(ascii(ch), 'XXXX'),2,4), ' ', '0');
         elsif (ascii_output) then 
-             return replace(asciistr(ch), '\', '\u');
+             result := replace(asciistr(ch), '\', '\u');
         end if;
       end case;    
-      return ch;  
+      return result;  
   end;
 
 
