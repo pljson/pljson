@@ -58,6 +58,8 @@ create or replace package json_ext as
   function is_date(v json_value) return boolean;
   --convertion is needed to extract dates 
   function to_date(v json_value) return date;
+  -- alias so that old code doesn't break
+  function to_date2(v json_value) return date;
   --JSON Path with date
   function get_date(obj json, path varchar2, base number default 1) return date;
   procedure put(obj in out nocopy json, path varchar2, elem date, base number default 1);
@@ -119,6 +121,12 @@ create or replace package body json_ext as
   exception
     when others then
       raise_application_error(-20110, 'Anydata did not contain a date on the format: '||format_string);
+  end;
+  
+ -- alias so that old code doesn't break
+  function to_date2(v json_value) return date as
+  begin
+    return to_date(v);
   end;
   
   --Json Path parser
