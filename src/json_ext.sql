@@ -57,7 +57,8 @@ create or replace package json_ext as
   --notice that a date type in json is also a varchar2
   function is_date(v json_value) return boolean;
   --convertion is needed to extract dates 
-  --(json_ext.to_date will not work along with the normal to_date function - any fix will be appreciated)
+  function to_date(v json_value) return date;
+  -- alias so that old code doesn't break
   function to_date2(v json_value) return date;
   --JSON Path with date
   function get_date(obj json, path varchar2, base number default 1) return date;
@@ -102,7 +103,7 @@ create or replace package body json_ext as
   function is_date(v json_value) return boolean as
     temp date;
   begin
-    temp := json_ext.to_date2(v);
+    temp := json_ext.to_date(v);
     return true;
   exception
     when others then 
@@ -110,16 +111,22 @@ create or replace package body json_ext as
   end;
   
   --convertion is needed to extract dates
-  function to_date2(v json_value) return date as
+  function to_date(v json_value) return date as
   begin
     if(v.is_string) then
-      return to_date(v.get_string, format_string);
+      return standard.to_date(v.get_string, format_string);
     else
       raise_application_error(-20110, 'Anydata did not contain a date-value');
     end if;
   exception
     when others then
       raise_application_error(-20110, 'Anydata did not contain a date on the format: '||format_string);
+  end;
+  
+ -- alias so that old code doesn't break
+  function to_date2(v json_value) return date as
+  begin
+    return to_date(v);
   end;
   
   --Json Path parser
@@ -331,7 +338,7 @@ create or replace package body json_ext as
     if(temp is null or not is_date(temp)) then 
       return null; 
     else 
-      return json_ext.to_date2(temp);
+      return json_ext.to_date(temp);
     end if;
   end;
   
