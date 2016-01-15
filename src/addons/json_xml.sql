@@ -134,7 +134,7 @@ package body json_xml as
         toString(v_value, nvl(tagname, 'array'), xmlstr, xmlbuf);   
       end loop;
     else 
-      add_to_clob(xmlstr, xmlbuf, '<' || tagname || '>'||escapeStr(obj.to_char())||'</' || tagname || '>');
+      add_to_clob(xmlstr, xmlbuf, '<' || tagname || '>'||escapeStr(obj.to_json_value().value_of())||'</' || tagname || '>');
     end if;
   end toString;
 
