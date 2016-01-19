@@ -50,7 +50,8 @@ package body "JSON_PRINTER" as
   -- associative array used inside escapeString to cache the escaped version of every character
   -- escaped so far  (example: char_map('"') contains the  '\"' string)
   -- (if the character does not need to be escaped, the character is stored unchanged in the array itself)
-  type Tmap_char_string is table of varchar2(40) index by varchar2(1);                          
+  type Rmap_char is record(buf varchar2(40), len integer);
+  type Tmap_char_string is table of Rmap_char index by varchar2(1);                         
        char_map Tmap_char_string;                    
        -- since char_map the associative array is a global variable reused across multiple calls to escapeString,
        -- i need to be able to detect that the escape_solidus or ascii_output global parameters have been changed,
@@ -103,33 +104,42 @@ package body "JSON_PRINTER" as
 
 
   function escapeString(str varchar2) return varchar2 as
-    sb varchar2(32000) := ''; 
-    buf varchar2(40);     
-    ch char(1);
+    sb varchar2(32000) := '';
+    sb_length number:=0;
+    buf varchar2(40);
+    buf_length number;
+    ch varchar(2); -- Some languages have letters with chars more then one?
   begin
-    if(str is null) then return ''; end if;  
+    if(str is null) then return ''; end if;
 
-    -- clear the cache if global parameters have been changed 
+    -- clear the cache if global parameters have been changed
     if char_map_escape_solidus <> escape_solidus or
-       char_map_ascii_output   <> ascii_output 
-    then                                                 
+       char_map_ascii_output   <> ascii_output
+    then
        char_map.delete;
        char_map_escape_solidus := escape_solidus;
        char_map_ascii_output := ascii_output;
     end if;
-    
+
     for i in 1 .. length(str) loop
       ch := substr(str, i, 1 ) ;
 
-      begin                    
+      declare
+        current_map Rmap_char;
+      begin
          -- it this char has already been processed, I have cached its escaped value
-         buf := char_map(ch); 
+         current_map:=char_map(ch);
+         buf := current_map.buf;
+         buf_length:=current_map.len;
       exception when no_Data_found then
          -- otherwise, i convert the value and add it to the cache
          buf := escapeChar(ch);
-         char_map(ch) := buf;
-      end; 
-      
+         buf_length:=length(buf);
+         current_map.buf:=buf;
+         current_map.len:=buf_length;
+         char_map(ch) := current_map;
+      end;
+
       sb := sb || buf;
     end loop;
     return sb;
@@ -185,11 +195,60 @@ package body "JSON_PRINTER" as
 --    dbms_lob.append(buf_lob, buf_str);
     dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
   end flush_clob;
+  
+  procedure add_escaped_string_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str in varchar2) as
+    sb varchar2(32767) := '';
+    sb_length number:=0;
+    new_sb_length number;
+    buf varchar2(40);
+    buf_length integer;
+    ch char(2);
+  begin
+    if(str is null) then return; end if;
+    -- clear the cache if global parameters have been changed
+    if char_map_escape_solidus <> escape_solidus or
+       char_map_ascii_output   <> ascii_output
+    then
+       char_map.delete;
+       char_map_escape_solidus := escape_solidus;
+       char_map_ascii_output := ascii_output;
+    end if;
 
+    for i in 1 .. length(str) loop
+      ch := substr(str, i, 1 ) ;
+      declare
+        current_map Rmap_char;
+      begin
+         -- it this char has already been processed, I have cached its escaped value
+         current_map:=char_map(ch);
+         buf := current_map.buf;
+         buf_length:=current_map.len;
+      exception when no_Data_found then
+         -- otherwise, i convert the value and add it to the cache
+         buf := escapeChar(ch);
+         buf_length:=length(buf);
+         current_map.buf:=buf;
+         current_map.len:=buf_length;
+         char_map(ch) := current_map;
+      end;
+      new_sb_length:=sb_length+buf_length;
+      -- if length of result > 32767, then add it to clob and continue with new result
+      if new_sb_length>=32767 then
+        add_to_clob(buf_lob, buf_str, sb); --
+        sb:=buf;
+        sb_length:=buf_length;
+      else
+        sb := sb || buf;
+        sb_length:=new_sb_length;
+      end if;
+    end loop;
+    -- add rest ob result to clob
+    add_to_clob(buf_lob, buf_str, sb);
+  end;
   procedure ppObj(obj json, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2);
 
   procedure ppEA(input json_list, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
-    elem json_value; 
+    elem json_value;
     arr json_value_array := input.list_data;
     numbuf varchar2(4000);
   begin
@@ -197,19 +256,19 @@ package body "JSON_PRINTER" as
       elem := arr(y);
       if(elem is not null) then
       case elem.get_type
-        when 'number' then 
+        when 'number' then
           numbuf := '';
           if (elem.get_number < 1 and elem.get_number > 0) then numbuf := '0'; end if;
-          if (elem.get_number < 0 and elem.get_number > -1) then 
-            numbuf := '-0'; 
+          if (elem.get_number < 0 and elem.get_number > -1) then
+            numbuf := '-0';
             numbuf := numbuf || substr(to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
           else
             numbuf := numbuf || to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
           end if;
           add_to_clob(buf, buf_str, llcheck(numbuf));
-        when 'string' then 
+        when 'string' then
+          add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
           if(elem.extended_str is not null) then --clob implementation
-            add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
             declare
               offset number := 1;
               v_str varchar(32767);
@@ -217,24 +276,26 @@ package body "JSON_PRINTER" as
             begin
               while(offset <= dbms_lob.getlength(elem.extended_str)) loop
                 dbms_lob.read(elem.extended_str, amount, offset, v_str);
-                if(elem.num = 1) then 
-                  add_to_clob(buf, buf_str, escapeString(v_str));
-                else 
+                if(elem.num = 1) then
+                  --add_to_clob(buf, buf_str, escapeString(v_str));
+                  add_escaped_string_to_clob(buf, buf_str, v_str);
+                else
                   add_to_clob(buf, buf_str, v_str);
                 end if;
                 offset := offset + amount;
               end loop;
             end;
-            add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end || newline_char);
           else
-            if(elem.num = 1) then 
-              add_to_clob(buf, buf_str, llcheck('"'||escapeString(elem.get_string)||'"'));
-            else 
-              add_to_clob(buf, buf_str, llcheck('/**/'||elem.get_string||'/**/'));
-            end if;
+            --if(elem.num = 1) then
+              --add_to_clob(buf, buf_str, llcheck('"'||escapeString(elem.get_string)||'"'));
+              add_escaped_string_to_clob(buf, buf_str, elem.get_string);
+            --else
+            --  add_to_clob(buf, buf_str, llcheck('/**/'||elem.get_string||'/**/'));
+            --end if;
           end if;
+          add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end || newline_char);
         when 'bool' then
-          if(elem.get_bool) then 
+          if(elem.get_bool) then
             add_to_clob(buf, buf_str, llcheck('true'));
           else
             add_to_clob(buf, buf_str, llcheck('false'));
@@ -259,18 +320,19 @@ package body "JSON_PRINTER" as
   begin
     add_to_clob(buf, buf_str, llcheck(tab(indent, spaces)) || llcheck(getMemName(mem, spaces)));
     case mem.get_type
-      when 'number' then 
+      when 'number' then
         if (mem.get_number < 1 and mem.get_number > 0) then numbuf := '0'; end if;
-        if (mem.get_number < 0 and mem.get_number > -1) then 
-          numbuf := '-0'; 
+        if (mem.get_number < 0 and mem.get_number > -1) then
+          numbuf := '-0';
           numbuf := numbuf || substr(to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
         else
           numbuf := numbuf || to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
         end if;
         add_to_clob(buf, buf_str, llcheck(numbuf));
-      when 'string' then 
+      when 'string' then
+        add_to_clob(buf, buf_str, case when mem.num = 1 then '"' else '/**/' end);
         if(mem.extended_str is not null) then --clob implementation
-          add_to_clob(buf, buf_str, case when mem.num = 1 then '"' else '/**/' end);
+
           declare
             offset number := 1;
             v_str varchar(32767);
@@ -282,24 +344,27 @@ package body "JSON_PRINTER" as
  --             v_str := dbms_lob.substr(mem.extended_str, 8192, offset);
               dbms_lob.read(mem.extended_str, amount, offset, v_str);
 --            dbms_output.put_line('VSTR_SIZE:'||length(v_str));
-              if(mem.num = 1) then 
-                add_to_clob(buf, buf_str, escapeString(v_str));
-              else 
+              if(mem.num = 1) then
+                --add_to_clob(buf, buf_str, escapeString(v_str));
+                add_escaped_string_to_clob(buf, buf_str, v_str);
+              else
                 add_to_clob(buf, buf_str, v_str);
               end if;
               offset := offset + amount;
             end loop;
           end;
-          add_to_clob(buf, buf_str, case when mem.num = 1 then '"' else '/**/' end || newline_char);
-        else 
-          if(mem.num = 1) then 
-            add_to_clob(buf, buf_str, llcheck('"'||escapeString(mem.get_string)||'"'));
-          else 
-            add_to_clob(buf, buf_str, llcheck('/**/'||mem.get_string||'/**/'));
-          end if;
+
+        else
+         -- if(mem.num = 1) then
+            -- add_to_clob(buf, buf_str, llcheck('"'||escapeString(mem.get_string)||'"'));
+            add_escaped_string_to_clob(buf, buf_str, mem.get_string);
+         -- else
+         --   add_to_clob(buf, buf_str, llcheck('/**/'||mem.get_string||'/**/'));
+         -- end if;
         end if;
+        add_to_clob(buf, buf_str, case when mem.num = 1 then '"' else '/**/' end || newline_char);
       when 'bool' then
-        if(mem.get_bool) then 
+        if(mem.get_bool) then
           add_to_clob(buf, buf_str, llcheck('true'));
         else
           add_to_clob(buf, buf_str, llcheck('false'));
@@ -362,20 +427,20 @@ package body "JSON_PRINTER" as
     amount number := dbms_lob.getlength(buf);
   begin
     if(erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
-    
+
     case json_part.get_type
-      when 'number' then 
+      when 'number' then
         if (json_part.get_number < 1 and json_part.get_number > 0) then numbuf := '0'; end if;
-        if (json_part.get_number < 0 and json_part.get_number > -1) then 
-          numbuf := '-0'; 
+        if (json_part.get_number < 0 and json_part.get_number > -1) then
+          numbuf := '-0';
           numbuf := numbuf || substr(to_char(json_part.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
         else
           numbuf := numbuf || to_char(json_part.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
         end if;
         add_to_clob(buf, buf_str, numbuf);
-      when 'string' then 
+      when 'string' then
+        add_to_clob(buf, buf_str, case when json_part.num = 1 then '"' else '/**/' end);
         if(json_part.extended_str is not null) then --clob implementation
-          add_to_clob(buf, buf_str, case when json_part.num = 1 then '"' else '/**/' end);
           declare
             offset number := 1;
             v_str varchar(32767);
@@ -383,24 +448,26 @@ package body "JSON_PRINTER" as
           begin
             while(offset <= dbms_lob.getlength(json_part.extended_str)) loop
               dbms_lob.read(json_part.extended_str, amount, offset, v_str);
-              if(json_part.num = 1) then 
-                add_to_clob(buf, buf_str, escapeString(v_str));
-              else 
+              if(json_part.num = 1) then
+                --add_to_clob(buf, buf_str, escapeString(v_str));
+                add_escaped_string_to_clob(buf, buf_str, v_str);
+              else
                 add_to_clob(buf, buf_str, v_str);
               end if;
               offset := offset + amount;
             end loop;
           end;
-          add_to_clob(buf, buf_str, case when json_part.num = 1 then '"' else '/**/' end);
-        else 
-          if(json_part.num = 1) then 
-            add_to_clob(buf, buf_str, llcheck('"'||escapeString(json_part.get_string)||'"'));
-          else 
-            add_to_clob(buf, buf_str, llcheck('/**/'||json_part.get_string||'/**/'));
-          end if;
+        else
+          --if(json_part.num = 1) then
+            --add_to_clob(buf, buf_str, llcheck('"'||escapeString(json_part.get_string)||'"'));
+            add_escaped_string_to_clob(buf, buf_str, json_part.get_string);
+          --else
+          --  add_to_clob(buf, buf_str, llcheck('/**/'||json_part.get_string||'/**/'));
+          --end if;
         end if;
+        add_to_clob(buf, buf_str, case when json_part.num = 1 then '"' else '/**/' end);
       when 'bool' then
-	      if(json_part.get_bool) then
+          if(json_part.get_bool) then
           add_to_clob(buf, buf_str, 'true');
         else
           add_to_clob(buf, buf_str, 'false');
