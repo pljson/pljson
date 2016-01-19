@@ -104,33 +104,42 @@ package body "JSON_PRINTER" as
 
 
   function escapeString(str varchar2) return varchar2 as
-    sb varchar2(32000) := ''; 
-    buf varchar2(40);     
-    ch char(1);
+    sb varchar2(32000) := '';
+    sb_length number:=0;
+    buf varchar2(40);
+    buf_length number;
+    ch varchar(4); -- Some languages have letters with chars more then one
   begin
-    if(str is null) then return ''; end if;  
+    if(str is null) then return ''; end if;
 
-    -- clear the cache if global parameters have been changed 
+    -- clear the cache if global parameters have been changed
     if char_map_escape_solidus <> escape_solidus or
-       char_map_ascii_output   <> ascii_output 
-    then                                                 
+       char_map_ascii_output   <> ascii_output
+    then
        char_map.delete;
        char_map_escape_solidus := escape_solidus;
        char_map_ascii_output := ascii_output;
     end if;
-    
+
     for i in 1 .. length(str) loop
       ch := substr(str, i, 1 ) ;
 
-      begin                    
+      declare
+        current_map Rmap_char;
+      begin
          -- it this char has already been processed, I have cached its escaped value
-         buf := char_map(ch); 
+         current_map:=char_map(ch);
+         buf := current_map.buf;
+         buf_length:=current_map.len;
       exception when no_Data_found then
          -- otherwise, i convert the value and add it to the cache
          buf := escapeChar(ch);
-         char_map(ch) := buf;
-      end; 
-      
+         buf_length:=length(buf);
+         current_map.buf:=buf;
+         current_map.len:=buf_length;
+         char_map(ch) := current_map;
+      end;
+
       sb := sb || buf;
     end loop;
     return sb;
