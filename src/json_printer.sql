@@ -51,7 +51,7 @@ package body "JSON_PRINTER" as
   -- escaped so far  (example: char_map('"') contains the  '\"' string)
   -- (if the character does not need to be escaped, the character is stored unchanged in the array itself)
   type Rmap_char is record(buf varchar2(40), len integer);
-  type Tmap_char_string is table of Rmap_char index by varchar2(1);                         
+  type Tmap_char_string is table of Rmap_char index by varchar2(4); /* index by max unicode size in bytes */
        char_map Tmap_char_string;                    
        -- since char_map the associative array is a global variable reused across multiple calls to escapeString,
        -- i need to be able to detect that the escape_solidus or ascii_output global parameters have been changed,
@@ -108,7 +108,7 @@ package body "JSON_PRINTER" as
     sb_length number:=0;
     buf varchar2(40);
     buf_length number;
-    ch varchar(2); -- Some languages have letters with chars more then one?
+    ch varchar(4); /* 4 bytes max unicode char */
   begin
     if(str is null) then return ''; end if;
 
@@ -181,7 +181,8 @@ package body "JSON_PRINTER" as
 /* Clob method start here */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
-    if(lengthb(str) > 32767 - lengthb(buf_str)) then
+    --if(lengthb(str) > 5000 - lengthb(buf_str)) then
+    if(length(str) > 5000 - length(buf_str)) then
 --      dbms_lob.append(buf_lob, buf_str);
       dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
       buf_str := str;
@@ -202,7 +203,7 @@ package body "JSON_PRINTER" as
     new_sb_length number;
     buf varchar2(40);
     buf_length integer;
-    ch char(2);
+    ch varchar(4); /* 4 bytes max unicode size; must be varchar2 */
   begin
     if(str is null) then return; end if;
     -- clear the cache if global parameters have been changed
@@ -245,6 +246,7 @@ package body "JSON_PRINTER" as
     -- add rest ob result to clob
     add_to_clob(buf_lob, buf_str, sb);
   end;
+  
   procedure ppObj(obj json, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2);
 
   procedure ppEA(input json_list, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
@@ -272,13 +274,13 @@ package body "JSON_PRINTER" as
             declare
               offset number := 1;
               v_str varchar(32767);
-              amount number := 32767;
+              amount number := 5000;
             begin
               while(offset <= dbms_lob.getlength(elem.extended_str)) loop
                 dbms_lob.read(elem.extended_str, amount, offset, v_str);
                 if(elem.num = 1) then
-                  --add_to_clob(buf, buf_str, escapeString(v_str));
-                  add_escaped_string_to_clob(buf, buf_str, v_str);
+                  add_to_clob(buf, buf_str, escapeString(v_str));
+                  -- add_escaped_string_to_clob(buf, buf_str, v_str);
                 else
                   add_to_clob(buf, buf_str, v_str);
                 end if;
@@ -336,7 +338,7 @@ package body "JSON_PRINTER" as
           declare
             offset number := 1;
             v_str varchar(32767);
-            amount number := 32767;
+            amount number := 5000;
           begin
 --            dbms_output.put_line('SIZE:'||dbms_lob.getlength(mem.extended_str));
             while(offset <= dbms_lob.getlength(mem.extended_str)) loop
@@ -345,8 +347,8 @@ package body "JSON_PRINTER" as
               dbms_lob.read(mem.extended_str, amount, offset, v_str);
 --            dbms_output.put_line('VSTR_SIZE:'||length(v_str));
               if(mem.num = 1) then
-                --add_to_clob(buf, buf_str, escapeString(v_str));
-                add_escaped_string_to_clob(buf, buf_str, v_str);
+                add_to_clob(buf, buf_str, escapeString(v_str));
+                --add_escaped_string_to_clob(buf, buf_str, v_str);
               else
                 add_to_clob(buf, buf_str, v_str);
               end if;
@@ -444,13 +446,13 @@ package body "JSON_PRINTER" as
           declare
             offset number := 1;
             v_str varchar(32767);
-            amount number := 32767;
+            amount number := 5000;
           begin
             while(offset <= dbms_lob.getlength(json_part.extended_str)) loop
               dbms_lob.read(json_part.extended_str, amount, offset, v_str);
               if(json_part.num = 1) then
-                --add_to_clob(buf, buf_str, escapeString(v_str));
-                add_escaped_string_to_clob(buf, buf_str, v_str);
+                add_to_clob(buf, buf_str, escapeString(v_str));
+                --add_escaped_string_to_clob(buf, buf_str, v_str);
               else
                 add_to_clob(buf, buf_str, v_str);
               end if;
@@ -640,7 +642,7 @@ package body "JSON_PRINTER" as
     indx number := 1;
     size_of_nl number := lengthb(delim);
     v_str varchar2(32767);
-    amount number := 32767;
+    amount number := 5000;
   begin
     if(jsonp is not null) then dbms_output.put_line(jsonp||'('); end if;
     while(indx != 0) loop
@@ -650,7 +652,7 @@ package body "JSON_PRINTER" as
       
       if(indx = 0) then
         --emit from prev to end;
-        amount := 32767;
+        amount := 5000;
  --       dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
         loop
           dbms_lob.read(my_clob, amount, prev, v_str);
@@ -660,8 +662,8 @@ package body "JSON_PRINTER" as
         end loop;
       else 
         amount := indx - prev;
-        if(amount > 32767) then 
-          amount := 32767;
+        if(amount > 5000) then 
+          amount := 5000;
 --          dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
           loop
             dbms_lob.read(my_clob, amount, prev, v_str);
@@ -669,7 +671,7 @@ package body "JSON_PRINTER" as
             prev := prev+amount-1;
             amount := indx - prev;
             exit when prev >= indx - 1;
-            if(amount > 32767) then amount := 32767; end if;
+            if(amount > 5000) then amount := 5000; end if;
           end loop;
           prev := indx + size_of_nl;
         else 
