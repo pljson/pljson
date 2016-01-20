@@ -50,8 +50,8 @@ package body "JSON_PRINTER" as
   -- associative array used inside escapeString to cache the escaped version of every character
   -- escaped so far  (example: char_map('"') contains the  '\"' string)
   -- (if the character does not need to be escaped, the character is stored unchanged in the array itself)
-  type Rmap_char is record(buf varchar2(40), len integer);
-  type Tmap_char_string is table of Rmap_char index by varchar2(1);                         
+  type Rmap_char is record(buf varchar2(40 char), len integer);
+  type Tmap_char_string is table of Rmap_char index by varchar2(1 char);                         
        char_map Tmap_char_string;                    
        -- since char_map the associative array is a global variable reused across multiple calls to escapeString,
        -- i need to be able to detect that the escape_solidus or ascii_output global parameters have been changed,
@@ -74,7 +74,7 @@ package body "JSON_PRINTER" as
   
   -- escapes a single character. 
   function escapeChar(ch char) return varchar2 deterministic is
-     result varchar2(20);
+     result varchar2(20 char);
   begin
       --backspace b = U+0008
       --formfeed  f = U+000C
@@ -104,9 +104,9 @@ package body "JSON_PRINTER" as
 
 
   function escapeString(str varchar2) return varchar2 as
-    sb varchar2(32000) := '';
+    sb varchar2(8191 char) := '';
     sb_length number:=0;
-    buf varchar2(40);
+    buf varchar2(40 char);
     buf_length number;
     ch varchar2(1 char);
   begin
@@ -197,10 +197,10 @@ package body "JSON_PRINTER" as
   end flush_clob;
   
   procedure add_escaped_string_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str in varchar2) as
-    sb varchar2(32767) := '';
+    sb varchar2(8191 char) := '';
     sb_length number:=0;
     new_sb_length number;
-    buf varchar2(40);
+    buf varchar2(40 char);
     buf_length integer;
     ch varchar2(1 char);
   begin
@@ -233,7 +233,7 @@ package body "JSON_PRINTER" as
       end;
       new_sb_length:=sb_length+buf_length;
       -- if length of result > 32767, then add it to clob and continue with new result
-      if new_sb_length>=32767 then
+      if new_sb_length>8191 then
         add_to_clob(buf_lob, buf_str, sb); --
         sb:=buf;
         sb_length:=buf_length;
@@ -271,8 +271,8 @@ package body "JSON_PRINTER" as
           if(elem.extended_str is not null) then --clob implementation
             declare
               offset number := 1;
-              v_str varchar(32767);
-              amount number := 32767;
+              v_str varchar(8191 char);
+              amount number := 8191;
             begin
               while(offset <= dbms_lob.getlength(elem.extended_str)) loop
                 dbms_lob.read(elem.extended_str, amount, offset, v_str);
@@ -335,8 +335,8 @@ package body "JSON_PRINTER" as
 
           declare
             offset number := 1;
-            v_str varchar(32767);
-            amount number := 32767;
+            v_str varchar(8191 char);
+            amount number := 8191;
           begin
 --            dbms_output.put_line('SIZE:'||dbms_lob.getlength(mem.extended_str));
             while(offset <= dbms_lob.getlength(mem.extended_str)) loop
@@ -396,7 +396,7 @@ package body "JSON_PRINTER" as
   end ppObj;
   
   procedure pretty_print(obj json, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as 
-    buf_str varchar2(32767);
+    buf_str varchar2(32767 byte);
     amount number := dbms_lob.getlength(buf);
   begin
     if(erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
@@ -408,7 +408,7 @@ package body "JSON_PRINTER" as
   end;
 
   procedure pretty_print_list(obj json_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as 
-    buf_str varchar2(32767);
+    buf_str varchar2(32767 byte);
     amount number := dbms_lob.getlength(buf);
   begin
     if(erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
@@ -422,7 +422,7 @@ package body "JSON_PRINTER" as
   end;
 
   procedure pretty_print_any(json_part json_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as
-    buf_str varchar2(32767) := '';
+    buf_str varchar2(32767 byte) := '';
     numbuf varchar2(4000);
     amount number := dbms_lob.getlength(buf);
   begin
@@ -443,8 +443,8 @@ package body "JSON_PRINTER" as
         if(json_part.extended_str is not null) then --clob implementation
           declare
             offset number := 1;
-            v_str varchar(32767);
-            amount number := 32767;
+            v_str varchar(8191 char);
+            amount number := 8191;
           begin
             while(offset <= dbms_lob.getlength(json_part.extended_str)) loop
               dbms_lob.read(json_part.extended_str, amount, offset, v_str);
@@ -585,7 +585,7 @@ package body "JSON_PRINTER" as
   end ppObj;
   
   function pretty_print(obj json, spaces boolean default true, line_length number default 0) return varchar2 as
-    buf varchar2(32767) := '';
+    buf varchar2(8191 char) := '';
   begin
     max_line_len := line_length;
     cur_line_len := 0;
@@ -594,7 +594,7 @@ package body "JSON_PRINTER" as
   end pretty_print;
 
   function pretty_print_list(obj json_list, spaces boolean default true, line_length number default 0) return varchar2 as
-    buf varchar2(32767);
+    buf varchar2(8191 char);
   begin
     max_line_len := line_length;
     cur_line_len := 0;
@@ -605,7 +605,7 @@ package body "JSON_PRINTER" as
   end;
 
   function pretty_print_any(json_part json_value, spaces boolean default true, line_length number default 0) return varchar2 as
-    buf varchar2(32767) := '';    
+    buf varchar2(8191 char) := '';    
   begin
     case json_part.get_type
       when 'number' then 
@@ -639,8 +639,8 @@ package body "JSON_PRINTER" as
     prev number := 1;
     indx number := 1;
     size_of_nl number := lengthb(delim);
-    v_str varchar2(32767);
-    amount number := 32767;
+    v_str varchar2(8191 char);
+    amount number := 8191;
   begin
     if(jsonp is not null) then dbms_output.put_line(jsonp||'('); end if;
     while(indx != 0) loop
@@ -650,7 +650,7 @@ package body "JSON_PRINTER" as
       
       if(indx = 0) then
         --emit from prev to end;
-        amount := 32767;
+        amount := 8191;
  --       dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
         loop
           dbms_lob.read(my_clob, amount, prev, v_str);
@@ -660,8 +660,8 @@ package body "JSON_PRINTER" as
         end loop;
       else 
         amount := indx - prev;
-        if(amount > 32767) then 
-          amount := 32767;
+        if(amount > 8191) then 
+          amount := 8191;
 --          dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
           loop
             dbms_lob.read(my_clob, amount, prev, v_str);
@@ -669,7 +669,7 @@ package body "JSON_PRINTER" as
             prev := prev+amount-1;
             amount := indx - prev;
             exit when prev >= indx - 1;
-            if(amount > 32767) then amount := 32767; end if;
+            if(amount > 8191) then amount := 8191; end if;
           end loop;
           prev := indx + size_of_nl;
         else 
