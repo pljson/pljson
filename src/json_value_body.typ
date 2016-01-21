@@ -24,11 +24,11 @@ type body json_value as
   end json_value;
 
   constructor function json_value(str clob, esc boolean default true) return self as result as
-    amount number := 32767;
+    amount number := 5000; /* for Unicode text, all text/loops max 5000 CHAR) */
   begin
     self.typeval := 3;
     if(esc) then self.num := 1; else self.num := 0; end if; --message to pretty printer
-    if(dbms_lob.getlength(str) > 32767) then
+    if(dbms_lob.getlength(str) > amount) then
       extended_str := str;
     end if;
     -- GHS 20120615: Added IF structure to handle null clobs
