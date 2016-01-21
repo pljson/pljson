@@ -108,7 +108,7 @@ package body "JSON_PRINTER" as
     sb_length number:=0;
     buf varchar2(40);
     buf_length number;
-    ch varchar(2); -- Some languages have letters with chars more then one?
+    ch varchar2(1 char);
   begin
     if(str is null) then return ''; end if;
 
@@ -202,7 +202,7 @@ package body "JSON_PRINTER" as
     new_sb_length number;
     buf varchar2(40);
     buf_length integer;
-    ch char(2);
+    ch varchar2(1 char);
   begin
     if(str is null) then return; end if;
     -- clear the cache if global parameters have been changed
