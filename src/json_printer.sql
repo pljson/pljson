@@ -285,12 +285,12 @@ package body "JSON_PRINTER" as
               end loop;
             end;
           else
-            if(elem.num = 1) then
-              add_to_clob(buf, buf_str, llcheck('"'||escapeString(elem.get_string)||'"'));
-              --add_escaped_string_to_clob(buf, buf_str, elem.get_string);
-            else
-              add_to_clob(buf, buf_str, llcheck('/**/'||elem.get_string||'/**/'));
-            end if;
+            --if(elem.num = 1) then
+              --add_to_clob(buf, buf_str, llcheck('"'||escapeString(elem.get_string)||'"'));
+              add_escaped_string_to_clob(buf, buf_str, elem.get_string);
+            --else
+            --  add_to_clob(buf, buf_str, llcheck('/**/'||elem.get_string||'/**/'));
+            --end if;
           end if;
           add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end || newline_char);
         when 'bool' then
