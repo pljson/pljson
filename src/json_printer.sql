@@ -178,8 +178,7 @@ package body "JSON_PRINTER" as
 /* Clob method start here */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
-    --if(lengthb(str) > 32767 - lengthb(buf_str)) then
-    if(length(str) > 5000 - length(buf_str)) then /* restrict to max escaped unicode string size */
+    if(lengthb(str) > 32767 - lengthb(buf_str)) then
 --      dbms_lob.append(buf_lob, buf_str);
       dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
       buf_str := str;
