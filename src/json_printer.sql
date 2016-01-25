@@ -48,7 +48,7 @@ package body "JSON_PRINTER" as
   -- escaped so far  (example: char_map('"') contains the  '\"' string)
   -- (if the character does not need to be escaped, the character is stored unchanged in the array itself)
   type Rmap_char is record(buf varchar2(40), len integer);
-  type Tmap_char_string is table of Rmap_char index by varchar2(1 CHAR); /* index by unicode CHAR */
+  type Tmap_char_string is table of Rmap_char index by varchar2(1 char); /* index by unicode char */
        char_map Tmap_char_string;                    
        -- since char_map the associative array is a global variable reused across multiple calls to escapeString,
        -- i need to be able to detect that the escape_solidus or ascii_output global parameters have been changed,
@@ -105,7 +105,7 @@ package body "JSON_PRINTER" as
     sb_length number:=0;
     buf varchar2(40);
     buf_length number;
-    ch varchar2(1 CHAR); /* unicode CHAR */
+    ch varchar2(1 char); /* unicode char */
   begin
     if(str is null) then return ''; end if;
 
@@ -199,7 +199,7 @@ package body "JSON_PRINTER" as
     new_sb_length number;
     buf varchar2(40);
     buf_length integer;
-    ch varchar2(1 CHAR); /* unicode CHAR */
+    ch varchar2(1 char); /* unicode char */
   begin
     if(str is null) then return; end if;
     -- clear the cache if global parameters have been changed
