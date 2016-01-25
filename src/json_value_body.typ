@@ -24,7 +24,7 @@ type body json_value as
   end json_value;
 
   constructor function json_value(str clob, esc boolean default true) return self as result as
-    amount number := 5000; /* for Unicode text, all text/loops max 5000 CHAR) */
+    amount number := 5000; /* for Unicode text, varchar2 'self.str' not exceed 5000 chars, does not limit size of data */
   begin
     self.typeval := 3;
     if(esc) then self.num := 1; else self.num := 0; end if; --message to pretty printer
