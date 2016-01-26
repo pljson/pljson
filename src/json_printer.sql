@@ -48,7 +48,7 @@ package body "JSON_PRINTER" as
   -- escaped so far  (example: char_map('"') contains the  '\"' string)
   -- (if the character does not need to be escaped, the character is stored unchanged in the array itself)
   type Rmap_char is record(buf varchar2(40), len integer);
-  type Tmap_char_string is table of Rmap_char index by varchar2(4); /* index by max unicode size in bytes */
+  type Tmap_char_string is table of Rmap_char index by varchar2(1 char); /* index by unicode char */
        char_map Tmap_char_string;                    
        -- since char_map the associative array is a global variable reused across multiple calls to escapeString,
        -- i need to be able to detect that the escape_solidus or ascii_output global parameters have been changed,
@@ -101,11 +101,11 @@ package body "JSON_PRINTER" as
 
 
   function escapeString(str varchar2) return varchar2 as
-    sb varchar2(32000) := '';
+    sb varchar2(32767) := '';
     sb_length number:=0;
     buf varchar2(40);
     buf_length number;
-    ch varchar(4); /* 4 bytes max unicode char */
+    ch varchar2(1 char); /* unicode char */
   begin
     if(str is null) then return ''; end if;
 
@@ -178,8 +178,7 @@ package body "JSON_PRINTER" as
 /* Clob method start here */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
-    --if(lengthb(str) > 5000 - lengthb(buf_str)) then
-    if(length(str) > 5000 - length(buf_str)) then
+    if(lengthb(str) > 32767 - lengthb(buf_str)) then
 --      dbms_lob.append(buf_lob, buf_str);
       dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
       buf_str := str;
@@ -200,7 +199,7 @@ package body "JSON_PRINTER" as
     new_sb_length number;
     buf varchar2(40);
     buf_length integer;
-    ch varchar(4); /* 4 bytes max unicode size; must be varchar2 */
+    ch varchar2(1 char); /* unicode char */
   begin
     if(str is null) then return; end if;
     -- clear the cache if global parameters have been changed
@@ -271,7 +270,7 @@ package body "JSON_PRINTER" as
             declare
               offset number := 1;
               v_str varchar(32767);
-              amount number := 5000;
+              amount number := 5000; /* max escaped unicode string size */
             begin
               while(offset <= dbms_lob.getlength(elem.extended_str)) loop
                 dbms_lob.read(elem.extended_str, amount, offset, v_str);
@@ -335,7 +334,7 @@ package body "JSON_PRINTER" as
           declare
             offset number := 1;
             v_str varchar(32767);
-            amount number := 5000;
+            amount number := 5000; /* max escaped unicode string size */
           begin
 --            dbms_output.put_line('SIZE:'||dbms_lob.getlength(mem.extended_str));
             while(offset <= dbms_lob.getlength(mem.extended_str)) loop
@@ -443,7 +442,7 @@ package body "JSON_PRINTER" as
           declare
             offset number := 1;
             v_str varchar(32767);
-            amount number := 5000;
+            amount number := 5000; /* max escaped unicode string size */
           begin
             while(offset <= dbms_lob.getlength(json_part.extended_str)) loop
               dbms_lob.read(json_part.extended_str, amount, offset, v_str);
@@ -639,7 +638,7 @@ package body "JSON_PRINTER" as
     indx number := 1;
     size_of_nl number := lengthb(delim);
     v_str varchar2(32767);
-    amount number := 5000;
+    amount number := 8191; /* max unicode chars */
   begin
     if(jsonp is not null) then dbms_output.put_line(jsonp||'('); end if;
     while(indx != 0) loop
@@ -649,7 +648,7 @@ package body "JSON_PRINTER" as
       
       if(indx = 0) then
         --emit from prev to end;
-        amount := 5000;
+        amount := 8191; /* max unicode chars */
  --       dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
         loop
           dbms_lob.read(my_clob, amount, prev, v_str);
@@ -659,8 +658,8 @@ package body "JSON_PRINTER" as
         end loop;
       else 
         amount := indx - prev;
-        if(amount > 5000) then 
-          amount := 5000;
+        if(amount > 8191) then /* max unicode chars */
+          amount := 8191; /* max unicode chars */
 --          dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
           loop
             dbms_lob.read(my_clob, amount, prev, v_str);
@@ -668,7 +667,7 @@ package body "JSON_PRINTER" as
             prev := prev+amount-1;
             amount := indx - prev;
             exit when prev >= indx - 1;
-            if(amount > 5000) then amount := 5000; end if;
+            if(amount > 8191) then amount := 8191; end if; /* max unicode chars */
           end loop;
           prev := indx + size_of_nl;
         else 
