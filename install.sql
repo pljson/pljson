@@ -45,6 +45,8 @@ PROMPT -----------------------------------;
 @@src/json_list_body.typ
 --@@src/grantsandsynonyms.sql --grants to core API
 @@src/json_ac.sql --Wrapper to enhance autocompletion
+@@src/pljson_table_impl.typ
+@@src/pljson_table_impl_body.typ
 
 PROMPT ------------------------------------------;
 PROMPT -- Adding optional packages for PL/JSON --;
