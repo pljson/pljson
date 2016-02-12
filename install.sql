@@ -45,8 +45,6 @@ PROMPT -----------------------------------;
 @@src/json_list_body.typ
 --@@src/grantsandsynonyms.sql --grants to core API
 @@src/json_ac.sql --Wrapper to enhance autocompletion
-@@src/pljson_table_impl.typ
-@@src/pljson_table_impl_body.typ
 
 PROMPT ------------------------------------------;
 PROMPT -- Adding optional packages for PL/JSON --;
@@ -56,3 +54,5 @@ PROMPT ------------------------------------------;
 @@src/addons/json_xml.sql --json to xml copied from http://www.json.org/java/org/json/XML.java
 @@src/addons/json_util_pkg.sql --dynamic sql from http://ora-00001.blogspot.com/2010/02/ref-cursor-to-json.html
 @@src/addons/json_helper.sql --Set operations on JSON and JSON_LIST
+@@src/addons/pljson_table_impl.typ -- dynamic table from json document
+@@src/addons/pljson_table_impl_body.typ -- dynamic table from json document
