@@ -41,5 +41,11 @@ declare begin
   begin execute immediate 'drop type json_null force'; exception when others then null; end;
   begin execute immediate 'drop type json_value_array force'; exception when others then null; end;
   begin execute immediate 'drop type json_value force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_narray force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_vtab force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_varray force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_table_impl force'; exception when others then null; end;
+  begin execute immediate 'drop synonym pljson_table'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_table'; exception when others then null; end;
 end;
 /
