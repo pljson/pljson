@@ -35,6 +35,7 @@ CREATE TABLE "JSON_TESTSUITE" (
 @ext_test.sql
 @jsonpath.sql
 @json_helper_test.sql
+@json_unicode_test.sql
 
 PROMPT Unit-testing of PLJSON implementation:
 select * from json_testsuite;

@@ -17,7 +17,7 @@ declare
   text_1_byte VARCHAR2(200) := '1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   CLOB_MAX_SIZE NUMBER := 256 * 1024;
   VARCHAR2_1_BYTE_MAX_SIZE NUMBER := 32000; /* allow some space for json markup */
-  VARCHAR2_2_BYTE_MAX_SIZE NUMBER := 10000; /* allow some space for json markup */
+  VARCHAR2_2_CHAR_MAX_SIZE NUMBER := 5000;
   i NUMBER;
   k NUMBER;
   t_start timestamp;
@@ -62,8 +62,8 @@ begin
   dbms_output.put_line('var_1 1-byte buffer, bytes = ' || to_char(lengthb(var_buf_1)));
   
   i := 0;
-  k := lengthb(text_2_byte);
-  while i + k < VARCHAR2_2_BYTE_MAX_SIZE loop
+  k := lengthc(text_2_byte);
+  while i + k < VARCHAR2_2_CHAR_MAX_SIZE loop
     var_buf_2 := var_buf_2 || text_2_byte;
     i := i + k;
   end loop;
@@ -114,7 +114,9 @@ begin
   */
   test_json := json();
   test_json_list := json_list();
-  for i in 1..496 loop
+  --before commit 97d72ca with extra CR NL at end
+  --for i in 1..496 loop
+  for i in 1..480 loop
     test_json_list.append(json_value(text_1_byte));
   end loop;
   test_json.put('array', test_json_list);
@@ -147,10 +149,10 @@ begin
   var_1 1-byte buffer, bytes = 31992
   var_2 2-byte buffer, bytes = 9984
   test all kinds of big strings, clob final chars = 1896666
-  test 1 varchar2 string of 32000 1-byte chars, varchar2 final bytes = 32012
-  test 1 varchar2 string of 5000 2-byte chars, varchar2 final bytes = 29972
-  test list of 1-byte chars, varchar2 final bytes = 32754
-  test list of 2-byte chars, varchar2 final bytes = 32222
+  test 1 varchar2 string of 32000 1-byte chars, varchar2 final bytes = 32014 -- was 32012 before commit 97d72ca
+  test 1 varchar2 string of 5000 2-byte chars, varchar2 final bytes = 29974 -- was 29972 before commit 97d72ca
+  test list of 1-byte chars, varchar2 final bytes = 32658 -- was 32754 before commit 97d72ca
+  test list of 2-byte chars, varchar2 final bytes = 32388 -- was 32222 before commit 97d72ca
   total sec = [4.8 - 5.2 sec on old Pentium 2.80 GHz development machine]
 
   */
