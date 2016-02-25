@@ -183,57 +183,7 @@ package body "JSON_PRINTER" as
 --    dbms_lob.append(buf_lob, buf_str);
     dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
   end flush_clob;
-  /*
-  procedure add_escaped_string_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str in varchar2) as
-    sb varchar2(32767) := '';
-    sb_length number:=0;
-    new_sb_length number;
-    buf varchar2(40);
-    buf_length integer;
-    ch varchar2(1 char);
-  begin
-    if(str is null) then return; end if;
-    -- clear the cache if global parameters have been changed
-    if char_map_escape_solidus <> escape_solidus or
-       char_map_ascii_output   <> ascii_output
-    then
-       char_map.delete;
-       char_map_escape_solidus := escape_solidus;
-       char_map_ascii_output := ascii_output;
-    end if;
-
-    for i in 1 .. length(str) loop
-      ch := substr(str, i, 1 ) ;
-      declare
-        current_map Rmap_char;
-      begin
-         -- it this char has already been processed, I have cached its escaped value
-         current_map:=char_map(ch);
-         buf := current_map.buf;
-         buf_length:=current_map.len;
-      exception when no_Data_found then
-         -- otherwise, i convert the value and add it to the cache
-         buf := escapeChar(ch);
-         buf_length:=length(buf);
-         current_map.buf:=buf;
-         current_map.len:=buf_length;
-         char_map(ch) := current_map;
-      end;
-      new_sb_length:=sb_length+buf_length;
-      -- if length of result > 32767, then add it to clob and continue with new result
-      if new_sb_length>=32767 then
-        add_to_clob(buf_lob, buf_str, sb); --
-        sb:=buf;
-        sb_length:=buf_length;
-      else
-        sb := sb || buf;
-        sb_length:=new_sb_length;
-      end if;
-    end loop;
-    -- add rest ob result to clob
-    add_to_clob(buf_lob, buf_str, sb);
-  end;
-  */
+ 
   procedure ppObj(obj json, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2);
 
   procedure ppString(elem json_value, buf in out nocopy clob, buf_str in out nocopy varchar2) is
@@ -254,7 +204,7 @@ package body "JSON_PRINTER" as
         end loop;
     else
         if(elem.num = 1) then
-            while(offset<length(elem.str)) loop
+            while(offset<=length(elem.str)) loop
                 v_str:=substr(elem.str, offset, amount);
                 add_to_clob(buf, buf_str, escapeString(v_str));
                 offset := offset + amount;
@@ -449,7 +399,7 @@ package body "JSON_PRINTER" as
         end loop;
     else
         if(elem.num = 1) then
-            while(offset<length(elem.str)) loop
+            while(offset<=length(elem.str)) loop
                 v_str:=substr(elem.str, offset, amount);
                 add_buf(buf, escapeString(v_str));
                 offset := offset + amount;
