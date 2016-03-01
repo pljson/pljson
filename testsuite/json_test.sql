@@ -286,7 +286,7 @@ begin
 
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
-    'JSON testing', pass_count,fail_count,total_count,'json_test.sql';
+    'json test', pass_count,fail_count,total_count,'json_test.sql';
   exception
     when others then null;
   end;

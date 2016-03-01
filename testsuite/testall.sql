@@ -19,25 +19,31 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
+
+PROMPT run with NLS_LANG='AMERICAN_AMERICA.AL32UTF8'
+
 CREATE TABLE "JSON_TESTSUITE" (
-  "COLLECTION" VARCHAR2(20 BYTE), 
-  "PASSED" NUMBER, 
-  "FAILED" NUMBER, 
-  "TOTAL" NUMBER, 
-  "FILENAME" VARCHAR2(20 BYTE)
+  "COLLECTION" VARCHAR2(25 BYTE),
+  "PASSED" NUMBER,
+  "FAILED" NUMBER,
+  "TOTAL" NUMBER,
+  "FILENAME" VARCHAR2(30 BYTE)
 );  
 
 --run each test here
-@jsonparsertest.sql
-@json_test.sql
-@json_list_test.sql
-@simple_test.sql
-@ext_test.sql
-@jsonpath.sql
-@json_helper_test.sql
-@json_unicode_test.sql
+@@json_parser_test.sql
+@@json_test.sql
+@@json_list_test.sql
+@@simple_test.sql
+@@json_ext_test.sql
+@@json_path_test.sql
+@@json_helper_test.sql
+@@json_unicode_test.sql
 
 PROMPT Unit-testing of PLJSON implementation:
+COLUMN PASSED FORMAT 999
+COLUMN FAILED FORMAT 999
+COLUMN TOTAL  FORMAT 999
 select * from json_testsuite;
 --select 'All tests', sum(passed), sum(failed), sum(total), ' ' from json_testsuite;
 drop table json_testsuite;

@@ -305,7 +305,7 @@ begin
 
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
-    'JSON_Path testing', pass_count,fail_count,total_count,'jsonpath.sql';
+    'json_path test', pass_count,fail_count,total_count,'json_path_test.sql';
   exception
     when others then null;
   end;
