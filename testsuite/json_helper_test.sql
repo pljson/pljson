@@ -8,6 +8,21 @@ declare
   total_count number := 0;
   str varchar2(200);
   
+  /* useful for debugging to show clearly symbols for CR, NL (CR => '[', NL => '!') */
+  function print_symbols(str varchar2) return varchar2 as
+    eol constant varchar2(10) := CHR(13) || CHR(10);
+  begin
+    return replace(replace(replace(str, '\n', eol), CHR(13), '['), CHR(10), '!');
+  end;
+  
+  /* use to pass tests even if json print output changes and produces extra/fewer eols(s) */
+  function strip_eol(str varchar2) return varchar2 as
+    eol constant varchar2(10) := CHR(13) || CHR(10);
+  begin
+    --dbms_output.put_line('string='||print_symbols(replace(str, '\n', eol)));
+    return replace(str, eol, '');
+  end;
+  
   procedure pass(str varchar2) as
   begin
     pass_count := pass_count + 1;
@@ -53,7 +68,7 @@ begin
   begin
     obj := json_helper.merge(json('{"a":1,"b":"str","c":{}}'),json('{"d":2,"e":"x"}'));
     assertTrue(obj.count = 5);
-    assertTrue(obj.to_char(false) = '{"a":1,"b":"str","c":{},"d":2,"e":"x"}');
+    assertTrue(strip_eol(obj.to_char(false)) = '{"a":1,"b":"str","c":{},"d":2,"e":"x"}');
     pass(str);
   exception
     when others then fail(str);
@@ -114,7 +129,7 @@ begin
   begin
     obj := json_helper.join(json_list('[1,"2",{"a":1}]'),json_list('[3,"4",{"b":2}]'));
     assertTrue(obj.count = 6);
-    assertTrue(obj.to_char(false) = '[1,"2",{"a":1},3,"4",{"b":2}]');
+    assertTrue(strip_eol(obj.to_char(false)) = '[1,"2",{"a":1},3,"4",{"b":2}]');
     pass(str);
   exception
     when others then fail(str);

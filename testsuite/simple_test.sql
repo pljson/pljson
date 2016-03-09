@@ -66,7 +66,7 @@ begin
 
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
-    'Simple type test', pass_count,fail_count,total_count,'simple_test.sql';
+    'simple type test', pass_count,fail_count,total_count,'simple_test.sql';
   exception
     when others then null;
   end;

@@ -25,10 +25,10 @@ Installation:
 1.  To install, extract the files to a directory
 2.  change to the directory where the files exist
 3.  run the install.sql file 
-4.  To Test the implementation, run the /testsuite/testall.sql file
+4.  To test the implementation, run the /testsuite/testall.sql file
 5.  To learn the API, look at the files in /examples
 
-Generel information about JSON is available at http://www.json.org
+General information about JSON is available at http://www.json.org
 
 
 

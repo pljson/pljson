@@ -149,7 +149,7 @@ begin
   
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
-    'Parser testing', pass_count,fail_count,total_count,'jsonparsertest.sql';
+    'json_parser test', pass_count,fail_count,total_count,'json_parser_test.sql';
   exception
     when others then null;
   end;

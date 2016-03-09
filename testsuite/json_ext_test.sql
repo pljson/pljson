@@ -8,6 +8,21 @@ declare
   total_count number := 0;
   str varchar2(200);
   
+  /* useful for debugging to show clearly symbols for CR, NL (CR => '[', NL => '!') */
+  function print_symbols(str varchar2) return varchar2 as
+    eol constant varchar2(10) := CHR(13) || CHR(10);
+  begin
+    return replace(replace(replace(str, '\n', eol), CHR(13), '['), CHR(10), '!');
+  end;
+  
+  /* use to pass tests even if json print output changes and produces extra/fewer eols(s) */
+  function strip_eol(str varchar2) return varchar2 as
+    eol constant varchar2(10) := CHR(13) || CHR(10);
+  begin
+    --dbms_output.put_line('string='||print_symbols(replace(str, '\n', eol)));
+    return replace(str, eol, '');
+  end;
+  
   procedure pass(str varchar2) as
   begin
     pass_count := pass_count + 1;
@@ -114,7 +129,7 @@ begin
     mylist.append(json_ext.to_json_value(json_ext.to_date2(mylist.get(5))), 5);
     mylist.remove(6); --remove the old
     
-    assertTrue(mylist.to_char = '["2009-07-01 00:22:33", "2009-08-08 00:00:00", "0009-07-08 00:00:00", "2009-07-01 00:00:00", "2007-01-03 00:00:00"]');
+    assertTrue(strip_eol(mylist.to_char) = '["2009-07-01 00:22:33", "2009-08-08 00:00:00", "0009-07-08 00:00:00", "2009-07-01 00:00:00", "2007-01-03 00:00:00"]');
     --we can see that 09-07-08 isn't a good idea when format_string doesn't match
     pass(str);
     json_ext.format_string := old_format_string;
@@ -140,7 +155,7 @@ begin
 
   begin
     execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
-    'JSON_Ext testing', pass_count,fail_count,total_count,'ext_test.sql';
+    'json_ext test', pass_count,fail_count,total_count,'json_ext_test.sql';
   exception
     when others then null;
   end;
