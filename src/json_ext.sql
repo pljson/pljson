@@ -480,46 +480,68 @@ create or replace package body json_ext as
 
   end put_internal;
 
-  /* JSON Path putters */  
+  /* JSON Path putters */
   procedure put(obj in out nocopy json, path varchar2, elem varchar2, base number default 1) as
-  begin 
-    put_internal(obj, path, json_value(elem), base);
+  begin
+    if elem is null then
+        put_internal(obj, path, json_value(), base);
+    else
+        put_internal(obj, path, json_value(elem), base);
+    end if;
   end;
-  
+
   procedure put(obj in out nocopy json, path varchar2, elem number, base number default 1) as
-  begin 
-    if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, json_value(elem), base);
+  begin
+    if elem is null then
+        put_internal(obj, path, json_value(), base);
+    else
+        put_internal(obj, path, json_value(elem), base);
+    end if;
   end;
 
   procedure put(obj in out nocopy json, path varchar2, elem json, base number default 1) as
-  begin 
-    if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, elem.to_json_value, base);
+  begin
+    if elem is null then
+        put_internal(obj, path, json_value(), base);
+    else
+        put_internal(obj, path, elem.to_json_value, base);
+    end if;
   end;
 
   procedure put(obj in out nocopy json, path varchar2, elem json_list, base number default 1) as
-  begin 
-    if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, elem.to_json_value, base);
+  begin
+    if elem is null then
+        put_internal(obj, path, json_value(), base);
+    else
+        put_internal(obj, path, elem.to_json_value, base);
+    end if;
   end;
 
   procedure put(obj in out nocopy json, path varchar2, elem boolean, base number default 1) as
-  begin 
-    if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, json_value(elem), base);
+  begin
+    if elem is null then
+        put_internal(obj, path, json_value(), base);
+    else
+        put_internal(obj, path, json_value(elem), base);
+    end if;
   end;
 
   procedure put(obj in out nocopy json, path varchar2, elem json_value, base number default 1) as
-  begin 
-    if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, elem, base);
+  begin
+    if elem is null then
+        put_internal(obj, path, json_value(), base);
+    else
+        put_internal(obj, path, elem, base);
+    end if;
   end;
 
   procedure put(obj in out nocopy json, path varchar2, elem date, base number default 1) as
-  begin 
-    if(elem is null) then raise_application_error(-20110, 'Cannot put null-value'); end if;
-    put_internal(obj, path, json_ext.to_json_value(elem), base);
+  begin
+    if elem is null then
+        put_internal(obj, path, json_value(), base);
+    else
+        put_internal(obj, path, json_ext.to_json_value(elem), base);
+    end if;
   end;
 
   procedure remove(obj in out nocopy json, path varchar2, base number default 1) as
