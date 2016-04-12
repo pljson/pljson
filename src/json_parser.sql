@@ -93,6 +93,10 @@ CREATE OR REPLACE PACKAGE BODY "JSON_PARSER" as
     if(indx > 4000 + s.offset or indx < s.offset) then
     --load right offset
       s.offset := indx - (indx mod 4000);
+      -- Solution for issue #37
+      if s.offset = indx then
+        s.offset := s.offset - 4000;
+      end if;
       s.src := dbms_lob.substr(s.s_clob, 4000, s.offset+1);
     end if;
     --read from s.src
