@@ -13,6 +13,7 @@ declare
   parser_exception exception;
   pragma exception_init(parser_exception, -20101);
   
+  /*
   procedure fail(text varchar2) as
   begin
     dbms_output.put_line('FAILED: '||text);
@@ -21,39 +22,59 @@ declare
   begin
     dbms_output.put_line('OK: '||text);
   end;
+  */
   
+  procedure pass(str varchar2) as
+  begin
+    pass_count := pass_count + 1;
+    total_count := total_count + 1;
+    dbms_output.put_line('OK: '||str);
+  end;
+  
+  procedure fail(str varchar2) as
+  begin
+    fail_count := fail_count + 1;
+    total_count := total_count + 1;
+    dbms_output.put_line('FAILED: '||str);
+  end;
+
   procedure assertFail(json_str varchar2, testname varchar2) as
     obj json;
   begin
-    total_count := total_count + 1;
+    --total_count := total_count + 1;
     obj := json(json_str);
-    fail_count := fail_count + 1;
+    --fail_count := fail_count + 1;
     fail(testname);
   exception
     when scanner_exception then
-    pass_count := pass_count + 1;
-    pass(testname);
+      --pass_count := pass_count + 1;
+      pass(testname);
     when parser_exception then
-    pass_count := pass_count + 1;
-    pass(testname);
+      --pass_count := pass_count + 1;
+      pass(testname);
     when others then
-    fail_count := fail_count + 1;
-    fail(testname);
+      --fail_count := fail_count + 1;
+      fail(testname);
   end;
   
   procedure assertPass(json_str varchar2, testname varchar2) as
     obj json;
   begin
-    total_count := total_count + 1;
+    --total_count := total_count + 1;
     obj := json(json_str);
   --  obj.print;
-    pass_count := pass_count + 1;
+    --pass_count := pass_count + 1;
     pass(testname);
   exception
     when others then
-    fail_count := fail_count + 1;
-    fail(testname);
-    dbms_output.put_line(sqlerrm);
+      --fail_count := fail_count + 1;
+      fail(testname);
+      dbms_output.put_line(sqlerrm);
+  end;
+
+  procedure assertTrue(b boolean) as
+  begin
+    if(not b) then raise_application_error(-20111, 'Test error'); end if;
   end;
 
 begin
@@ -91,7 +112,7 @@ begin
   --unicode char test
   assertPass('{"æåø": "ÅÆØ"}','Unicode char test - on UTF8 databases');
   --string ending test
-  declare 
+  declare
     tokens json_parser.lTokens;
     src json_parser.json_src;
   begin
@@ -112,7 +133,7 @@ begin
   assertFail('{ "a": [','premature exit from array4');
   assertFail('{ "a": [ 2 2 ]}','commas between values in array 1');
   assertPass('{ "a": [ 2, 2 ]}','commas between values in array 2');
-  assertFail('{ "a": [ 2, 2 }','remember to end array');  
+  assertFail('{ "a": [ 2, 2 }','remember to end array');
   assertPass('{ "a": []}','empty array');
   assertPass('{ "a": [[]]}','empty array in array');
   assertPass('{ "a": [true, [true, false], "my fancy array", ["you could call it a list"]]}','wild array');
@@ -142,7 +163,32 @@ begin
     "abcdefghijklmnopqrstuvxyzabcdefghijklmnopqrstuvxyz1" : 53,
     "abcdefghijklmnopqrstuvxyzabcdefghijklmnopqrstuvxyz2" : 53
   }', 'Duplicate 2');
- 
+
+  -- issue #37 test
+  declare
+    test_clob clob;
+    test_buff varchar2(100);
+    amount number;
+    src json_parser.json_src;
+    test_str varchar2(100) := 'issue #37';
+  begin
+    test_buff := 'abcdefghijklmnopqrstuvwxyz';
+    dbms_lob.createtemporary(test_clob, false, DBMS_LOB.SESSION);
+    amount := length(test_buff);
+    dbms_lob.write(test_clob, amount, 3995, test_buff);
+    
+    src := json_parser.prepareClob(test_clob);
+    for i in reverse 3995..4005 loop
+      dbms_output.put_line('issue #37: '|| i ||' '|| substr(test_buff, i-3995+1, 1)|| ' - ' || json_parser.next_char(i, src));
+      assertTrue(substr(test_buff, i-3995+1, 1) = json_parser.next_char(i, src));
+    end loop;
+    
+    dbms_lob.freetemporary(test_clob);
+    pass(test_str);
+  exception
+    when others then fail(test_str);
+  end;
+  
   dbms_output.put_line('');
   dbms_output.put_line('Passed '||pass_count||' of '||total_count||' tests.');
   dbms_output.put_line('Failed '||fail_count||' of '||total_count||' tests.');
