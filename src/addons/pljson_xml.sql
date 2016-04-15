@@ -1,6 +1,6 @@
 set define off
-create or replace
-package json_xml as 
+
+create or replace package pljson_xml as
   /*
   Copyright (c) 2010 Jonas Krogsboell
 
@@ -22,7 +22,7 @@ package json_xml as
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-  
+
   /*
   declare
     obj json := json('{a:1,b:[2,3,4],c:true}');
@@ -31,15 +31,15 @@ package json_xml as
     obj.print;
     x := json_xml.json_to_xml(obj);
     dbms_output.put_line(x.getclobval());
-  end;  
+  end;
   */
 
-  function json_to_xml(obj json, tagname varchar2 default 'root') return xmltype;
+  function json_to_xml(obj pljson, tagname varchar2 default 'root') return xmltype;
 
-end json_xml;
+end pljson_xml;
 /
-create or replace
-package body json_xml as 
+
+create or replace package body pljson_xml as
 
   function escapeStr(str varchar2) return varchar2 as
     buf varchar2(32767) := '';
@@ -55,7 +55,7 @@ package body json_xml as
       else buf := buf || ch;
       end case;
     end loop;
-    return buf;  
+    return buf;
   end escapeStr;
 
 /* Clob methods from printer */
@@ -66,26 +66,26 @@ package body json_xml as
       buf_str := str;
     else
       buf_str := buf_str || str;
-    end if;  
+    end if;
   end add_to_clob;
-
+  
   procedure flush_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2) as
   begin
     dbms_lob.append(buf_lob, buf_str);
   end flush_clob;
   
-  procedure toString(obj json_value, tagname in varchar2, xmlstr in out nocopy clob, xmlbuf in out nocopy varchar2) as
-    v_obj json;
-    v_list json_list;
-
-    v_keys json_list;
-    v_value json_value;
+  procedure toString(obj pljson_value, tagname in varchar2, xmlstr in out nocopy clob, xmlbuf in out nocopy varchar2) as
+    v_obj pljson;
+    v_list pljson_list;
+    
+    v_keys pljson_list;
+    v_value pljson_value;
     key_str varchar2(4000);
   begin
     if (obj.is_object()) then
       add_to_clob(xmlstr, xmlbuf, '<' || tagname || '>');
-      v_obj := json(obj);
-
+      v_obj := pljson(obj);
+      
       v_keys := v_obj.get_keys();
       for i in 1 .. v_keys.count loop
         v_value := v_obj.get(i);
@@ -94,51 +94,51 @@ package body json_xml as
         if(key_str = 'content') then
           if(v_value.is_array()) then
             declare
-              v_l json_list := json_list(v_value);
+              v_l pljson_list := pljson_list(v_value);
             begin
               for j in 1 .. v_l.count loop
                 if(j > 1) then add_to_clob(xmlstr, xmlbuf, chr(13)||chr(10)); end if;
                 add_to_clob(xmlstr, xmlbuf, escapeStr(v_l.get(j).to_char()));
               end loop;
             end;
-          else 
+          else
             add_to_clob(xmlstr, xmlbuf, escapeStr(v_value.to_char()));
           end if;
         elsif(v_value.is_array()) then
           declare
-            v_l json_list := json_list(v_value);
+            v_l pljson_list := pljson_list(v_value);
           begin
             for j in 1 .. v_l.count loop
               v_value := v_l.get(j);
-              if(v_value.is_array()) then 
+              if(v_value.is_array()) then
                 add_to_clob(xmlstr, xmlbuf, '<' || key_str || '>');
                 add_to_clob(xmlstr, xmlbuf, escapeStr(v_value.to_char()));
                 add_to_clob(xmlstr, xmlbuf, '</' || key_str || '>');
               else
-                toString(v_value, key_str, xmlstr, xmlbuf);   
+                toString(v_value, key_str, xmlstr, xmlbuf);
               end if;
             end loop;
           end;
         elsif(v_value.is_null() or (v_value.is_string and v_value.get_string = '')) then
           add_to_clob(xmlstr, xmlbuf, '<' || key_str || '/>');
         else
-          toString(v_value, key_str, xmlstr, xmlbuf);   
+          toString(v_value, key_str, xmlstr, xmlbuf);
         end if;
       end loop;
-
+      
       add_to_clob(xmlstr, xmlbuf, '</' || tagname || '>');
     elsif (obj.is_array()) then
-      v_list := json_list(obj);
+      v_list := pljson_list(obj);
       for i in 1 .. v_list.count loop
         v_value := v_list.get(i);
-        toString(v_value, nvl(tagname, 'array'), xmlstr, xmlbuf);   
+        toString(v_value, nvl(tagname, 'array'), xmlstr, xmlbuf);
       end loop;
-    else 
+    else
       add_to_clob(xmlstr, xmlbuf, '<' || tagname || '>'||escapeStr(obj.value_of())||'</' || tagname || '>');
     end if;
   end toString;
-
-  function json_to_xml(obj json, tagname varchar2 default 'root') return xmltype as
+  
+  function json_to_xml(obj pljson, tagname varchar2 default 'root') return xmltype as
     xmlstr clob := empty_clob();
     xmlbuf varchar2(32767) := '';
     returnValue xmltype;
@@ -153,5 +153,5 @@ package body json_xml as
     return returnValue;
   end;
 
-end json_xml;
+end pljson_xml;
 /

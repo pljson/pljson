@@ -25,7 +25,7 @@ create or replace type body pljson_table_impl as
   
   /*
   E.I.Sarmas (github.com/dsnz)   2016-02-09
-
+  
   implementation and demo for json_table.json_table() functionality
   modelled after Oracle 12c json_table()
   
@@ -74,34 +74,34 @@ create or replace type body pljson_table_impl as
   begin
     --dbms_output.put_line('>>Prepare');
     
-    tc := ti.RetType.GetAttrElemInfo(1, prec, scale, len, csid, csfrm, elem_typ, aname); 
-    sctx := pljson_table_impl(str, paths, names, pljson_vtab(), pljson_narray(), elem_typ); 
-    return odciconst.success; 
+    tc := ti.RetType.GetAttrElemInfo(1, prec, scale, len, csid, csfrm, elem_typ, aname);
+    sctx := pljson_table_impl(str, paths, names, pljson_vtab(), pljson_narray(), elem_typ);
+    return odciconst.success;
   end;
-
+  
   static function ODCITableStart(sctx in out pljson_table_impl,
     str clob, paths pljson_varray, names pljson_varray := null) return number is
-    json_obj json;
-    json_val json_value;
+    json_obj pljson;
+    json_val pljson_value;
     buf varchar2(32767);
     --data_tab pljson_vtab := pljson_vtab();
-    json_array json_list;
-    json_elem json_value;
+    json_array pljson_list;
+    json_elem pljson_value;
     value_array pljson_varray := pljson_varray();
   begin
     --dbms_output.put_line('>>Start');
     
     sctx.data_tab.delete;
     --dbms_output.put_line('json_str='||str);
-    json_obj := json(str);
+    json_obj := pljson(str);
     for i in paths.FIRST .. paths.LAST loop
       --dbms_output.put_line('path='||paths(i));
-      json_val := json_ext.get_json_value(json_obj, paths(i));
+      json_val := pljson_ext.get_json_value(json_obj, paths(i));
       --dbms_output.put_line('type='||json_val.get_type());
       case json_val.typeval
         --when 1 then 'object';
         when 2 then -- 'array';
-          json_array := json_list(json_val);
+          json_array := pljson_list(json_val);
           value_array.delete;
           for j in 1 .. json_array.count loop
             json_elem := json_array.get(j);
@@ -121,7 +121,7 @@ create or replace type body pljson_table_impl as
                 --dbms_output.put_line('res[]='||buf);
                 value_array.extend(); value_array(value_array.LAST) := buf;
               when 6 then -- 'null';
-                buf := null; 
+                buf := null;
                 --dbms_output.put_line('res[]='||buf);
                 value_array.extend(); value_array(value_array.LAST) := buf;
             end case;
@@ -140,7 +140,7 @@ create or replace type body pljson_table_impl as
           --dbms_output.put_line('res='||buf);
           sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
         when 6 then -- 'null';
-          buf := null; 
+          buf := null;
           --dbms_output.put_line('res='||buf);
           sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
       end case;
@@ -214,7 +214,7 @@ create or replace type body pljson_table_impl as
   member function ODCITableClose(self in pljson_table_impl) return number is
   begin
     --dbms_output.put_line('>>Close');
-    return odciconst.success; 
+    return odciconst.success;
   end;
 
 end;

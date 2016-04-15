@@ -1,15 +1,19 @@
 /*
-  set of 5 tests exercising correct Unicode support and big strings for both clob and varchar2 api versions
+  E.I.Sarmas (github.com/dsnz)   2016-01-25
+  
+  set of 5 tests exercising correct Unicode support and big strings
+  for both clob and varchar2 api versions
   test should not produce ORA-06502 error
-  run with NLS_LANG='AMERICAN_AMERICA.AL32UTF8'
+  must run with NLS_LANG='AMERICAN_AMERICA.AL32UTF8'
 */
 
 PROMPT did you run with NLS_LANG='AMERICAN_AMERICA.AL32UTF8' ?
 
 set serveroutput on format wrapped
+
 declare
-  test_json json;
-  test_json_list json_list;
+  test_json pljson;
+  test_json_list pljson_list;
   clob_buf_1 clob;
   clob_buf_2 clob;
   var_buf_1 VARCHAR2(32767);
@@ -28,7 +32,7 @@ declare
   t_start timestamp;
   t_stop  timestamp;
   t_sec NUMBER;
-
+  
   pass_count number := 0;
   fail_count number := 0;
   total_count number := 0;
@@ -67,7 +71,7 @@ declare
   begin
     if(not b) then raise_application_error(-20111, 'Test error'); end if;
   end;
-
+  
   procedure assertFalse(b boolean) as
   begin
     if(b) then raise_application_error(-20111, 'Test error'); end if;
@@ -84,7 +88,7 @@ begin
   1 varchar2 string of 5000  2-byte chars
   */
   /* buffer preparation */
-
+  
   dbms_lob.createtemporary(clob_buf_1, TRUE, dbms_lob.SESSION);
   dbms_lob.trim(clob_buf_1, 0);
   k := length(text_1_byte);
@@ -120,7 +124,7 @@ begin
     i := i + k;
   end loop;
   --dbms_output.put_line('var_2 2-byte buffer, bytes = ' || to_char(lengthb(var_buf_2)));
-
+  
   /* expected buffer sizes
   clob_1 1-byte buffer, chars = 262136
   clob_2 2-byte buffer, chars = 262080
@@ -136,20 +140,20 @@ begin
   */
   str := 'json with clob(s), varchar2(s) both 1-byte, 2-byte chars using to_clob()';
   begin
-    test_json := json();
+    test_json := pljson();
     test_json.put('publish', true);
     test_json.put('issueDate', to_char(sysdate, 'YYYY-MM-DD"T"HH24:MI:SS'));
-    test_json.put('clob_1', json_value(clob_buf_1));
-    test_json.put('clob_2', json_value(clob_buf_2));
+    test_json.put('clob_1', pljson_value(clob_buf_1));
+    test_json.put('clob_2', pljson_value(clob_buf_2));
     test_json.put('var_1', var_buf_1);
     test_json.put('var_2', var_buf_2);
-  
+    
     dbms_lob.createtemporary(json_clob, TRUE, dbms_lob.SESSION);
     dbms_lob.trim(json_clob, 0);
-  
+    
     test_json.to_clob(json_clob);
     assertTrue(dbms_lob.getlength(json_clob) = 1896666);
-
+    
     --dbms_output.put_line('test all kinds of big strings, clob final chars = ' || to_char(dbms_lob.getlength(json_clob)));
     pass(str); 
     dbms_lob.freetemporary(json_clob);
@@ -169,11 +173,11 @@ begin
   */
   str := 'json with varchar2 string of 32767 1-byte chars using to_char()';
   begin
-    test_json := json();
+    test_json := pljson();
     test_json.put('var_1', var_buf_1);
     json_var := test_json.to_char();
     assertTrue(lengthb(json_var) = 32014);
-  
+    
     --dbms_output.put_line('test 1 varchar2 string of 32000 1-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
     pass(str); 
   exception
@@ -185,11 +189,11 @@ begin
   */
   str := 'json with varchar2 string of 5000 2-byte chars using to_char()';
   begin 
-    test_json := json();
+    test_json := pljson();
     test_json.put('var_2', var_buf_2);
     json_var := test_json.to_char();
     assertTrue(lengthb(json_var) = 29974);
-  
+    
     --dbms_output.put_line('test 1 varchar2 string of 5000 2-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
     pass(str); 
   exception
@@ -201,17 +205,17 @@ begin
   */
   str := 'json list with many small strings of 62 1-byte chars using to_char()';
   begin
-    test_json := json();
-    test_json_list := json_list();
+    test_json := pljson();
+    test_json_list := pljson_list();
     --before commit 97d72ca with extra CR NL at end
     --for i in 1..496 loop
     for i in 1..480 loop
-      test_json_list.append(json_value(text_1_byte));
+      test_json_list.append(pljson_value(text_1_byte));
     end loop;
     test_json.put('array', test_json_list);
     json_var := test_json.to_char();
     assertTrue(lengthb(json_var) = 32658);
-  
+    
     --dbms_output.put_line('test list of 1-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
     pass(str); 
   exception
@@ -223,15 +227,15 @@ begin
   */
   str := 'json list with many small strings of 64 2-byte chars using to_char()';
   begin
-    test_json := json();
-    test_json_list := json_list();
+    test_json := pljson();
+    test_json_list := pljson_list();
     for i in 1..83 loop
-      test_json_list.append(json_value(text_2_byte));
+      test_json_list.append(pljson_value(text_2_byte));
     end loop;
     test_json.put('array', test_json_list);
     json_var := test_json.to_char();
     assertTrue(lengthb(json_var) = 32388);
-  
+    
     --dbms_output.put_line('test list of 2-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
     pass(str); 
   exception
@@ -244,7 +248,7 @@ begin
   
   /* 
   expected output
-
+  
   clob_1 1-byte buffer, chars = 262136
   clob_2 2-byte buffer, chars = 262080
   var_1 1-byte buffer, bytes = 31992
@@ -257,8 +261,8 @@ begin
   total sec = [4.8 - 5.2 sec on old Pentium 2.80 GHz development machine]
   */
   begin
-    execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
-    'json unicode test', pass_count,fail_count,total_count,'json_unicode_test.sql';
+    execute immediate 'insert into pljson_testsuite values (:1, :2, :3, :4, :5)' using
+    'pljson unicode test', pass_count, fail_count, total_count, 'pljson_unicode_test.sql';
 --  exception
 --    when others then null;
   end;
