@@ -1,3 +1,19 @@
+Version: 1.0.6
+  + Many thanks to the people who have contributed to this release
+    (listed in chronological commit order):
+    + Brian Shaver
+    + Carlo Sirna
+    + SigmaEpsilon
+    + Borodulin Maxim
+    + dsnz
+    + E.I.Sarmas
+  + Project build environment added
+  + Project files re-organized
+  + Tests fixed to run correctly
+  + `escapeChar` and `escapeString` refactored
+  + 12c name clashes fixed
+  + Lots of code cleanups and bugs fixed
+
 Version: 1.0.5
   + Fixed error with \r and \f in parser and printer
 
