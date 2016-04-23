@@ -124,6 +124,11 @@ create or replace type body pljson_table_impl as
                 buf := null;
                 --dbms_output.put_line('res[]='||buf);
                 value_array.extend(); value_array(value_array.LAST) := buf;
+              else
+                -- if object is unknown or does not exist add new element of type null
+                buf := null;
+                --dbms_output.put_line('res='||buf);
+                sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
             end case;
           end loop;
           sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := value_array;
@@ -140,6 +145,11 @@ create or replace type body pljson_table_impl as
           --dbms_output.put_line('res='||buf);
           sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
         when 6 then -- 'null';
+          buf := null;
+          --dbms_output.put_line('res='||buf);
+          sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
+        else
+          -- if object is unknown or does not exist add new element of type null
           buf := null;
           --dbms_output.put_line('res='||buf);
           sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);

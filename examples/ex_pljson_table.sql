@@ -125,8 +125,8 @@ pljson_table.json_table(
    "maps" : [ true, true, false ]
   }
 }',
-pljson_varray('data.name', 'data.extra', 'data.maps', 'data.shares.count'),
-pljson_varray('name', 'extra', 'map', 'count'))
+pljson_varray('data.name', 'data.extra', 'data.maps', 'data.shares.count', 'data.missing'),
+pljson_varray('name', 'extra', 'map', 'count', 'whatelse'))
 )
 /
 
@@ -148,8 +148,8 @@ pljson_table.json_table(
    "maps" : [ true, true, false ]
   }
 }',
-pljson_varray('data.name', 'data.extra', 'data.maps', 'data.shares.count'),
-pljson_varray('name', 'extra', 'map', 'count'))
+pljson_varray('data.name', 'data.extra', 'data.maps', 'data.shares.count', 'data.missing'),
+pljson_varray('name', 'extra', 'map', 'count', 'whatelse'))
 )
 order by num
 /
@@ -162,8 +162,8 @@ from pljson_table_test,
 table(
 pljson_table.json_table(
 col,
-pljson_varray('data.name', 'data.extra', 'data.maps', 'data.shares.count'),
-pljson_varray('name', 'extra', 'map', 'count'))
+pljson_varray('data.name', 'data.extra', 'data.maps', 'data.shares.count', 'data.missing'),
+pljson_varray('name', 'extra', 'map', 'count', 'whatelse'))
 )
 order by num
 /
