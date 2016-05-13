@@ -74,9 +74,9 @@ create or replace type body pljson_table_impl as
   begin
     --dbms_output.put_line('>>Prepare');
     
-    tc := ti.RetType.GetAttrElemInfo(1, prec, scale, len, csid, csfrm, elem_typ, aname); 
-    sctx := pljson_table_impl(str, paths, names, pljson_vtab(), pljson_narray(), elem_typ); 
-    return odciconst.success; 
+    tc := ti.RetType.GetAttrElemInfo(1, prec, scale, len, csid, csfrm, elem_typ, aname);
+    sctx := pljson_table_impl(str, paths, names, pljson_vtab(), pljson_narray(), elem_typ);
+    return odciconst.success;
   end;
 
   static function ODCITableStart(sctx in out pljson_table_impl,
@@ -121,9 +121,14 @@ create or replace type body pljson_table_impl as
                 --dbms_output.put_line('res[]='||buf);
                 value_array.extend(); value_array(value_array.LAST) := buf;
               when 6 then -- 'null';
-                buf := null; 
+                buf := null;
                 --dbms_output.put_line('res[]='||buf);
                 value_array.extend(); value_array(value_array.LAST) := buf;
+              else
+                -- if object is unknown or does not exist add new element of type null
+                buf := null;
+                --dbms_output.put_line('res='||buf);
+                sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
             end case;
           end loop;
           sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := value_array;
@@ -140,7 +145,12 @@ create or replace type body pljson_table_impl as
           --dbms_output.put_line('res='||buf);
           sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
         when 6 then -- 'null';
-          buf := null; 
+          buf := null;
+          --dbms_output.put_line('res='||buf);
+          sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
+        else
+          -- if object is unknown or does not exist add new element of type null
+          buf := null;
           --dbms_output.put_line('res='||buf);
           sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
       end case;
@@ -214,7 +224,7 @@ create or replace type body pljson_table_impl as
   member function ODCITableClose(self in pljson_table_impl) return number is
   begin
     --dbms_output.put_line('>>Close');
-    return odciconst.success; 
+    return odciconst.success;
   end;
 
 end;

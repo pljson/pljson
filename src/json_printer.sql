@@ -22,6 +22,7 @@ create or replace package json_printer as
   --newline_char varchar2(2) := chr(10); -- Mac style
   --newline_char varchar2(2) := chr(13); -- Linux style
   ascii_output boolean    not null := true;
+  empty_string_as_null boolean not null := false;
   escape_solidus boolean  not null := false;
 
   function pretty_print(obj json, spaces boolean default true, line_length number default 0) return varchar2;
@@ -191,8 +192,11 @@ package body "JSON_PRINTER" as
     v_str varchar(5000 char);
     amount number := 5000; /*chunk size for use in escapeString. Maximum escaped unicode string size for chunk may be 6 one-byte chars * 5000 chunk size in multi-byte chars = 30000 1-byte chars. Maximum value may be 32767 1-byte chars */
   begin
-    add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
-    if(elem.extended_str is not null) then --clob implementation
+    if empty_string_as_null and elem.extended_str is null and elem.str is null then
+      add_to_clob(buf, buf_str, 'null');
+    else
+      add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
+      if(elem.extended_str is not null) then --clob implementation
         while(offset <= dbms_lob.getlength(elem.extended_str)) loop
           dbms_lob.read(elem.extended_str, amount, offset, v_str);
           if(elem.num = 1) then
@@ -202,18 +206,19 @@ package body "JSON_PRINTER" as
           end if;
           offset := offset + amount;
         end loop;
-    else
+      else
         if(elem.num = 1) then
-            while(offset<=length(elem.str)) loop
-                v_str:=substr(elem.str, offset, amount);
-                add_to_clob(buf, buf_str, escapeString(v_str));
-                offset := offset + amount;
-            end loop;
+          while(offset<=length(elem.str)) loop
+            v_str:=substr(elem.str, offset, amount);
+            add_to_clob(buf, buf_str, escapeString(v_str));
+            offset := offset + amount;
+          end loop;
         else
-            add_to_clob(buf, buf_str, elem.str);
+          add_to_clob(buf, buf_str, elem.str);
         end if;
+      end if;
+      add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
     end if;
-    add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end || newline_char);
   end;
 
   procedure ppEA(input json_list, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
@@ -376,7 +381,7 @@ package body "JSON_PRINTER" as
   procedure add_buf (buf in out nocopy varchar2, str in varchar2) as
   begin
     if(lengthb(str)>32767-lengthb(buf)) then
-        raise_application_error(-20001,'Length of result JSON more than 32767 bytes. Use to_clob() procedures');
+      raise_application_error(-20001,'Length of result JSON more than 32767 bytes. Use to_clob() procedures');
     end if;
     buf := buf || str;
   end;
@@ -386,8 +391,11 @@ package body "JSON_PRINTER" as
     v_str varchar(5000 char);
     amount number := 5000; /*chunk size for use in escapeString. Maximum escaped unicode string size for chunk may be 6 one-byte chars * 5000 chunk size in multi-byte chars = 30000 1-byte chars. Maximum value may be 32767 1-byte chars */
   begin
-    add_buf(buf, case when elem.num = 1 then '"' else '/**/' end);
-    if(elem.extended_str is not null) then --clob implementation
+    if empty_string_as_null and elem.extended_str is null and elem.str is null then
+      add_buf(buf, 'null');
+    else
+      add_buf(buf, case when elem.num = 1 then '"' else '/**/' end);
+      if(elem.extended_str is not null) then --clob implementation
         while(offset <= dbms_lob.getlength(elem.extended_str)) loop
           dbms_lob.read(elem.extended_str, amount, offset, v_str);
           if(elem.num = 1) then
@@ -397,18 +405,19 @@ package body "JSON_PRINTER" as
           end if;
           offset := offset + amount;
         end loop;
-    else
+      else
         if(elem.num = 1) then
-            while(offset<=length(elem.str)) loop
-                v_str:=substr(elem.str, offset, amount);
-                add_buf(buf, escapeString(v_str));
-                offset := offset + amount;
-            end loop;
+          while(offset<=length(elem.str)) loop
+            v_str:=substr(elem.str, offset, amount);
+            add_buf(buf, escapeString(v_str));
+            offset := offset + amount;
+          end loop;
         else
-            add_buf(buf, elem.str);
+          add_buf(buf, elem.str);
         end if;
+      end if;
+      add_buf(buf, case when elem.num = 1 then '"' else '/**/' end);
     end if;
-    add_buf(buf, case when elem.num = 1 then '"' else '/**/' end || newline_char);
   end;
   
   procedure ppObj(obj json, indent number, buf in out nocopy varchar2, spaces boolean);
