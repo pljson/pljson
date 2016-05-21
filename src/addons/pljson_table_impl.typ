@@ -9,7 +9,6 @@ create or replace type pljson_narray as table of number;
 /
 
 create synonym pljson_table for pljson_table_impl;
-create synonym json_table for pljson_table_impl;
 
 
 
@@ -36,10 +35,10 @@ create or replace type pljson_table_impl as object
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-
+  
   /*
   E.I.Sarmas (github.com/dsnz)   2016-02-09
-
+  
   implementation and demo for json_table.json_table() functionality
   modelled after Oracle 12c json_table()
   
@@ -60,9 +59,8 @@ create or replace type pljson_table_impl as object
   create or replace type pljson_narray as table of number;
   
   create synonym pljson_table for pljson_table_impl;
-  create synonym json_table for pljson_table_impl;
   */
-   
+  
   str clob, -- varchar2(32767),
   paths pljson_varray,
   names pljson_varray,

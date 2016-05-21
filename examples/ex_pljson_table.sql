@@ -23,7 +23,7 @@
 
 /*
   E.I.Sarmas (github.com/dsnz)   2016-02-09
-
+  
   implementation and demo for json_table.json_table() functionality
   modelled after Oracle 12c json_table()
   
@@ -79,26 +79,26 @@ commit;
 
 /*
   the call format is
-
+  
   <type>.json_table(<json document>, pljson_varray(...), pljson_varray())
   
   where <type> is pljson_table or json_table or pljson_table_impl
-
+  
   pljson_varray is a type used to pass multiple string arguments
-
+  
   1st pljson_varray contains 'paths' in the document to select and project as columns
   2nd pljson_varray contains 'names' for respective paths that will serve as 'column names'
-
+  
   the names array is optional, if not present the columns are named JSON_1, JSON_2, ...
-
+  
   the value for a column may be a single one (string/number/boolean/number)
   or an array of single values
-
+  
   the final table contains the 'cartesian product' of all column values
   (this is equivalent to the 'NESTED PATH' of json_table() in Oracle12c)
-
+  
   all returned columns are of type varchar2
-
+  
   it could be easy for the columns to be automatically of type varchar2/number/...
   but this would involve excessive number of transformations from and to
   varchar representation in the implementation and would impact performance

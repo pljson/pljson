@@ -25,7 +25,7 @@ create or replace type body pljson_table_impl as
   
   /*
   E.I.Sarmas (github.com/dsnz)   2016-02-09
-
+  
   implementation and demo for json_table.json_table() functionality
   modelled after Oracle 12c json_table()
   
@@ -78,30 +78,30 @@ create or replace type body pljson_table_impl as
     sctx := pljson_table_impl(str, paths, names, pljson_vtab(), pljson_narray(), elem_typ);
     return odciconst.success;
   end;
-
+  
   static function ODCITableStart(sctx in out pljson_table_impl,
     str clob, paths pljson_varray, names pljson_varray := null) return number is
-    json_obj json;
-    json_val json_value;
+    json_obj pljson;
+    json_val pljson_value;
     buf varchar2(32767);
     --data_tab pljson_vtab := pljson_vtab();
-    json_array json_list;
-    json_elem json_value;
+    json_array pljson_list;
+    json_elem pljson_value;
     value_array pljson_varray := pljson_varray();
   begin
     --dbms_output.put_line('>>Start');
     
     sctx.data_tab.delete;
     --dbms_output.put_line('json_str='||str);
-    json_obj := json(str);
+    json_obj := pljson(str);
     for i in paths.FIRST .. paths.LAST loop
       --dbms_output.put_line('path='||paths(i));
-      json_val := json_ext.get_json_value(json_obj, paths(i));
+      json_val := pljson_ext.get_json_value(json_obj, paths(i));
       --dbms_output.put_line('type='||json_val.get_type());
       case json_val.typeval
         --when 1 then 'object';
         when 2 then -- 'array';
-          json_array := json_list(json_val);
+          json_array := pljson_list(json_val);
           value_array.delete;
           for j in 1 .. json_array.count loop
             json_elem := json_array.get(j);

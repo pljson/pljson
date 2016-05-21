@@ -22,6 +22,7 @@
   */
 
 declare begin
+  /* drop old install */
   begin execute immediate 'drop package json_parser'; exception when others then null; end;
   begin execute immediate 'drop package json_printer'; exception when others then null; end;
   begin execute immediate 'drop package json_ext'; exception when others then null; end;
@@ -32,13 +33,7 @@ declare begin
   begin execute immediate 'drop package json_helper'; exception when others then null; end;
   begin execute immediate 'drop package json_ac'; exception when others then null; end;
   begin execute immediate 'drop type json force'; exception when others then null; end;
-  begin execute immediate 'drop type json_member_array force'; exception when others then null; end;
-  begin execute immediate 'drop type json_member force'; exception when others then null; end;
   begin execute immediate 'drop type json_list force'; exception when others then null; end;
-  begin execute immediate 'drop type json_element_array force'; exception when others then null; end;
-  begin execute immediate 'drop type json_element force'; exception when others then null; end;
-  begin execute immediate 'drop type json_bool force'; exception when others then null; end;
-  begin execute immediate 'drop type json_null force'; exception when others then null; end;
   begin execute immediate 'drop type json_value_array force'; exception when others then null; end;
   begin execute immediate 'drop type json_value force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_narray force'; exception when others then null; end;
@@ -46,6 +41,39 @@ declare begin
   begin execute immediate 'drop type pljson_varray force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_table_impl force'; exception when others then null; end;
   begin execute immediate 'drop synonym pljson_table'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_table'; exception when others then null; end;
+  /* drop new install */
+  begin execute immediate 'drop package pljson_parser'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_printer'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_ext'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_dyn'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_ml'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_xml'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_util_pkg'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_helper'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_ac'; exception when others then null; end;
+  begin execute immediate 'drop type pljson force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_list force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_value_array force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_value force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_narray force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_vtab force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_varray force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_table_impl force'; exception when others then null; end;
+  begin execute immediate 'drop synonym pljson_table'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_parser'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_printer'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_ext'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_dyn'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_ml'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_xml'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_util_pkg'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_helper'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_ac'; exception when others then null; end;
+  begin execute immediate 'drop synonym json'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_list'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_value_array'; exception when others then null; end;
+  begin execute immediate 'drop synonym json_value'; exception when others then null; end;
   begin execute immediate 'drop synonym json_table'; exception when others then null; end;
 end;
 /

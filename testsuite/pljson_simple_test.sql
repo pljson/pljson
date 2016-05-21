@@ -26,7 +26,7 @@ declare
   begin
     if(not b) then raise_application_error(-20111, 'Test error'); end if;
   end;
-
+  
   procedure assertFalse(b boolean) as
   begin
     if(b) then raise_application_error(-20111, 'Test error'); end if;
@@ -36,37 +36,37 @@ begin
   
   str := 'Bool test';
   declare
-    obj json_value;
+    obj pljson_value;
   begin
-    obj := json_value(true);
+    obj := pljson_value(true);
     assertTrue(obj.get_bool);
     assertFalse(not obj.get_bool);
-    assertTrue(json_printer.pretty_print_any(obj) = 'true');
-    obj := json_value(false);
+    assertTrue(pljson_printer.pretty_print_any(obj) = 'true');
+    obj := pljson_value(false);
     assertFalse(obj.get_bool);
     assertTrue(not obj.get_bool);
-    assertTrue(json_printer.pretty_print_any(obj) = 'false');
+    assertTrue(pljson_printer.pretty_print_any(obj) = 'false');
     pass(str);
   exception
     when others then fail(str);
   end;
-
+  
   str := 'Null test';
   declare
-    obj json_value;
+    obj pljson_value;
   begin
-    obj := json_value();
+    obj := pljson_value();
     assertTrue(obj is not null);
-    assertTrue(json_printer.pretty_print_any(obj) = 'null');
+    assertTrue(pljson_printer.pretty_print_any(obj) = 'null');
     --assertTrue(obj.null_data is null); --doesnt matter really
     pass(str);
   exception
     when others then fail(str);
   end;
-
+  
   begin
-    execute immediate 'insert into json_testsuite values (:1, :2, :3, :4, :5)' using
-    'simple type test', pass_count,fail_count,total_count,'simple_test.sql';
+    execute immediate 'insert into pljson_testsuite values (:1, :2, :3, :4, :5)' using
+    'pljson simple type test', pass_count, fail_count, total_count, 'pljson_simple_test.sql';
   exception
     when others then null;
   end;
