@@ -209,7 +209,7 @@ create or replace package body pljson_printer as
         end loop;
       else
         if(elem.num = 1) then
-          while(offset <= length(elem.str)) loop
+          while(offset<=length(elem.str)) loop
             v_str:=substr(elem.str, offset, amount);
             add_to_clob(buf, buf_str, escapeString(v_str));
             offset := offset + amount;
@@ -409,7 +409,7 @@ create or replace package body pljson_printer as
         end loop;
       else
         if(elem.num = 1) then
-          while(offset <= length(elem.str)) loop
+          while(offset<=length(elem.str)) loop
             v_str:=substr(elem.str, offset, amount);
             add_buf(buf, escapeString(v_str));
             offset := offset + amount;
