@@ -198,7 +198,7 @@ create or replace package body pljson_printer as
     else
       add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
       if(elem.extended_str is not null) then --clob implementation
-        while(offset<=dbms_lob.getlength(elem.extended_str)) loop
+        while(offset <= dbms_lob.getlength(elem.extended_str)) loop
           dbms_lob.read(elem.extended_str, amount, offset, v_str);
           if(elem.num = 1) then
             add_to_clob(buf, buf_str, escapeString(v_str));
@@ -398,7 +398,7 @@ create or replace package body pljson_printer as
     else
       add_buf(buf, case when elem.num = 1 then '"' else '/**/' end);
       if(elem.extended_str is not null) then --clob implementation
-        while(offset<=dbms_lob.getlength(elem.extended_str)) loop
+        while(offset <= dbms_lob.getlength(elem.extended_str)) loop
           dbms_lob.read(elem.extended_str, amount, offset, v_str);
           if(elem.num = 1) then
             add_buf(buf, escapeString(v_str));
