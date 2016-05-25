@@ -193,9 +193,11 @@ begin
     when others then fail(test_str);
   end;
   
+  /*
   dbms_output.put_line('');
   dbms_output.put_line('Passed '||pass_count||' of '||total_count||' tests.');
   dbms_output.put_line('Failed '||fail_count||' of '||total_count||' tests.');
+  */
   
   begin
     execute immediate 'insert into pljson_testsuite values (:1, :2, :3, :4, :5)' using

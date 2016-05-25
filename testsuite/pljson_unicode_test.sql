@@ -152,10 +152,11 @@ begin
     dbms_lob.trim(json_clob, 0);
     
     test_json.to_clob(json_clob);
-    assertTrue(dbms_lob.getlength(json_clob) = 1896666);
-    
     --dbms_output.put_line('test all kinds of big strings, clob final chars = ' || to_char(dbms_lob.getlength(json_clob)));
-    pass(str); 
+    
+    assertTrue(dbms_lob.getlength(json_clob) = 1896656);
+    pass(str);
+    
     dbms_lob.freetemporary(json_clob);
   exception
     when others then
@@ -176,9 +177,9 @@ begin
     test_json := pljson();
     test_json.put('var_1', var_buf_1);
     json_var := test_json.to_char();
-    assertTrue(lengthb(json_var) = 32014);
-    
     --dbms_output.put_line('test 1 varchar2 string of 32000 1-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
+    
+    assertTrue(lengthb(json_var) = 32012);
     pass(str); 
   exception
     when others then fail(str);
@@ -192,9 +193,9 @@ begin
     test_json := pljson();
     test_json.put('var_2', var_buf_2);
     json_var := test_json.to_char();
-    assertTrue(lengthb(json_var) = 29974);
-    
     --dbms_output.put_line('test 1 varchar2 string of 5000 2-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
+    
+    assertTrue(lengthb(json_var) = 29972);
     pass(str); 
   exception
     when others then fail(str);
@@ -214,9 +215,9 @@ begin
     end loop;
     test_json.put('array', test_json_list);
     json_var := test_json.to_char();
-    assertTrue(lengthb(json_var) = 32658);
-    
     --dbms_output.put_line('test list of 1-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
+    
+    assertTrue(lengthb(json_var) = 31698);
     pass(str); 
   exception
     when others then fail(str);
@@ -234,9 +235,9 @@ begin
     end loop;
     test_json.put('array', test_json_list);
     json_var := test_json.to_char();
-    assertTrue(lengthb(json_var) = 32388);
-    
     --dbms_output.put_line('test list of 2-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
+    
+    assertTrue(lengthb(json_var) = 32222);
     pass(str); 
   exception
     when others then fail(str);
@@ -253,11 +254,11 @@ begin
   clob_2 2-byte buffer, chars = 262080
   var_1 1-byte buffer, bytes = 31992
   var_2 2-byte buffer, bytes = 9984
-  test all kinds of big strings, clob final chars = 1896666
-  test 1 varchar2 string of 32000 1-byte chars, varchar2 final bytes = 32014 -- was 32012 before commit 97d72ca
-  test 1 varchar2 string of 5000 2-byte chars, varchar2 final bytes = 29974 -- was 29972 before commit 97d72ca
-  test list of 1-byte chars, varchar2 final bytes = 32658 -- was 32754 before commit 97d72ca
-  test list of 2-byte chars, varchar2 final bytes = 32388 -- was 32222 before commit 97d72ca
+  test all kinds of big strings, clob final chars = 1896656
+  test 1 varchar2 string of 32000 1-byte chars, varchar2 final bytes = 32012
+  test 1 varchar2 string of 5000 2-byte chars, varchar2 final bytes = 29972
+  test list of 1-byte chars, varchar2 final bytes = 31698
+  test list of 2-byte chars, varchar2 final bytes = 32222
   total sec = [4.8 - 5.2 sec on old Pentium 2.80 GHz development machine]
   */
   begin
