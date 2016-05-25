@@ -1,4 +1,4 @@
-create or replace package json_dyn authid current_user as
+create or replace package pljson_dyn authid current_user as
  /*
   Copyright (c) 2010 Jonas Krogsboell
 
@@ -27,10 +27,10 @@ create or replace package json_dyn authid current_user as
   include_blobs          boolean not null := false;
 
   /* list with objects */
-  function executeList(stmt varchar2, bindvar json default null, cur_num number default null) return json_list;
+  function executeList(stmt varchar2, bindvar pljson default null, cur_num number default null) return pljson_list;
 
   /* object with lists */
-  function executeObject(stmt varchar2, bindvar json default null, cur_num number default null) return json;
+  function executeObject(stmt varchar2, bindvar pljson default null, cur_num number default null) return pljson;
 
 
   /* usage example:
@@ -49,11 +49,10 @@ create or replace package json_dyn authid current_user as
   function executeList(stmt in out sys_refcursor) return json_list;
   function executeObject(stmt in out sys_refcursor) return json;
 */
-end json_dyn;
+end pljson_dyn;
 /
 
-create or replace
-package body json_dyn as
+create or replace package body pljson_dyn as
 /*
   -- 11gR2
   function executeList(stmt in out sys_refcursor) return json_list as
@@ -72,8 +71,8 @@ package body json_dyn as
   end;
 */
 
-  procedure bind_json(l_cur number, bindvar json) as
-    keylist json_list := bindvar.get_keys();
+  procedure bind_json(l_cur number, bindvar pljson) as
+    keylist pljson_list := bindvar.get_keys();
   begin
     for i in 1 .. keylist.count loop
       if(bindvar.get(i).get_type = 'number') then
@@ -81,7 +80,7 @@ package body json_dyn as
       elsif(bindvar.get(i).get_type = 'array') then
         declare
           v_bind dbms_sql.varchar2_table;
-          v_arr  json_list := json_list(bindvar.get(i));
+          v_arr  pljson_list := pljson_list(bindvar.get(i));
         begin
           for j in 1 .. v_arr.count loop
             v_bind(j) := v_arr.get(j).value_of;
@@ -95,14 +94,14 @@ package body json_dyn as
   end bind_json;
 
   /* list with objects */
-  function executeList(stmt varchar2, bindvar json, cur_num number) return json_list as
+  function executeList(stmt varchar2, bindvar pljson, cur_num number) return pljson_list as
     l_cur number;
     l_dtbl dbms_sql.desc_tab2;
     l_cnt number;
     l_status number;
     l_val varchar2(4000);
-    outer_list json_list := json_list();
-    inner_obj json;
+    outer_list pljson_list := pljson_list();
+    inner_obj pljson;
     conv number;
     read_date date;
     read_clob clob;
@@ -135,7 +134,7 @@ package body json_dyn as
 
     --loop through rows
     while ( dbms_sql.fetch_rows(l_cur) > 0 ) loop
-      inner_obj := json(); --init for each row
+      inner_obj := pljson(); --init for each row
       --loop through columns
       for i in 1..l_cnt loop
         case true
@@ -146,10 +145,10 @@ package body json_dyn as
             if(null_as_empty_string) then
               inner_obj.put(l_dtbl(i).col_name, ''); --treatet as emptystring?
             else
-              inner_obj.put(l_dtbl(i).col_name, json_value.makenull); --null
+              inner_obj.put(l_dtbl(i).col_name, pljson_value.makenull); --null
             end if;
           else
-            inner_obj.put(l_dtbl(i).col_name, json_value(l_val)); --null
+            inner_obj.put(l_dtbl(i).col_name, pljson_value(l_val)); --null
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'varchar2' ||l_dtbl(i).col_type);
         --handling number types
@@ -161,21 +160,21 @@ package body json_dyn as
         when l_dtbl(i).col_type = 12 then -- date
           if(include_dates) then
             dbms_sql.column_value(l_cur,i,read_date);
-            inner_obj.put(l_dtbl(i).col_name, json_ext.to_json_value(read_date));
+            inner_obj.put(l_dtbl(i).col_name, pljson_ext.to_json_value(read_date));
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'date ' ||l_dtbl(i).col_type);
         when l_dtbl(i).col_type = 112 then --clob
           if(include_clobs) then
             dbms_sql.column_value(l_cur,i,read_clob);
-            inner_obj.put(l_dtbl(i).col_name, json_value(read_clob));
+            inner_obj.put(l_dtbl(i).col_name, pljson_value(read_clob));
           end if;
         when l_dtbl(i).col_type = 113 then --blob
           if(include_blobs) then
             dbms_sql.column_value(l_cur,i,read_blob);
             if(dbms_lob.getlength(read_blob) > 0) then
-              inner_obj.put(l_dtbl(i).col_name, json_ext.encode(read_blob));
+              inner_obj.put(l_dtbl(i).col_name, pljson_ext.encode(read_blob));
             else
-              inner_obj.put(l_dtbl(i).col_name, json_value.makenull);
+              inner_obj.put(l_dtbl(i).col_name, pljson_value.makenull);
             end if;
           end if;
 
@@ -189,16 +188,16 @@ package body json_dyn as
   end executeList;
 
   /* object with lists */
-  function executeObject(stmt varchar2, bindvar json, cur_num number) return json as
+  function executeObject(stmt varchar2, bindvar pljson, cur_num number) return pljson as
     l_cur number;
     l_dtbl dbms_sql.desc_tab;
     l_cnt number;
     l_status number;
     l_val varchar2(4000);
-    inner_list_names json_list := json_list();
-    inner_list_data json_list := json_list();
-    data_list json_list;
-    outer_obj json := json();
+    inner_list_names pljson_list := pljson_list();
+    inner_list_data pljson_list := pljson_list();
+    data_list pljson_list;
+    outer_obj pljson := pljson();
     conv number;
     read_date date;
     read_clob clob;
@@ -242,7 +241,7 @@ package body json_dyn as
 
     --loop through rows
     while ( dbms_sql.fetch_rows(l_cur) > 0 ) loop
-      data_list := json_list();
+      data_list := pljson_list();
       --loop through columns
       for i in 1..l_cnt loop
         case true
@@ -253,10 +252,10 @@ package body json_dyn as
             if(null_as_empty_string) then
               data_list.append(''); --treatet as emptystring?
             else
-              data_list.append(json_value.makenull); --null
+              data_list.append(pljson_value.makenull); --null
             end if;
           else
-            data_list.append(json_value(l_val)); --null
+            data_list.append(pljson_value(l_val)); --null
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'varchar2' ||l_dtbl(i).col_type);
         --handling number types
@@ -268,21 +267,21 @@ package body json_dyn as
         when l_dtbl(i).col_type = 12 then -- date
           if(include_dates) then
             dbms_sql.column_value(l_cur,i,read_date);
-            data_list.append(json_ext.to_json_value(read_date));
+            data_list.append(pljson_ext.to_json_value(read_date));
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'date ' ||l_dtbl(i).col_type);
         when l_dtbl(i).col_type = 112 then --clob
           if(include_clobs) then
             dbms_sql.column_value(l_cur,i,read_clob);
-            data_list.append(json_value(read_clob));
+            data_list.append(pljson_value(read_clob));
           end if;
         when l_dtbl(i).col_type = 113 then --blob
           if(include_blobs) then
             dbms_sql.column_value(l_cur,i,read_blob);
             if(dbms_lob.getlength(read_blob) > 0) then
-              data_list.append(json_ext.encode(read_blob));
+              data_list.append(pljson_ext.encode(read_blob));
             else
-              data_list.append(json_value.makenull);
+              data_list.append(pljson_value.makenull);
             end if;
           end if;
         else null; --discard other types
@@ -297,5 +296,5 @@ package body json_dyn as
     return outer_obj;
   end executeObject;
 
-end json_dyn;
+end pljson_dyn;
 /
