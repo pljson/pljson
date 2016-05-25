@@ -31,5 +31,20 @@ Installation:
 General information about JSON is available at http://www.json.org
 
 
+PLJSON is certified to work for Oracle 10 and above.
+(it can work with Oracle 8,9 with some minor changes only)
+
+Recently and for Oracle 12c and later there has been a change in naming
+of types and pakages so that there is no confusion with existing or future
+Oracle objects starting with 'json_'. All project public objects are now
+named with prefix 'pljson_'.
+For compatibility with older releases of Oracle the installation
+creates synonyms with names starting with 'json_' which can still be used
+with Oracle 12c but since there is no guarantee that this will be possible
+in future Oracle versions the user is warned to use only names starting
+with 'pljson_' in his code.
+(the necessary naming changes have been made in the /testsuite files
+but the /examples and /doc files contain the old names and again
+the user is warned to use the new names)
 
 

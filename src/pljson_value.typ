@@ -1,6 +1,5 @@
-create or replace
-type json_value as object
-( 
+create or replace type pljson_value as object
+(
   /*
   Copyright (c) 2010 Jonas Krogsboell
 
@@ -22,7 +21,7 @@ type json_value as object
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-
+  
   typeval number(1), /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
   str varchar2(32767),
   num number, /* store 1 as true, 0 as false */
@@ -31,19 +30,19 @@ type json_value as object
   
   /* mapping */
   mapname varchar2(4000),
-  mapindx number(32),  
+  mapindx number(32),
   
-  constructor function json_value(object_or_array sys.anydata) return self as result,
-  constructor function json_value(str varchar2, esc boolean default true) return self as result,
-  constructor function json_value(str clob, esc boolean default true) return self as result,
-  constructor function json_value(num number) return self as result,
-  constructor function json_value(b boolean) return self as result,
-  constructor function json_value return self as result,
-  static function makenull return json_value,
+  constructor function pljson_value(object_or_array sys.anydata) return self as result,
+  constructor function pljson_value(str varchar2, esc boolean default true) return self as result,
+  constructor function pljson_value(str clob, esc boolean default true) return self as result,
+  constructor function pljson_value(num number) return self as result,
+  constructor function pljson_value(b boolean) return self as result,
+  constructor function pljson_value return self as result,
+  static function makenull return pljson_value,
   
   member function get_type return varchar2,
   member function get_string(max_byte_size number default null, max_char_size number default null) return varchar2,
-  member procedure get_string(self in json_value, buf in out nocopy clob),
+  member procedure get_string(self in pljson_value, buf in out nocopy clob),
   member function get_number return number,
   member function get_bool return boolean,
   member function get_null return varchar2,
@@ -55,18 +54,17 @@ type json_value as object
   member function is_bool return boolean,
   member function is_null return boolean,
   
-  /* Output methods */ 
+  /* Output methods */
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
-  member procedure to_clob(self in json_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),
-  member procedure print(self in json_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null), --32512 is maximum
-  member procedure htp(self in json_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
+  member procedure to_clob(self in pljson_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),
+  member procedure print(self in pljson_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null), --32512 is maximum
+  member procedure htp(self in pljson_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
   
-  member function value_of(self in json_value, max_byte_size number default null, max_char_size number default null) return varchar2
-  
+  member function value_of(self in pljson_value, max_byte_size number default null, max_char_size number default null) return varchar2
+
 ) not final;
 /
 
-create or replace type json_value_array as table of json_value;
+create or replace type pljson_value_array as table of pljson_value;
 /
-
 sho err

@@ -19,39 +19,39 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-create or replace type body json as
+create or replace type body pljson as
 
   /* Constructors */
-  constructor function json return self as result as
+  constructor function pljson return self as result as
   begin
-    self.json_data := json_value_array();
-    self.check_for_duplicate := 1;
-    return;
-  end;
-
-  constructor function json(str varchar2) return self as result as
-  begin
-    self := json_parser.parser(str);
+    self.json_data := pljson_value_array();
     self.check_for_duplicate := 1;
     return;
   end;
   
-  constructor function json(str in clob) return self as result as
+  constructor function pljson(str varchar2) return self as result as
   begin
-    self := json_parser.parser(str);
+    self := pljson_parser.parser(str);
     self.check_for_duplicate := 1;
     return;
-  end;  
-
-  constructor function json(cast json_value) return self as result as
+  end;
+  
+  constructor function pljson(str in clob) return self as result as
+  begin
+    self := pljson_parser.parser(str);
+    self.check_for_duplicate := 1;
+    return;
+  end;
+  
+  constructor function pljson(cast pljson_value) return self as result as
     x number;
   begin
     x := cast.object_or_array.getobject(self);
     self.check_for_duplicate := 1;
     return;
   end;
-
-  constructor function json(l in out nocopy json_list) return self as result as
+  
+  constructor function pljson(l in out nocopy pljson_list) return self as result as
   begin
     for i in 1 .. l.list_data.count loop
       if(l.list_data(i).mapname is null or l.list_data(i).mapname like 'row%') then
@@ -59,18 +59,18 @@ create or replace type body json as
       end if;
       l.list_data(i).mapindx := i;
     end loop;
-
+  
     self.json_data := l.list_data;
     self.check_for_duplicate := 1;
     return;
   end;
-
-  /* Member setter methods */  
-  member procedure remove(self in out nocopy json, pair_name varchar2) as
-    temp json_value;
+  
+  /* Member setter methods */
+  member procedure remove(self in out nocopy pljson, pair_name varchar2) as
+    temp pljson_value;
     indx pls_integer;
     
-    function get_member(pair_name varchar2) return json_value as
+    function get_member(pair_name varchar2) return pljson_value as
       indx pls_integer;
     begin
       indx := json_data.first;
@@ -87,7 +87,7 @@ create or replace type body json as
     if(temp is null) then return; end if;
     
     indx := json_data.next(temp.mapindx);
-    loop 
+    loop
       exit when indx is null;
       json_data(indx).mapindx := indx - 1;
       json_data(indx-1) := json_data(indx);
@@ -96,12 +96,12 @@ create or replace type body json as
     json_data.trim(1);
     --num_elements := num_elements - 1;
   end;
-
-  member procedure put(self in out nocopy json, pair_name varchar2, pair_value json_value, position pls_integer default null) as
-    insert_value json_value := nvl(pair_value, json_value.makenull);
+  
+  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson_value, position pls_integer default null) as
+    insert_value pljson_value := nvl(pair_value, pljson_value.makenull);
     indx pls_integer; x number;
-    temp json_value;
-    function get_member(pair_name varchar2) return json_value as
+    temp pljson_value;
+    function get_member(pair_name varchar2) return pljson_value as
       indx pls_integer;
     begin
       indx := json_data.first;
@@ -115,8 +115,8 @@ create or replace type body json as
     end;
   begin
     --dbms_output.put_line('PN '||pair_name);
-
---    if(pair_name is null) then 
+    
+--    if(pair_name is null) then
 --      raise_application_error(-20102, 'JSON put-method type error: name cannot be null');
 --    end if;
     insert_value.mapname := pair_name;
@@ -124,7 +124,7 @@ create or replace type body json as
     if(self.check_for_duplicate = 1) then temp := get_member(pair_name); else temp := null; end if;
     if(temp is not null) then
       insert_value.mapindx := temp.mapindx;
-      json_data(temp.mapindx) := insert_value; 
+      json_data(temp.mapindx) := insert_value;
       return;
     elsif(position is null or position > self.count) then
       --insert at the end of the list
@@ -151,9 +151,9 @@ create or replace type body json as
       end loop;
       json_data(1) := insert_value;
       insert_value.mapindx := 1;
-    else 
+    else
       --insert somewhere in the list
-      indx := json_data.last; 
+      indx := json_data.last;
 --      dbms_output.put_line('Test '||indx);
       json_data.extend;
 --      dbms_output.put_line('Test '||indx);
@@ -171,65 +171,65 @@ create or replace type body json as
 --    num_elements := num_elements + 1;
   end;
   
-  member procedure put(self in out nocopy json, pair_name varchar2, pair_value varchar2, position pls_integer default null) as
+  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value varchar2, position pls_integer default null) as
   begin
-    put(pair_name, json_value(pair_value), position);
+    put(pair_name, pljson_value(pair_value), position);
   end;
   
-  member procedure put(self in out nocopy json, pair_name varchar2, pair_value number, position pls_integer default null) as
+  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value number, position pls_integer default null) as
   begin
     if(pair_value is null) then
-      put(pair_name, json_value(), position);
-    else 
-      put(pair_name, json_value(pair_value), position);
+      put(pair_name, pljson_value(), position);
+    else
+      put(pair_name, pljson_value(pair_value), position);
     end if;
   end;
   
-  member procedure put(self in out nocopy json, pair_name varchar2, pair_value boolean, position pls_integer default null) as
+  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value boolean, position pls_integer default null) as
   begin
     if(pair_value is null) then
-      put(pair_name, json_value(), position);
-    else 
-      put(pair_name, json_value(pair_value), position);
+      put(pair_name, pljson_value(), position);
+    else
+      put(pair_name, pljson_value(pair_value), position);
     end if;
   end;
   
-  member procedure check_duplicate(self in out nocopy json, v_set boolean) as
+  member procedure check_duplicate(self in out nocopy pljson, v_set boolean) as
   begin
-    if(v_set) then 
+    if(v_set) then
       check_for_duplicate := 1;
-    else 
+    else
       check_for_duplicate := 0;
     end if;
-  end; 
-
+  end;
+  
   /* deprecated putters */
- 
-  member procedure put(self in out nocopy json, pair_name varchar2, pair_value json, position pls_integer default null) as
+  
+  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson, position pls_integer default null) as
   begin
     if(pair_value is null) then
-      put(pair_name, json_value(), position);
-    else 
+      put(pair_name, pljson_value(), position);
+    else
       put(pair_name, pair_value.to_json_value, position);
     end if;
   end;
-
-  member procedure put(self in out nocopy json, pair_name varchar2, pair_value json_list, position pls_integer default null) as
+  
+  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson_list, position pls_integer default null) as
   begin
     if(pair_value is null) then
-      put(pair_name, json_value(), position);
-    else 
+      put(pair_name, pljson_value(), position);
+    else
       put(pair_name, pair_value.to_json_value, position);
     end if;
   end;
-
-  /* Member getter methods */ 
+  
+  /* Member getter methods */
   member function count return number as
   begin
     return self.json_data.count;
   end;
-
-  member function get(pair_name varchar2) return json_value as
+  
+  member function get(pair_name varchar2) return pljson_value as
     indx pls_integer;
   begin
     indx := json_data.first;
@@ -242,7 +242,7 @@ create or replace type body json as
     return null;
   end;
   
-  member function get(position pls_integer) return json_value as
+  member function get(position pls_integer) return pljson_value as
   begin
     if(self.count >= position and position > 0) then
       return self.json_data(position);
@@ -262,120 +262,120 @@ create or replace type body json as
     end loop;
     return -1;
   end;
-
+  
   member function exist(pair_name varchar2) return boolean as
   begin
     return (self.get(pair_name) is not null);
   end;
   
-  /* Output methods */  
+  /* Output methods */
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2 as
   begin
     if(spaces is null) then
-      return json_printer.pretty_print(self, line_length => chars_per_line);
-    else 
-      return json_printer.pretty_print(self, spaces, line_length => chars_per_line);
+      return pljson_printer.pretty_print(self, line_length => chars_per_line);
+    else
+      return pljson_printer.pretty_print(self, spaces, line_length => chars_per_line);
     end if;
-  end;
-
-  member procedure to_clob(self in json, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) as
-  begin
-    if(spaces is null) then	
-      json_printer.pretty_print(self, false, buf, line_length => chars_per_line, erase_clob => erase_clob);
-    else 
-      json_printer.pretty_print(self, spaces, buf, line_length => chars_per_line, erase_clob => erase_clob);
-    end if;
-  end;
-
-  member procedure print(self in json, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null) as --32512 is the real maximum in sqldeveloper
-    my_clob clob;
-  begin
-    my_clob := empty_clob();
-    dbms_lob.createtemporary(my_clob, true);
-    json_printer.pretty_print(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
-    json_printer.dbms_output_clob(my_clob, json_printer.newline_char, jsonp);
-    dbms_lob.freetemporary(my_clob);  
   end;
   
-  member procedure htp(self in json, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null) as 
+  member procedure to_clob(self in pljson, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) as
+  begin
+    if(spaces is null) then
+      pljson_printer.pretty_print(self, false, buf, line_length => chars_per_line, erase_clob => erase_clob);
+    else
+      pljson_printer.pretty_print(self, spaces, buf, line_length => chars_per_line, erase_clob => erase_clob);
+    end if;
+  end;
+  
+  member procedure print(self in pljson, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null) as --32512 is the real maximum in sqldeveloper
     my_clob clob;
   begin
     my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
-    json_printer.pretty_print(self, spaces, my_clob, chars_per_line);
-    json_printer.htp_output_clob(my_clob, jsonp);
-    dbms_lob.freetemporary(my_clob);  
+    pljson_printer.pretty_print(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
+    pljson_printer.dbms_output_clob(my_clob, pljson_printer.newline_char, jsonp);
+    dbms_lob.freetemporary(my_clob);
   end;
-
-  member function to_json_value return json_value as
+  
+  member procedure htp(self in pljson, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null) as
+    my_clob clob;
   begin
-    return json_value(sys.anydata.convertobject(self));
+    my_clob := empty_clob();
+    dbms_lob.createtemporary(my_clob, true);
+    pljson_printer.pretty_print(self, spaces, my_clob, chars_per_line);
+    pljson_printer.htp_output_clob(my_clob, jsonp);
+    dbms_lob.freetemporary(my_clob);
   end;
-
+  
+  member function to_json_value return pljson_value as
+  begin
+    return pljson_value(sys.anydata.convertobject(self));
+  end;
+  
   /* json path */
-  member function path(json_path varchar2, base number default 1) return json_value as
+  member function path(json_path varchar2, base number default 1) return pljson_value as
   begin
-    return json_ext.get_json_value(self, json_path, base);
+    return pljson_ext.get_json_value(self, json_path, base);
   end path;
-
+  
   /* json path_put */
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_value, base number default 1) as
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_value, base number default 1) as
   begin
-    json_ext.put(self, json_path, elem, base);
+    pljson_ext.put(self, json_path, elem, base);
   end path_put;
   
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem varchar2, base number default 1) as
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem varchar2, base number default 1) as
   begin
-    json_ext.put(self, json_path, elem, base);
+    pljson_ext.put(self, json_path, elem, base);
   end path_put;
   
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem number, base number default 1) as
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem number, base number default 1) as
   begin
-    if(elem is null) then 
-      json_ext.put(self, json_path, json_value(), base);
-    else 
-      json_ext.put(self, json_path, elem, base);
-    end if;
-  end path_put;
-
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem boolean, base number default 1) as
-  begin
-    if(elem is null) then 
-      json_ext.put(self, json_path, json_value(), base);
-    else 
-      json_ext.put(self, json_path, elem, base);
-    end if;
-  end path_put;
-
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem json_list, base number default 1) as
-  begin
-    if(elem is null) then 
-      json_ext.put(self, json_path, json_value(), base);
-    else 
-      json_ext.put(self, json_path, elem, base);
-    end if;
-  end path_put;
-
-  member procedure path_put(self in out nocopy json, json_path varchar2, elem json, base number default 1) as
-  begin
-    if(elem is null) then 
-      json_ext.put(self, json_path, json_value(), base);
-    else 
-      json_ext.put(self, json_path, elem, base);
+    if(elem is null) then
+      pljson_ext.put(self, json_path, pljson_value(), base);
+    else
+      pljson_ext.put(self, json_path, elem, base);
     end if;
   end path_put;
   
-  member procedure path_remove(self in out nocopy json, json_path varchar2, base number default 1) as
-  begin 
-    json_ext.remove(self, json_path, base);
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem boolean, base number default 1) as
+  begin
+    if(elem is null) then
+      pljson_ext.put(self, json_path, pljson_value(), base);
+    else
+      pljson_ext.put(self, json_path, elem, base);
+    end if;
+  end path_put;
+  
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_list, base number default 1) as
+  begin
+    if(elem is null) then
+      pljson_ext.put(self, json_path, pljson_value(), base);
+    else
+      pljson_ext.put(self, json_path, elem, base);
+    end if;
+  end path_put;
+  
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson, base number default 1) as
+  begin
+    if(elem is null) then
+      pljson_ext.put(self, json_path, pljson_value(), base);
+    else
+      pljson_ext.put(self, json_path, elem, base);
+    end if;
+  end path_put;
+  
+  member procedure path_remove(self in out nocopy pljson, json_path varchar2, base number default 1) as
+  begin
+    pljson_ext.remove(self, json_path, base);
   end path_remove;
-
+  
   /* Thanks to Matt Nolan */
-  member function get_keys return json_list as
-    keys json_list;
+  member function get_keys return pljson_list as
+    keys pljson_list;
     indx pls_integer;
   begin
-    keys := json_list();
+    keys := pljson_list();
     indx := json_data.first;
     loop
       exit when indx is null;
@@ -385,19 +385,19 @@ create or replace type body json as
     return keys;
   end;
   
-  member function get_values return json_list as
-    vals json_list := json_list();
+  member function get_values return pljson_list as
+    vals pljson_list := pljson_list();
   begin
     vals.list_data := self.json_data;
     return vals;
   end;
   
-  member procedure remove_duplicates(self in out nocopy json) as
+  member procedure remove_duplicates(self in out nocopy pljson) as
   begin
-    json_parser.remove_duplicates(self);
+    pljson_parser.remove_duplicates(self);
   end remove_duplicates;
 
 
 end;
-/ 
+/
 sho err

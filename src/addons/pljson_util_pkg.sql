@@ -1,13 +1,14 @@
-set define off;
-create or replace package json_util_pkg authid current_user as
+set define off
+
+create or replace package pljson_util_pkg authid current_user as
 
   /*
 
   Purpose:    JSON utilities for PL/SQL
   see http://ora-00001.blogspot.com/
   
-  Remarks:    
-
+  Remarks:
+  
   Who     Date        Description
   ------  ----------  -------------------------------------
   MBR     30.01.2010  Created
@@ -19,18 +20,18 @@ create or replace package json_util_pkg authid current_user as
   -- generate JSON from REF Cursor
   function ref_cursor_to_json (p_ref_cursor in sys_refcursor,
                                p_max_rows in number := null,
-                               p_skip_rows in number := null) return json_list;
+                               p_skip_rows in number := null) return pljson_list;
 
   -- generate JSON from SQL statement
   function sql_to_json (p_sql in varchar2,
                         p_max_rows in number := null,
-                        p_skip_rows in number := null) return json_list;
+                        p_skip_rows in number := null) return pljson_list;
 
 
-end json_util_pkg;
+end pljson_util_pkg;
 /
-create or replace package body json_util_pkg
-as
+
+create or replace package body pljson_util_pkg as
   scanner_exception exception;
   pragma exception_init(scanner_exception, -20100);
   parser_exception exception;
@@ -40,12 +41,12 @@ as
 
   Purpose:    JSON utilities for PL/SQL
 
-  Remarks:    
+  Remarks:
 
   Who     Date        Description
   ------  ----------  -------------------------------------
   MBR     30.01.2010  Created
-  
+
   */
 
 
@@ -66,7 +67,7 @@ begin
   ------  ----------  -------------------------------------
   MBR     30.01.2010  Created
   MBR     30.01.2010  Added fix for nulls
-  
+
   */
 
 
@@ -76,24 +77,24 @@ begin
   Copyright (c) 2006,2008 Doeke Zanstra
   All rights reserved.
 
-  Redistribution and use in source and binary forms, with or without modification, 
+  Redistribution and use in source and binary forms, with or without modification,
   are permitted provided that the following conditions are met:
 
-  Redistributions of source code must retain the above copyright notice, this 
-  list of conditions and the following disclaimer. Redistributions in binary 
-  form must reproduce the above copyright notice, this list of conditions and the 
-  following disclaimer in the documentation and/or other materials provided with 
+  Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer. Redistributions in binary
+  form must reproduce the above copyright notice, this list of conditions and the
+  following disclaimer in the documentation and/or other materials provided with
   the distribution.
 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
-  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
-  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
@@ -111,8 +112,8 @@ begin
       <xsl:with-param name="s" select="."/>
     </xsl:call-template>
   </xsl:template>
-  
-  <!-- Main template for escaping strings; used by above template and for object-properties 
+
+  <!-- Main template for escaping strings; used by above template and for object-properties
        Responsibilities: placed quotes around string, and chain up to next filter, escape-bs-string -->
   <xsl:template name="escape-string">
     <xsl:param name="s"/>
@@ -164,8 +165,8 @@ begin
   </xsl:template>
   
   <!-- Replace tab, line feed and/or carriage return by its matching escape code. Can't escape backslash
-       or double quote here, because they don't replace characters (&#x0; becomes \t), but they prefix 
-       characters (\ becomes \\). Besides, backslash should be seperate anyway, because it should be 
+       or double quote here, because they don't replace characters (&#x0; becomes \t), but they prefix
+       characters (\ becomes \\). Besides, backslash should be seperate anyway, because it should be
        processed first. This function can't do that. -->
   <xsl:template name="encode-string">
     <xsl:param name="s"/>
@@ -191,7 +192,7 @@ begin
       <xsl:otherwise><xsl:value-of select="$s"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-
+  
   <!-- number (no support for javascript mantissa) -->
   <xsl:template match="text()[not(string(number())='NaN' or
                       (starts-with(.,'0' ) and . != '0' and
@@ -201,11 +202,11 @@ not(starts-with(.,'-0.' )))
                       )]">
     <xsl:value-of select="."/>
   </xsl:template>
-
+  
   <!-- boolean, case-insensitive -->
   <xsl:template match="text()[translate(.,'TRUE','true')='true']">true</xsl:template>
   <xsl:template match="text()[translate(.,'FALSE','false')='false']">false</xsl:template>
-
+  
   <!-- object -->
   <xsl:template match="*" name="base">
     <xsl:if test="not(preceding-sibling::*)">{</xsl:if>
@@ -226,7 +227,7 @@ not(starts-with(.,'-0.' )))
     <xsl:if test="following-sibling::*">,</xsl:if>
     <xsl:if test="not(following-sibling::*)">}</xsl:if>
   </xsl:template>
-
+  
   <!-- array -->
   <xsl:template match="*[count(../*[name(../*)=name(.)])=count(../*) and count(../*)&gt;1]">
     <xsl:if test="not(preceding-sibling::*)">[</xsl:if>
@@ -246,7 +247,7 @@ not(starts-with(.,'-0.' )))
   <xsl:template match="/">
     <xsl:apply-templates select="node()"/>
   </xsl:template>
-    
+
 </xsl:stylesheet>^';
 
 end get_xml_to_json_stylesheet;
@@ -254,7 +255,7 @@ end get_xml_to_json_stylesheet;
 
 function ref_cursor_to_json (p_ref_cursor in sys_refcursor,
                              p_max_rows in number := null,
-                             p_skip_rows in number := null) return json_list
+                             p_skip_rows in number := null) return pljson_list
 as
   l_ctx         dbms_xmlgen.ctxhandle;
   l_num_rows    pls_integer;
@@ -267,13 +268,13 @@ begin
 
   Purpose:    generate JSON from REF Cursor
 
-  Remarks:    
+  Remarks:
 
   Who     Date        Description
   ------  ----------  -------------------------------------
   MBR     30.01.2010  Created
   JKR     01.05.2010  Edited to fit in PL/JSON
-  
+
   */
 
   l_ctx := dbms_xmlgen.newcontext (p_ref_cursor);
@@ -281,7 +282,7 @@ begin
   dbms_xmlgen.setnullhandling (l_ctx, dbms_xmlgen.empty_tag);
   
   -- for pagination
-
+  
   if p_max_rows is not null then
     dbms_xmlgen.setmaxrows (l_ctx, p_max_rows);
   end if;
@@ -298,7 +299,7 @@ begin
   dbms_xmlgen.closecontext (l_ctx);
   
   close p_ref_cursor;
-
+  
   if l_num_rows > 0 then
     -- perform the XSL transformation
     l_json := l_xml.transform (xmltype(get_xml_to_json_stylesheet));
@@ -306,27 +307,27 @@ begin
   else
     l_returnvalue := g_json_null_object;
   end if;
-
+  
   l_returnvalue := dbms_xmlgen.convert (l_returnvalue, dbms_xmlgen.entity_decode);
   
   if(l_num_rows = 0) then
-    return json_list();
-  else 
+    return pljson_list();
+  else
     if(l_num_rows = 1) then
-      declare ret json_list := json_list();
+      declare ret pljson_list := pljson_list();
       begin
         ret.append(
-          json(
-            json(l_returnvalue).get('ROWSET')
+          pljson(
+            pljson(l_returnvalue).get('ROWSET')
           ).get('ROW')
         );
         return ret;
       end;
-    else 
-      return json_list(json(l_returnvalue).get('ROWSET'));
+    else
+      return pljson_list(pljson(l_returnvalue).get('ROWSET'));
     end if;
   end if;
-  
+
 exception
   when scanner_exception then
     dbms_output.put('Scanner problem with the following input: ');
@@ -336,12 +337,12 @@ exception
     dbms_output.put('Parser problem with the following input: ');
     dbms_output.put_line(l_returnvalue);
     raise;
-  when others then raise;  
+  when others then raise;
 end ref_cursor_to_json;
 
 function sql_to_json (p_sql in varchar2,
                       p_max_rows in number := null,
-                      p_skip_rows in number := null) return json_list
+                      p_skip_rows in number := null) return pljson_list
 as
   v_cur sys_refcursor;
 begin
@@ -351,7 +352,5 @@ begin
 end sql_to_json;
 
 
-end json_util_pkg;
+end pljson_util_pkg;
 /
-
-
