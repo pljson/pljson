@@ -1,4 +1,4 @@
-create or replace package json_printer as
+create or replace package pljson_printer as
   /*
   Copyright (c) 2010 Jonas Krogsboell
   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,27 +24,27 @@ create or replace package json_printer as
   ascii_output boolean    not null := true;
   empty_string_as_null boolean not null := false;
   escape_solidus boolean  not null := false;
-
-  function pretty_print(obj json, spaces boolean default true, line_length number default 0) return varchar2;
-  function pretty_print_list(obj json_list, spaces boolean default true, line_length number default 0) return varchar2;
-  function pretty_print_any(json_part json_value, spaces boolean default true, line_length number default 0) return varchar2;
-  procedure pretty_print(obj json, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
-  procedure pretty_print_list(obj json_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
-  procedure pretty_print_any(json_part json_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
+  
+  function pretty_print(obj pljson, spaces boolean default true, line_length number default 0) return varchar2;
+  function pretty_print_list(obj pljson_list, spaces boolean default true, line_length number default 0) return varchar2;
+  function pretty_print_any(json_part pljson_value, spaces boolean default true, line_length number default 0) return varchar2;
+  procedure pretty_print(obj pljson, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
+  procedure pretty_print_list(obj pljson_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
+  procedure pretty_print_any(json_part pljson_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
   
   procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null);
   procedure htp_output_clob(my_clob clob, jsonp varchar2 default null);
-  -- made public just for testing/profiling... 
+  -- made public just for testing/profiling...
   function escapeString(str varchar2) return varchar2;
-  
-end json_printer;
+
+end pljson_printer;
 /
-create or replace
-package body "JSON_PRINTER" as
+
+create or replace package body pljson_printer as
   max_line_len number := 0;
   cur_line_len number := 0;
-
-
+  
+  
   -- associative array used inside escapeString to cache the escaped version of every character
   -- escaped so far  (example: char_map('"') contains the  '\"' string)
   -- (if the character does not need to be escaped, the character is stored unchanged in the array itself)
@@ -56,8 +56,8 @@ package body "JSON_PRINTER" as
        -- in order to clear it and avoid using escape sequences that have been cached using the previous values
        char_map_escape_solidus boolean := escape_solidus;
        char_map_ascii_output boolean := ascii_output;
-
-
+  
+  
   function llcheck(str in varchar2) return varchar2 as
   begin
     --dbms_output.put_line(cur_line_len || ' : '|| str);
@@ -69,7 +69,7 @@ package body "JSON_PRINTER" as
       return str;
     end if;
   end llcheck;
-
+  
   -- escapes a single character.
   function escapeChar(ch char) return varchar2 deterministic is
      result varchar2(20);
@@ -80,7 +80,7 @@ package body "JSON_PRINTER" as
       --carret    r = U+000D
       --tabulator t = U+0009
       result := ch;
-
+      
       case ch
       when chr( 8) then result := '\b';
       when chr( 9) then result := '\t';
@@ -98,16 +98,16 @@ package body "JSON_PRINTER" as
       end case;
       return result;
   end;
-
-
-
+  
+  
+  
   function escapeString(str varchar2) return varchar2 as
     sb varchar2(32767 byte) := '';
     buf varchar2(40);
     ch varchar2(1 char); /* unicode char */
   begin
     if(str is null) then return ''; end if;
-
+    
     -- clear the cache if global parameters have been changed
     if char_map_escape_solidus <> escape_solidus or
        char_map_ascii_output   <> ascii_output
@@ -116,10 +116,10 @@ package body "JSON_PRINTER" as
        char_map_escape_solidus := escape_solidus;
        char_map_ascii_output := ascii_output;
     end if;
-
+    
     for i in 1 .. length(str) loop
       ch := substr(str, i, 1 ) ;
-
+      
       begin
          -- it this char has already been processed, I have cached its escaped value
          buf:=char_map(ch);
@@ -128,18 +128,18 @@ package body "JSON_PRINTER" as
          buf := escapeChar(ch);
          char_map(ch) := buf;
       end;
-
+      
       sb := sb || buf;
     end loop;
     return sb;
   end escapeString;
-
+  
   function newline(spaces boolean) return varchar2 as
   begin
     cur_line_len := 0;
     if(spaces) then return newline_char; else return ''; end if;
   end;
-
+  
 /*  function get_schema return varchar2 as
   begin
     return sys_context('userenv', 'current_schema');
@@ -152,13 +152,13 @@ package body "JSON_PRINTER" as
     for x in 1 .. indent loop i := i || indent_string; end loop;
     return i;
   end;
-
+  
   function getCommaSep(spaces boolean) return varchar2 as
   begin
     if(spaces) then return ', '; else return ','; end if;
   end;
-
-  function getMemName(mem json_value, spaces boolean) return varchar2 as
+  
+  function getMemName(mem pljson_value, spaces boolean) return varchar2 as
   begin
     if(spaces) then
       return llcheck('"'||escapeString(mem.mapname)||'"') || llcheck(' : ');
@@ -166,8 +166,8 @@ package body "JSON_PRINTER" as
       return llcheck('"'||escapeString(mem.mapname)||'"') || llcheck(':');
     end if;
   end;
-
-/* Clob method start here */
+  
+  /* Clob method start here */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
     if(lengthb(str) > 32767 - lengthb(buf_str)) then
@@ -178,19 +178,20 @@ package body "JSON_PRINTER" as
       buf_str := buf_str || str;
     end if;
   end add_to_clob;
-
+  
   procedure flush_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2) as
   begin
 --    dbms_lob.append(buf_lob, buf_str);
     dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
   end flush_clob;
- 
-  procedure ppObj(obj json, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2);
-
-  procedure ppString(elem json_value, buf in out nocopy clob, buf_str in out nocopy varchar2) is
+  
+  procedure ppObj(obj pljson, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2);
+  
+  procedure ppString(elem pljson_value, buf in out nocopy clob, buf_str in out nocopy varchar2) is
     offset number := 1;
+    /* E.I.Sarmas (github.com/dsnz)   2016-01-21   limit to 5000 chars */
     v_str varchar(5000 char);
-    amount number := 5000; /*chunk size for use in escapeString. Maximum escaped unicode string size for chunk may be 6 one-byte chars * 5000 chunk size in multi-byte chars = 30000 1-byte chars. Maximum value may be 32767 1-byte chars */
+    amount number := 5000; /* chunk size for use in escapeString; maximum escaped unicode string size for chunk may be 6 one-byte chars * 5000 chunk size in multi-byte chars = 30000 1-byte chars (maximum value is 32767 1-byte chars) */
   begin
     if empty_string_as_null and elem.extended_str is null and elem.str is null then
       add_to_clob(buf, buf_str, 'null');
@@ -220,10 +221,10 @@ package body "JSON_PRINTER" as
       add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
     end if;
   end;
-
-  procedure ppEA(input json_list, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
-    elem json_value;
-    arr json_value_array := input.list_data;
+  
+  procedure ppEA(input pljson_list, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
+    elem pljson_value;
+    arr pljson_value_array := input.list_data;
     numbuf varchar2(4000);
   begin
     for y in 1 .. arr.count loop
@@ -252,18 +253,18 @@ package body "JSON_PRINTER" as
           add_to_clob(buf, buf_str, llcheck('null'));
         when 'array' then
           add_to_clob(buf, buf_str, llcheck('['));
-          ppEA(json_list(elem), indent, buf, spaces, buf_str);
+          ppEA(pljson_list(elem), indent, buf, spaces, buf_str);
           add_to_clob(buf, buf_str, llcheck(']'));
         when 'object' then
-          ppObj(json(elem), indent, buf, spaces, buf_str);
+          ppObj(pljson(elem), indent, buf, spaces, buf_str);
         else add_to_clob(buf, buf_str, llcheck(elem.get_type));
       end case;
       end if;
       if(y != arr.count) then add_to_clob(buf, buf_str, llcheck(getCommaSep(spaces))); end if;
     end loop;
   end ppEA;
-
-  procedure ppMem(mem json_value, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
+  
+  procedure ppMem(mem pljson_value, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
     numbuf varchar2(4000);
   begin
     add_to_clob(buf, buf_str, llcheck(tab(indent, spaces)) || llcheck(getMemName(mem, spaces)));
@@ -289,15 +290,15 @@ package body "JSON_PRINTER" as
         add_to_clob(buf, buf_str, llcheck('null'));
       when 'array' then
         add_to_clob(buf, buf_str, llcheck('['));
-        ppEA(json_list(mem), indent, buf, spaces, buf_str);
+        ppEA(pljson_list(mem), indent, buf, spaces, buf_str);
         add_to_clob(buf, buf_str, llcheck(']'));
       when 'object' then
-        ppObj(json(mem), indent, buf, spaces, buf_str);
+        ppObj(pljson(mem), indent, buf, spaces, buf_str);
       else add_to_clob(buf, buf_str, llcheck(mem.get_type));
     end case;
   end ppMem;
-
-  procedure ppObj(obj json, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
+  
+  procedure ppObj(obj pljson, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
   begin
     add_to_clob(buf, buf_str, llcheck('{') || newline(spaces));
     for m in 1 .. obj.json_data.count loop
@@ -310,25 +311,25 @@ package body "JSON_PRINTER" as
     end loop;
     add_to_clob(buf, buf_str, llcheck(tab(indent, spaces)) || llcheck('}')); -- || chr(13);
   end ppObj;
-
-  procedure pretty_print(obj json, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as
+  
+  procedure pretty_print(obj pljson, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as
     buf_str varchar2(32767);
     amount number := dbms_lob.getlength(buf);
   begin
     if(erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
-
+    
     max_line_len := line_length;
     cur_line_len := 0;
     ppObj(obj, 0, buf, spaces, buf_str);
     flush_clob(buf, buf_str);
   end;
-
-  procedure pretty_print_list(obj json_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as
+  
+  procedure pretty_print_list(obj pljson_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as
     buf_str varchar2(32767);
     amount number := dbms_lob.getlength(buf);
   begin
     if(erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
-
+    
     max_line_len := line_length;
     cur_line_len := 0;
     add_to_clob(buf, buf_str, llcheck('['));
@@ -336,14 +337,14 @@ package body "JSON_PRINTER" as
     add_to_clob(buf, buf_str, llcheck(']'));
     flush_clob(buf, buf_str);
   end;
-
-  procedure pretty_print_any(json_part json_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as
+  
+  procedure pretty_print_any(json_part pljson_value, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true) as
     buf_str varchar2(32767) := '';
     numbuf varchar2(4000);
     amount number := dbms_lob.getlength(buf);
   begin
     if(erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
-
+    
     case json_part.get_type
       when 'number' then
         if (json_part.get_number < 1 and json_part.get_number > 0) then numbuf := '0'; end if;
@@ -365,19 +366,19 @@ package body "JSON_PRINTER" as
       when 'null' then
         add_to_clob(buf, buf_str, 'null');
       when 'array' then
-        pretty_print_list(json_list(json_part), spaces, buf, line_length);
+        pretty_print_list(pljson_list(json_part), spaces, buf, line_length);
         return;
       when 'object' then
-        pretty_print(json(json_part), spaces, buf, line_length);
+        pretty_print(pljson(json_part), spaces, buf, line_length);
         return;
       else add_to_clob(buf, buf_str, 'unknown type:'|| json_part.get_type);
     end case;
     flush_clob(buf, buf_str);
   end;
-
-/* Clob method end here */
-
-/* Varchar2 method start here */
+  
+  /* Clob method end here */
+  
+  /* Varchar2 method start here */
   procedure add_buf (buf in out nocopy varchar2, str in varchar2) as
   begin
     if(lengthb(str)>32767-lengthb(buf)) then
@@ -386,10 +387,11 @@ package body "JSON_PRINTER" as
     buf := buf || str;
   end;
   
-  procedure ppString(elem json_value, buf in out nocopy varchar2) is
+  procedure ppString(elem pljson_value, buf in out nocopy varchar2) is
     offset number := 1;
+    /* E.I.Sarmas (github.com/dsnz)   2016-01-21   limit to 5000 chars */
     v_str varchar(5000 char);
-    amount number := 5000; /*chunk size for use in escapeString. Maximum escaped unicode string size for chunk may be 6 one-byte chars * 5000 chunk size in multi-byte chars = 30000 1-byte chars. Maximum value may be 32767 1-byte chars */
+    amount number := 5000; /* chunk size for use in escapeString; maximum escaped unicode string size for chunk may be 6 one-byte chars * 5000 chunk size in multi-byte chars = 30000 1-byte chars (maximum value is 32767 1-byte chars) */
   begin
     if empty_string_as_null and elem.extended_str is null and elem.str is null then
       add_buf(buf, 'null');
@@ -420,11 +422,11 @@ package body "JSON_PRINTER" as
     end if;
   end;
   
-  procedure ppObj(obj json, indent number, buf in out nocopy varchar2, spaces boolean);
-
-  procedure ppEA(input json_list, indent number, buf in out varchar2, spaces boolean) as
-    elem json_value;
-    arr json_value_array := input.list_data;
+  procedure ppObj(obj pljson, indent number, buf in out nocopy varchar2, spaces boolean);
+  
+  procedure ppEA(input pljson_list, indent number, buf in out varchar2, spaces boolean) as
+    elem pljson_value;
+    arr pljson_value_array := input.list_data;
     str varchar2(400);
   begin
     for y in 1 .. arr.count loop
@@ -452,18 +454,18 @@ package body "JSON_PRINTER" as
           add_buf (buf, llcheck('null'));
         when 'array' then
           add_buf( buf, llcheck('['));
-          ppEA(json_list(elem), indent, buf, spaces);
+          ppEA(pljson_list(elem), indent, buf, spaces);
           add_buf( buf, llcheck(']'));
         when 'object' then
-          ppObj(json(elem), indent, buf, spaces);
+          ppObj(pljson(elem), indent, buf, spaces);
         else add_buf (buf, llcheck(elem.get_type)); /* should never happen */
       end case;
       end if;
       if(y != arr.count) then add_buf(buf, llcheck(getCommaSep(spaces))); end if;
     end loop;
   end ppEA;
-
-  procedure ppMem(mem json_value, indent number, buf in out nocopy varchar2, spaces boolean) as
+  
+  procedure ppMem(mem pljson_value, indent number, buf in out nocopy varchar2, spaces boolean) as
     str varchar2(400) := '';
   begin
     add_buf(buf, llcheck(tab(indent, spaces)) || getMemName(mem, spaces));
@@ -488,15 +490,15 @@ package body "JSON_PRINTER" as
         add_buf(buf, llcheck('null'));
       when 'array' then
         add_buf(buf, llcheck('['));
-        ppEA(json_list(mem), indent, buf, spaces);
+        ppEA(pljson_list(mem), indent, buf, spaces);
         add_buf(buf, llcheck(']'));
       when 'object' then
-        ppObj(json(mem), indent, buf, spaces);
+        ppObj(pljson(mem), indent, buf, spaces);
       else add_buf(buf, llcheck(mem.get_type)); /* should never happen */
     end case;
   end ppMem;
-
-  procedure ppObj(obj json, indent number, buf in out nocopy varchar2, spaces boolean) as
+  
+  procedure ppObj(obj pljson, indent number, buf in out nocopy varchar2, spaces boolean) as
   begin
     add_buf (buf, llcheck('{') || newline(spaces));
     for m in 1 .. obj.json_data.count loop
@@ -506,8 +508,8 @@ package body "JSON_PRINTER" as
     end loop;
     add_buf(buf, llcheck(tab(indent, spaces)) || llcheck('}')); -- || chr(13);
   end ppObj;
-
-  function pretty_print(obj json, spaces boolean default true, line_length number default 0) return varchar2 as
+  
+  function pretty_print(obj pljson, spaces boolean default true, line_length number default 0) return varchar2 as
     buf varchar2(32767 byte) := '';
   begin
     max_line_len := line_length;
@@ -515,19 +517,19 @@ package body "JSON_PRINTER" as
     ppObj(obj, 0, buf, spaces);
     return buf;
   end pretty_print;
-
-  function pretty_print_list(obj json_list, spaces boolean default true, line_length number default 0) return varchar2 as
+  
+  function pretty_print_list(obj pljson_list, spaces boolean default true, line_length number default 0) return varchar2 as
     buf varchar2(32767 byte) :='';
   begin
     max_line_len := line_length;
     cur_line_len := 0;
-    add_buf(buf, llcheck('['));    
+    add_buf(buf, llcheck('['));
     ppEA(obj, 0, buf, spaces);
     add_buf(buf, llcheck(']'));
     return buf;
   end;
-
-  function pretty_print_any(json_part json_value, spaces boolean default true, line_length number default 0) return varchar2 as
+  
+  function pretty_print_any(json_part pljson_value, spaces boolean default true, line_length number default 0) return varchar2 as
     buf varchar2(32767) := '';
   begin
     case json_part.get_type
@@ -546,14 +548,14 @@ package body "JSON_PRINTER" as
       when 'null' then
         buf := 'null';
       when 'array' then
-        buf := pretty_print_list(json_list(json_part), spaces, line_length);
+        buf := pretty_print_list(pljson_list(json_part), spaces, line_length);
       when 'object' then
-        buf := pretty_print(json(json_part), spaces, line_length);
+        buf := pretty_print(pljson(json_part), spaces, line_length);
       else buf := 'weird error: '|| json_part.get_type;
     end case;
     return buf;
   end;
-
+  
   procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as
     prev number := 1;
     indx number := 1;
@@ -566,7 +568,7 @@ package body "JSON_PRINTER" as
       --read every line
       indx := dbms_lob.instr(my_clob, delim, prev+1);
  --     dbms_output.put_line(prev || ' to ' || indx);
-
+      
       if(indx = 0) then
         --emit from prev to end;
         amount := 8191; /* max unicode chars */
@@ -597,10 +599,10 @@ package body "JSON_PRINTER" as
           prev := indx + size_of_nl;
         end if;
       end if;
-
+    
     end loop;
     if(jsonp is not null) then dbms_output.put_line(')'); end if;
-
+    
 /*    while (amount != 0) loop
       indx := dbms_lob.instr(my_clob, delim, prev+1);
 
@@ -623,8 +625,8 @@ package body "JSON_PRINTER" as
     end loop;
     if(jsonp is not null) then dbms_output.put_line(')'); end if;*/
   end;
-
-
+  
+  
 /*  procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as
     prev number := 1;
     indx number := 1;
@@ -667,14 +669,14 @@ package body "JSON_PRINTER" as
     l_amt    number default 30;
     l_off   number default 1;
     l_str   varchar2(4096);
-
+  
   begin
     if(jsonp is not null) then htp.prn(jsonp||'('); end if;
-
+    
     begin
       loop
         dbms_lob.read( my_clob, l_amt, l_off, l_str );
-
+        
         -- it is vital to use htp.PRN to avoid
         -- spurious line feeds getting added to your
         -- document
@@ -685,10 +687,10 @@ package body "JSON_PRINTER" as
     exception
       when no_data_found then NULL;
     end;
-
+    
     /*
     len := dbms_lob.getlength(my_clob);
-
+    
     while(pos < len) loop
       htp.prn(dbms_lob.substr(my_clob, amount, pos)); -- should I replace substr with dbms_lob.read?
       --dbms_output.put_line(dbms_lob.substr(my_clob, amount, pos));
@@ -698,5 +700,5 @@ package body "JSON_PRINTER" as
     if(jsonp is not null) then htp.prn(')'); end if;
   end;
 
-end json_printer;
+end pljson_printer;
 /

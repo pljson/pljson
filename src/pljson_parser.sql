@@ -1,4 +1,4 @@
-create or replace package json_parser as
+create or replace package pljson_parser as
   /*
   Copyright (c) 2010 Jonas Krogsboell
 
@@ -29,33 +29,33 @@ create or replace package json_parser as
     col PLS_INTEGER,
     data VARCHAR2(32767),
     data_overflow clob); -- max_string_size
-
+  
   type lTokens is table of rToken index by pls_integer;
   type json_src is record (len number, offset number, src varchar2(32767), s_clob clob);
-
+  
   json_strict boolean not null := false;
-
+  
   function next_char(indx number, s in out nocopy json_src) return varchar2;
   function next_char2(indx number, s in out nocopy json_src, amount number default 1) return varchar2;
   
-  function prepareClob(buf in clob) return json_parser.json_src;
-  function prepareVarchar2(buf in varchar2) return json_parser.json_src;
+  function prepareClob(buf in clob) return pljson_parser.json_src;
+  function prepareVarchar2(buf in varchar2) return pljson_parser.json_src;
   function lexer(jsrc in out nocopy json_src) return lTokens;
   procedure print_token(t rToken);
   
-  function parser(str varchar2) return json;
-  function parse_list(str varchar2) return json_list;
-  function parse_any(str varchar2) return json_value;
-  function parser(str clob) return json;
-  function parse_list(str clob) return json_list;
-  function parse_any(str clob) return json_value;
-  procedure remove_duplicates(obj in out nocopy json);
+  function parser(str varchar2) return pljson;
+  function parse_list(str varchar2) return pljson_list;
+  function parse_any(str varchar2) return pljson_value;
+  function parser(str clob) return pljson;
+  function parse_list(str clob) return pljson_list;
+  function parse_any(str clob) return pljson_value;
+  procedure remove_duplicates(obj in out nocopy pljson);
   function get_version return varchar2;
-  
-end json_parser;
+
+end pljson_parser;
 /
 
-create or replace package body json_parser as
+create or replace package body pljson_parser as
   /*
   Copyright (c) 2009 Jonas Krogsboell
 
@@ -119,8 +119,8 @@ create or replace package body json_parser as
     return buf;
   end;
   
-  function prepareClob(buf clob) return json_parser.json_src as
-    temp json_parser.json_src;
+  function prepareClob(buf clob) return pljson_parser.json_src as
+    temp pljson_parser.json_src;
   begin
     temp.s_clob := buf;
     temp.offset := 0;
@@ -129,8 +129,8 @@ create or replace package body json_parser as
     return temp;
   end;
   
-  function prepareVarchar2(buf varchar2) return json_parser.json_src as
-    temp json_parser.json_src;
+  function prepareVarchar2(buf varchar2) return pljson_parser.json_src as
+    temp pljson_parser.json_src;
   begin
     temp.s_clob := buf;
     temp.offset := 0;
@@ -333,7 +333,7 @@ create or replace package body json_parser as
               end if;
 --              varbuf := varbuf || buf || four;
               varbuf := varbuf || '\'||four;--chr(to_number(four,'XXXX'));
-               v_count := v_count + 5;
+              v_count := v_count + 5;
               indx := indx + 5;
               buf := next_char(indx, jsrc);
               end;
@@ -523,17 +523,17 @@ create or replace package body json_parser as
   
   /* SCANNER END */
   
-  /* PARSER FUNCTIONS START*/
+  /* PARSER FUNCTIONS START */
   procedure p_error(text varchar2, tok rToken) as
   begin
     raise_application_error(-20101, 'JSON Parser exception @ line: '||tok.line||' column: '||tok.col||' - '||text);
   end;
   
-  function parseObj(tokens lTokens, indx in out nocopy pls_integer) return json;
+  function parseObj(tokens lTokens, indx in out nocopy pls_integer) return pljson;
   
-  function parseArr(tokens lTokens, indx in out nocopy pls_integer) return json_list as
-    e_arr json_value_array := json_value_array();
-    ret_list json_list := json_list();
+  function parseArr(tokens lTokens, indx in out nocopy pls_integer) return pljson_list as
+    e_arr pljson_value_array := pljson_value_array();
+    ret_list pljson_list := pljson_list();
     v_count number := 0;
     tok rToken;
   begin
@@ -544,14 +544,14 @@ create or replace package body json_parser as
       e_arr.extend;
       v_count := v_count + 1;
       case tok.type_name
-        when 'TRUE' then e_arr(v_count) := json_value(true);
-        when 'FALSE' then e_arr(v_count) := json_value(false);
-        when 'NULL' then e_arr(v_count) := json_value;
-        when 'STRING' then e_arr(v_count) := case when tok.data_overflow is not null then json_value(tok.data_overflow) else json_value(tok.data) end;
-        when 'ESTRING' then e_arr(v_count) := json_value(tok.data_overflow, false);
-        when 'NUMBER' then e_arr(v_count) := json_value(to_number(replace(tok.data, '.', decimalpoint)));
+        when 'TRUE' then e_arr(v_count) := pljson_value(true);
+        when 'FALSE' then e_arr(v_count) := pljson_value(false);
+        when 'NULL' then e_arr(v_count) := pljson_value;
+        when 'STRING' then e_arr(v_count) := case when tok.data_overflow is not null then pljson_value(tok.data_overflow) else pljson_value(tok.data) end;
+        when 'ESTRING' then e_arr(v_count) := pljson_value(tok.data_overflow, false);
+        when 'NUMBER' then e_arr(v_count) := pljson_value(to_number(replace(tok.data, '.', decimalpoint)));
         when '[' then
-          declare e_list json_list; begin
+          declare e_list pljson_list; begin
             indx := indx + 1;
             e_list := parseArr(tokens, indx);
             e_arr(v_count) := e_list.to_json_value;
@@ -581,21 +581,21 @@ create or replace package body json_parser as
     return ret_list;
   end parseArr;
   
-  function parseMem(tokens lTokens, indx in out pls_integer, mem_name varchar2, mem_indx number) return json_value as
-    mem json_value;
+  function parseMem(tokens lTokens, indx in out pls_integer, mem_name varchar2, mem_indx number) return pljson_value as
+    mem pljson_value;
     tok rToken;
   begin
     tok := tokens(indx);
     case tok.type_name
-      when 'TRUE' then mem := json_value(true);
-      when 'FALSE' then mem := json_value(false);
-      when 'NULL' then mem := json_value;
-      when 'STRING' then mem := case when tok.data_overflow is not null then json_value(tok.data_overflow) else json_value(tok.data) end;
-      when 'ESTRING' then mem := json_value(tok.data_overflow, false);
-      when 'NUMBER' then mem := json_value(to_number(replace(tok.data, '.', decimalpoint)));
+      when 'TRUE' then mem := pljson_value(true);
+      when 'FALSE' then mem := pljson_value(false);
+      when 'NULL' then mem := pljson_value;
+      when 'STRING' then mem := case when tok.data_overflow is not null then pljson_value(tok.data_overflow) else pljson_value(tok.data) end;
+      when 'ESTRING' then mem := pljson_value(tok.data_overflow, false);
+      when 'NUMBER' then mem := pljson_value(to_number(replace(tok.data, '.', decimalpoint)));
       when '[' then
         declare
-          e_list json_list;
+          e_list pljson_list;
         begin
           indx := indx + 1;
           e_list := parseArr(tokens, indx);
@@ -623,15 +623,15 @@ create or replace package body json_parser as
     end loop;
   end test_duplicate_members;*/
   
-  function parseObj(tokens lTokens, indx in out nocopy pls_integer) return json as
+  function parseObj(tokens lTokens, indx in out nocopy pls_integer) return pljson as
     type memmap is table of number index by varchar2(4000); -- i've read somewhere that this is not possible - but it is!
     mymap memmap;
     nullelemfound boolean := false;
     
-    obj json;
+    obj pljson;
     tok rToken;
     mem_name varchar(4000);
-    arr json_value_array := json_value_array();
+    arr pljson_value_array := pljson_value_array();
   begin
     --what to expect?
     while(indx <= tokens.count) loop
@@ -663,7 +663,7 @@ create or replace package body json_parser as
         if(tok.type_name = ':') then
           --parse
           declare
-            jmb json_value;
+            jmb pljson_value;
             x number;
           begin
             x := arr.count + 1;
@@ -689,7 +689,7 @@ create or replace package body json_parser as
            p_error('A comma seperator is probably missing', tok);
         end if;
       when '}' then
-        obj := json();
+        obj := pljson();
         obj.json_data := arr;
         return obj;
       else
@@ -703,9 +703,9 @@ create or replace package body json_parser as
   
   end;
   
-  function parser(str varchar2) return json as
+  function parser(str varchar2) return pljson as
     tokens lTokens;
-    obj json;
+    obj pljson;
     indx pls_integer := 1;
     jsrc json_src;
   begin
@@ -725,9 +725,9 @@ create or replace package body json_parser as
     return obj;
   end parser;
   
-  function parse_list(str varchar2) return json_list as
+  function parse_list(str varchar2) return pljson_list as
     tokens lTokens;
-    obj json_list;
+    obj pljson_list;
     indx pls_integer := 1;
     jsrc json_src;
   begin
@@ -747,9 +747,9 @@ create or replace package body json_parser as
     return obj;
   end parse_list;
   
-  function parse_list(str clob) return json_list as
+  function parse_list(str clob) return pljson_list as
     tokens lTokens;
-    obj json_list;
+    obj pljson_list;
     indx pls_integer := 1;
     jsrc json_src;
   begin
@@ -769,9 +769,9 @@ create or replace package body json_parser as
     return obj;
   end parse_list;
   
-  function parser(str clob) return json as
+  function parser(str clob) return pljson as
     tokens lTokens;
-    obj json;
+    obj pljson;
     indx pls_integer := 1;
     jsrc json_src;
   begin
@@ -792,10 +792,10 @@ create or replace package body json_parser as
     return obj;
   end parser;
   
-  function parse_any(str varchar2) return json_value as
+  function parse_any(str varchar2) return pljson_value as
     tokens lTokens;
-    obj json_list;
-    ret json_value;
+    obj pljson_list;
+    ret pljson_value;
     indx pls_integer := 1;
     jsrc json_src;
   begin
@@ -811,9 +811,9 @@ create or replace package body json_parser as
     return obj.head();
   end parse_any;
   
-  function parse_any(str clob) return json_value as
+  function parse_any(str clob) return pljson_value as
     tokens lTokens;
-    obj json_list;
+    obj pljson_list;
     indx pls_integer := 1;
     jsrc json_src;
   begin
@@ -829,11 +829,11 @@ create or replace package body json_parser as
   end parse_any;
   
   /* last entry is the one to keep */
-  procedure remove_duplicates(obj in out nocopy json) as
-    type memberlist is table of json_value index by varchar2(4000);
+  procedure remove_duplicates(obj in out nocopy pljson) as
+    type memberlist is table of pljson_value index by varchar2(4000);
     members memberlist;
-    nulljsonvalue json_value := null;
-    validated json := json();
+    nulljsonvalue pljson_value := null;
+    validated pljson := pljson();
     indx varchar2(4000);
   begin
     for i in 1 .. obj.count loop
@@ -862,8 +862,8 @@ create or replace package body json_parser as
   
   function get_version return varchar2 as
   begin
-    return 'PL/JSON v1.0.4';
+    return 'PL/JSON v2.0.0';
   end get_version;
 
-end json_parser;
+end pljson_parser;
 /
