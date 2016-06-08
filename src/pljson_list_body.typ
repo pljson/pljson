@@ -236,7 +236,7 @@ create or replace type body pljson_list as
     end if;
   end;
 
-  member function to_clob(self in pljson_list) return clob as
+  member function to_clob(self in pljson_list, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) return clob as
     my_clob clob;
   begin
     dbms_lob.createtemporary(my_clob, true);
