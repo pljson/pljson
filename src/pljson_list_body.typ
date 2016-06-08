@@ -240,7 +240,7 @@ create or replace type body pljson_list as
     my_clob clob;
   begin
     dbms_lob.createtemporary(my_clob, true);
-    self.to_clob(my_clob);
+    self.to_clob(my_clob, spaces, chars_per_line, erase_clob);
     return my_clob;
   end;
   
