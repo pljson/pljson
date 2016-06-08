@@ -235,6 +235,14 @@ create or replace type body pljson_list as
       pljson_printer.pretty_print_list(self, spaces, buf, line_length => chars_per_line, erase_clob => erase_clob);
     end if;
   end;
+
+  member function to_clob(self in pljson_list) return clob as
+    my_clob clob;
+  begin
+    dbms_lob.createtemporary(my_clob, true);
+    self.to_clob(my_clob);
+    return my_clob;
+  end;
   
   member procedure print(self in pljson_list, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null) as --32512 is the real maximum in sqldeveloper
     my_clob clob;
