@@ -42,6 +42,16 @@ $ git merge develop # while on your feature branch
   + spaces for tabs
   + 2 spaces per tab
   + all lower case
++ Name SQL files according to the following rules:
+  1. Self-contained package declaration and body implementation:
+     `pljson_<feature>.package.sql`. So if your feature is "foo", and all of
+     its source code is in one file, you would name that file:
+     `pljson_foo.package.sql`.
+  2. Split declaration and implementation files: `pljson_<feature>.<kind>.decl.sql`
+     and `pljson_<feature>.<kind>.impl.sql` where `<kind>` is the type of
+     database object, e.g. `type` or `package`. For example, a type "foo"
+     that separates its declaration from implementation would have files:
+     `pljson_foo.type.decl.sql` and `pljson_foo.type.impl.sql`.
 + Add an example if your have added a completely new feature
 + Make sure unit tests pass
 + Add/update unit tests to cover your change

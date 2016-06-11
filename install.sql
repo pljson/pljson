@@ -35,28 +35,28 @@ PROMPT -- Compiling objects for PL/JSON --;
 PROMPT -----------------------------------;
 @@uninstall.sql
 
-@@src/pljson_value.typ
-@@src/pljson_list.typ
-@@src/pljson.typ
-@@src/pljson_parser.sql
-@@src/pljson_printer.sql
-@@src/pljson_value_body.typ
-@@src/pljson_ext.sql --extra helper functions
-@@src/pljson_body.typ
-@@src/pljson_list_body.typ
+@@src/pljson_value.type.decl.sql
+@@src/pljson_list.type.decl.sql
+@@src/pljson.type.decl.sql
+@@src/pljson_parser.package.sql
+@@src/pljson_printer.package.sql
+@@src/pljson_value.type.impl.sql
+@@src/pljson_ext.package.sql --extra helper functions
+@@src/pljson.type.impl.sql
+@@src/pljson_list.type.impl.sql
 --@@src/grantsandsynonyms.sql --grants to core API
-@@src/pljson_ac.sql --Wrapper to enhance autocompletion
+@@src/pljson_autocomplete.package.sql --Wrapper to enhance autocompletion
 
 PROMPT ------------------------------------------;
 PROMPT -- Adding optional packages for PL/JSON --;
 PROMPT ------------------------------------------;
-@@src/addons/pljson_dyn.sql --dynamic sql execute 
-@@src/addons/pljson_ml.sql --jsonml (xml to json)
-@@src/addons/pljson_xml.sql --json to xml copied from http://www.json.org/java/org/json/XML.java
-@@src/addons/pljson_util_pkg.sql --dynamic sql from http://ora-00001.blogspot.com/2010/02/ref-cursor-to-json.html
-@@src/addons/pljson_helper.sql --Set operations on JSON and JSON_LIST
-@@src/addons/pljson_table_impl.typ -- dynamic table from json document
-@@src/addons/pljson_table_impl_body.typ -- dynamic table from json document
+@@src/addons/pljson_dynamic_sql.package.sql --dynamic sql execute
+@@src/addons/pljson_ml.package.sql --jsonml (xml to json)
+@@src/addons/pljson_xml.package.sql --json to xml copied from http://www.json.org/java/org/json/XML.java
+@@src/addons/pljson_util.package.sql --dynamic sql from http://ora-00001.blogspot.com/2010/02/ref-cursor-to-json.html
+@@src/addons/pljson_helper.package.sql --Set operations on JSON and JSON_LIST
+@@src/addons/pljson_table.type.decl.sql -- dynamic table from json document
+@@src/addons/pljson_table.type.impl.sql -- dynamic table from json document
 -- synonyms for backwards compatibility
 create synonym json_parser for pljson_parser;
 create synonym json_printer for pljson_printer;

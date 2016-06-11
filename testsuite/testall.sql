@@ -31,14 +31,14 @@ CREATE TABLE pljson_testsuite (
 );
 
 --run each test here
-@@pljson_parser_test.sql
-@@pljson_test.sql
-@@pljson_list_test.sql
-@@pljson_simple_test.sql
-@@pljson_ext_test.sql
-@@pljson_path_test.sql
-@@pljson_helper_test.sql
-@@pljson_unicode_test.sql
+@@pljson_parser.test.sql
+@@pljson.test.sql
+@@pljson_list.test.sql
+@@pljson_simple.test.sql
+@@pljson_ext.test.sql
+@@pljson_path.test.sql
+@@pljson_helper.test.sql
+@@pljson_unicode.test.sql
 
 PROMPT Unit-testing of PLJSON implementation:
 COLUMN PASSED HEADING 'PASS' FORMAT 999
