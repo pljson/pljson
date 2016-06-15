@@ -1,9 +1,9 @@
-'use strict';
+'use strict'
 
-var grunt = require('grunt');
-var packageJSON = require('./package.json');
+var grunt = require('grunt')
+var packageJSON = require('./package.json')
 
-require('load-grunt-tasks')(grunt);
+require('load-grunt-tasks')(grunt)
 
 grunt.initConfig({
   githubPages: {
@@ -65,10 +65,10 @@ grunt.initConfig({
       dest: 'release-' + packageJSON.version + '.zip'
     }
   }
-});
+})
 
-grunt.registerTask('release', ['panda:docHTML', 'shell:prepareRelease', 'zip']);
-grunt.registerTask('buildDocHTML', ['panda:docHTML', 'shell:copyDiagramToHTML']);
-grunt.registerTask('buildPDF', ['panda:pdf']);
-grunt.registerTask('buildSite', ['panda:docHTML', 'shell:copyDiagramToHTML', 'shell:buildSite']);
-grunt.registerTask('publishSite', ['panda:docHTML', 'shell:copyDiagramToHTML', 'shell:buildSite', 'githubPages:target']);
+grunt.registerTask('release', ['panda:docHTML', 'shell:prepareRelease', 'zip'])
+grunt.registerTask('buildDocHTML', ['panda:docHTML', 'shell:copyDiagramToHTML'])
+grunt.registerTask('buildPDF', ['panda:pdf'])
+grunt.registerTask('buildSite', ['panda:docHTML', 'shell:copyDiagramToHTML', 'shell:buildSite'])
+grunt.registerTask('publishSite', ['panda:docHTML', 'shell:copyDiagramToHTML', 'shell:buildSite', 'githubPages:target'])

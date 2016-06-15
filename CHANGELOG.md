@@ -1,3 +1,20 @@
+Version: 2.0.0
+  + Standardizing on [Semantic Versioning](http://semver.org/).
+    With this release we are committing to using the Semantic Versioning method
+    of version numbering. Thus, going forward:
+    + 'z' releases in *x.y.z* will be bug fixes to existing APIs
+    + 'y' releases in *x.y.z* will be non-breaking API changes (e.g. additions)
+    + 'x' releases in *x.y.z* may contain API changes that could break
+      existing code depending on *PL/JSON*
+  + Oracle 12c compatibility:
+    @dsnz completely overhauled the API to remove any possibility of name
+    conflicts with the official Oracle implementation of JSON. This is a
+    *breaking* change for old code. However, the install script adds aliases
+    for the old package names to retain compatibility. These aliases **will be
+    removed** in version 3.0.0.
+  + @Martyanov added the method `pljson_printer.empty_string_as_null` to enable
+    rendering JSON with empty strings as `null`.
+
 Version: 1.0.6
   + Many thanks to the people who have contributed to this release
     (listed in chronological commit order):

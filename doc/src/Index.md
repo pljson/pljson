@@ -1,11 +1,11 @@
 # Purpose
 
 The goal of PL/JSON is to create a correct implementation of JSON to use in a
-PL/SQL environment. The Oracle object syntax has been choosen to ensure a
+PL/SQL environment. The Oracle object syntax has been chosen to ensure a
 straightforward and easy way to decode and encode JSON. PL/JSON is delivered AS
 IS and we cannot make any guarantee or be held responsible to any unwanted
-effects that may arise from using this software. Although we would like to
-stress that we have tested and used this software and would like to think that
+effects that may arise from using this software. However, we would like to
+stress that we have tested, and used this software, and believe that
 it is a safe product to use.
 
 # Description
@@ -21,14 +21,15 @@ only three objects you should know: `JSON`, `JSON_LIST` and `JSON_VALUE`. The
 `JSON` object can hold an object described by the `{ }` syntax and is named
 `JSON` rather than `JSON_OBJECT` to keep the name short and the fact that an
 object with the name object sounds silly. The `JSON_LIST` object can hold an
-array described with the `[ ]` syntax. The postfix "list" was choosen over
-"array" for two reasons, one: to keep it short, two: there seams to be a naming
+array described with the `[ ]` syntax. The postfix "list" was chosen over
+"array" for two reasons, one: to keep it short, two: there seems to be a naming
 standard in Oracle types that the postfix "array" is being used to describe
 types with the "table of" construction. The last type `JSON_VALUE` contains
 the primitive simple types (strings, numbers, bools, null), but can also
 contain an array or an object. The object model for PL/JSON is shown in figure
-[PL/JSON Object Model](#PL/JSON Object Model):
+[PL/JSON Object Model](#objmodel):
 
+<a id="objmodel"></a>
 ![PL/JSON Object Model](visual.jpg)
 
 # In The Release
@@ -39,7 +40,7 @@ contain an array or an object. The object model for PL/JSON is shown in figure
 * 3 packages (parser, printer and extension)
 * A few examples files
 * Some testing scripts - creates and delete a table (`JSON_TESTSUITE`)
-* Optional addons packages
+* Optional add-ons packages
 
 # Getting Started
 To get started using this product, you should first install the product with the
@@ -73,7 +74,7 @@ Of course, you could also search the internet for information -
 # Tweaks
 You can tweak the behaviour of PL/JSON by setting various variables in the
 packages. The following sections are a description of the possible
-adjustments you can do. 
+adjustments you can do.
 
 ## JSON_PRINTER
 In the printer package you can edit the line break method to linux, windows or
@@ -85,7 +86,7 @@ The parser is extended to accept more than just pure JSON. The variable
 "json_strict" is defaulted to false and can be set to true to force PL/JSON to
 only accept proper JSON. The current implementation allows input to contain
 comments with the `/* */` notation. Furthermore it extends the definition of a
-string to allow singlequotes and converts names into strings. The railroad
+string to allow single quotes and converts names into strings. The railroad
 diagram below shows the grammar for names accepted by PL/JSON:
 
 ```
@@ -158,8 +159,8 @@ rewrite the functions in the package.
 
 A JSON Path is a way to navigate in a JSON object. The implementation is quite
 simple and does not support all the features that are available in Stefan
-Goessners JavaScript, Python and PHP implementation of JSON Path. Actually, all
-that is does is to add the support for navigation in JSON, that are allready
+Goessner's JavaScript, Python and PHP implementation of JSON Path. Actually, all
+that it does is to add the support for navigation in JSON, which are already
 build in into those languages. When navigating with JSON Path in PL/JSON,
 members of JSON objects are found with the dot operator while elements in lists
 are found with square brackets. Accepted input in path navigation is formalized
@@ -188,7 +189,7 @@ The JSON Object:
 Extract the ''abc'' list:
 
 ```sql
-json_ext.get_json_list(obj, 
+json_ext.get_json_list(obj,
   'xyz.abc').print;
 -----------
 [1, 2, 3, [4 ,5 , {
@@ -206,7 +207,7 @@ json_ext.get_number(obj,
 ```
 
 As of version 0.8.4, square brackets can be used to extract JSON members like
-you would do in JavaScript: 
+you would do in JavaScript:
 
 ```sql
 json_ext.get_number(obj,
@@ -257,7 +258,7 @@ true
 3
 ```
 
-The example files 8 to 10 provides a more detailed explaination.
+The example files 8 to 10 provides a more detailed explanation.
 
 In the 0.9.2 release, it is also possible to use path to modify objects and
 arrays:
@@ -284,9 +285,9 @@ Input to the parser is expected to be in the charset of the database. The
 objects that are generated contains unescaped values that will be escaped when
 emitted through the printer. To ensure correct JSON output, even from non-UTF
 databases, only ASCII chars are emitted. All the characters which are not part
-of ASCII will be escaped. 
+of ASCII will be escaped.
 
-The errors or exceptions that PL/JSON may throw, can be catched with the
+The errors or exceptions that PL/JSON may throw, can be caught with the
 following code:
 
 ```sql
@@ -313,47 +314,25 @@ end;
 * The number parsing assumes that oracles number type can contain the input
   (in most cases it can).
 
-# Testsuite
+# Test Suite
+
 Any proper product is tested for correctness. So should PL/JSON be, with a
-testsuite that can be executed without installing any additional software on
-your database. You probaly don't need the testsuite, but if you modify the
+test suite that can be executed without installing any additional software on
+your database. You probably don't need the test suite, but if you modify the
 implementation or add more features, tests will be needed. Also if you discover
-a bug, you could report the bug by writing a relevant testcase.
-
-# Contributing
-Write to us in the forums of sourceforge.net. We will be happy to hear from you.
-
-> Q: ''I've added a lot of code, please merge my changes'
->
-> A: Hmmm - it's not that we don't appriciate your work, but we would really
-  prefer that you wrote tests and documentation to each feature - otherwise new
-  code could easily break functionality.
-
-> Q: ''I've added some changes and I might contribute them to the project, but
-  what's in it for me?''
->
-> A: This is not GPL, so you can keep your changes if you want to. 
-  When you are contributing then more eyes will look at your code. 
-  Possible errors might get detected and corrected and new features may arise
-  from your features - making it a better product you can use.
+a bug, you could report the bug by writing a relevant test case.
 
 # Optional Packages
 
-
-* JSON_DYN A package that enables you to generate JSON from sql. Nested queries
+* *JSON_DYN* A package that enables you to generate JSON from sql. Nested queries
   are not supported. See example 16 for more information.
-* JSON_ML A package that converts from XML to JSON using a XSLT stylesheet.
+* *JSON_ML* A package that converts from XML to JSON using a XSLT stylesheet.
   See www.jsonml.org.
-* JSON_XML A package that converts a JSON object to XML. 
-* JSON_HELPER Work on JSON with set operations.
-* JSON_UTIL_PKG Written by Morten Braten (http://ora-00001.blogspot.com).
-  Generate JSON from sql using a XSLT stylesheet. 
-* JSON_AC Autocomplete package. Some PL/SQL IDE's provide autocompletion when
+* *JSON_XML* A package that converts a JSON object to XML.
+* *JSON_HELPER* Work on JSON with set operations.
+* *JSON_UTIL_PKG* Written by Morten Braten (http://ora-00001.blogspot.com).
+  Generate JSON from sql using a XSLT stylesheet.
+* *JSON_AC* Autocomplete package. Some PL/SQL IDE's provide autocompletion when
   using a package but not when using an object type. This package is a wrapper
   around the methods on JSON, JSON_LIST and JSON_VALUE. Use it if you often
   forget the methods on those object types.
-
-
-
-
-
