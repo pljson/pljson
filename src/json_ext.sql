@@ -672,10 +672,10 @@ create or replace package body json_ext as
   end base64;
 
 
-	function base64(l json_list) return blob as
+  function base64(l json_list) return blob as
     c clob := empty_clob();
     bret blob;
-    
+  
     v_blob_offset NUMBER := 1;
     v_clob_offset NUMBER := 1;
     v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
@@ -750,13 +750,13 @@ create or replace package body json_ext as
   --dbms_output.put_line(obj.count);
   --dbms_output.put_line(obj.get_last().to_char);
     return obj;
-    
+  
   end encode;
   
   function decode(v json_value) return blob as
     c clob := empty_clob();
     bret blob;
-    
+  
     v_blob_offset NUMBER := 1;
     v_clob_offset NUMBER := 1;
     v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
@@ -770,7 +770,7 @@ create or replace package body json_ext as
     bret := decodeBase64Clob2Blob(c);
     dbms_lob.freetemporary(c);
     return bret;
-
+  
   end decode;
 
 

@@ -55,6 +55,21 @@ create or replace package body json_ml as
   begin
     if(jsonml_stylesheet is null) then 
     jsonml_stylesheet := xmltype('<?xml version="1.0" encoding="UTF-8"?>
+<!--
+		JsonML.xslt
+ 
+		Created: 2006-11-15-0551
+		Modified: 2009-02-14-0927
+ 
+		Released under an open-source license:
+		http://jsonml.org/License.htm
+ 
+		This transformation converts any XML document into JsonML.
+		It omits processing-instructions and comment-nodes.
+		
+		To enable comment-nodes to be emitted as JavaScript comments,
+		uncomment the Comment() template.
+--> 
 <xsl:stylesheet version="1.0"
 				xmlns:xsl="http://www.w3.org/1999/XSL/Transform"> 
  
@@ -64,6 +79,7 @@ create or replace package body json_ml as
 				indent="no"
 				omit-xml-declaration="yes" /> 
  
+	<!-- constants --> 
 	<xsl:variable name="XHTML"
 				  select="''http://www.w3.org/1999/xhtml''" /> 
  
