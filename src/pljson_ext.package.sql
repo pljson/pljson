@@ -130,6 +130,31 @@ create or replace package body pljson_ext as
     return to_date(v);
   end;
   
+  function decodeBase64Clob2Blob(p_clob clob) return blob
+  is
+    v_out_bl blob;
+    clob_size number;
+    pos number;
+    charBuff varchar2(32767);
+    dBuffer raw(32767);
+    v_readSize_nr number;
+    v_line_nr number;
+  begin
+    dbms_lob.createTemporary(v_out_bl, true, dbms_lob.call);
+    v_line_nr := greatest(65, instr(p_clob, chr(10)), instr(p_clob, chr(13)));
+    v_readSize_nr := floor(32767/v_line_nr)*v_line_nr;
+    clob_size := dbms_lob.getLength(p_clob);
+    pos := 1;
+
+    while (pos < clob_size) loop
+      dbms_lob.read(p_clob, v_readSize_nr, pos, charBuff);
+      dBuffer := utl_encode.base64_decode(utl_raw.cast_to_raw(charBuff));
+      dbms_lob.writeappend(v_out_bl, utl_raw.length(dBuffer), dBuffer);
+      pos := pos + v_readSize_nr;
+    end loop;
+    return v_out_bl;
+  end decodeBase64Clob2Blob;  
+  
   --Json Path parser
   function parsePath(json_path varchar2, base number default 1) return pljson_list as
     build_path varchar2(32767) := '[';
@@ -647,50 +672,15 @@ create or replace package body pljson_ext as
   
   end base64;
   
-  
   function base64(l pljson_list) return blob as
     c clob := empty_clob();
-    b blob := empty_blob();
     bret blob;
-    
+  
     v_blob_offset NUMBER := 1;
     v_clob_offset NUMBER := 1;
     v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
     v_warning NUMBER;
     v_amount PLS_INTEGER;
-    
-    FUNCTION decodeBase642Blob(pBlobIn IN BLOB) RETURN BLOB IS
-      vAmount NUMBER := 256;--32;
-      vBlobDec BLOB := empty_blob();
-      vBlobDecLen NUMBER := 0;
-      vBlobInLen NUMBER := 0;
-      vBuffer RAW(256);--32);
-      vOffset NUMBER := 1;
-    BEGIN
---      dbms_output.put_line('Start base64 decoding.');
-      vBlobInLen := dbms_lob.getlength(pBlobIn);
---      dbms_output.put_line('<BlobInLength>' || vBlobInLen);
-      dbms_lob.createtemporary(vBlobDec, TRUE);
-      LOOP
-        IF vOffset >= vBlobInLen THEN
-          EXIT;
-        END IF;
-        dbms_lob.read(pBlobIn, vAmount, vOffset, vBuffer);
-        BEGIN
-          dbms_lob.append(vBlobDec, utl_encode.base64_decode(vBuffer));
-        EXCEPTION
-          WHEN OTHERS THEN
-          dbms_output.put_line('<vAmount>' || vAmount || '<vOffset>' || vOffset || '<vBuffer>' || vBuffer);
-          dbms_output.put_line('ERROR IN append: ' || SQLERRM);
-          RAISE;
-        END;
-        vOffset := vOffset + vAmount;
-      END LOOP;
-      vBlobDecLen := dbms_lob.getlength(vBlobDec);
---      dbms_output.put_line('<BlobDecLength>' || vBlobDecLen);
---      dbms_output.put_line('Finshed base64 decoding.');
-      RETURN vBlobDec;
-    END decodeBase642Blob;
   begin
     dbms_lob.createtemporary(c, TRUE);
     for i in 1 .. l.count loop
@@ -698,17 +688,9 @@ create or replace package body pljson_ext as
     end loop;
     v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);
-    
-    dbms_lob.createtemporary(b, TRUE);
-    DBMS_LOB.CONVERTTOBLOB(b, c, dbms_lob.lobmaxsize, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
+    bret := decodeBase64Clob2Blob(c);
     dbms_lob.freetemporary(c);
-    v_amount := DBMS_LOB.GETLENGTH(b);
---    dbms_output.put_line('L B'||v_amount);
-    
-    bret := decodeBase642Blob(b);
-    dbms_lob.freetemporary(b);
     return bret;
-  
   end base64;
   
   function encode(binarydata blob) return pljson_value as
@@ -773,65 +755,23 @@ create or replace package body pljson_ext as
   
   function decode(v pljson_value) return blob as
     c clob := empty_clob();
-    b blob := empty_blob();
     bret blob;
-    
+  
     v_blob_offset NUMBER := 1;
     v_clob_offset NUMBER := 1;
     v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
     v_warning NUMBER;
     v_amount PLS_INTEGER;
-    
-    FUNCTION decodeBase642Blob(pBlobIn IN BLOB) RETURN BLOB IS
-      vAmount NUMBER := 256;--32;
-      vBlobDec BLOB := empty_blob();
-      vBlobDecLen NUMBER := 0;
-      vBlobInLen NUMBER := 0;
-      vBuffer RAW(256);--32);
-      vOffset NUMBER := 1;
-    BEGIN
---      dbms_output.put_line('Start base64 decoding.');
-      vBlobInLen := dbms_lob.getlength(pBlobIn);
---      dbms_output.put_line('<BlobInLength>' || vBlobInLen);
-      dbms_lob.createtemporary(vBlobDec, TRUE);
-      LOOP
-        IF vOffset >= vBlobInLen THEN
-          EXIT;
-        END IF;
-        dbms_lob.read(pBlobIn, vAmount, vOffset, vBuffer);
-        BEGIN
-          dbms_lob.append(vBlobDec, utl_encode.base64_decode(vBuffer));
-        EXCEPTION
-          WHEN OTHERS THEN
-          dbms_output.put_line('<vAmount>' || vAmount || '<vOffset>' || vOffset || '<vBuffer>' || vBuffer);
-          dbms_output.put_line('ERROR IN append: ' || SQLERRM);
-          RAISE;
-        END;
-        vOffset := vOffset + vAmount;
-      END LOOP;
-      vBlobDecLen := dbms_lob.getlength(vBlobDec);
---      dbms_output.put_line('<BlobDecLength>' || vBlobDecLen);
---      dbms_output.put_line('Finshed base64 decoding.');
-      RETURN vBlobDec;
-    END decodeBase642Blob;
   begin
     dbms_lob.createtemporary(c, TRUE);
     v.get_string(c);
     v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);
-    
-    dbms_lob.createtemporary(b, TRUE);
-    DBMS_LOB.CONVERTTOBLOB(b, c, dbms_lob.lobmaxsize, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
+    bret := decodeBase64Clob2Blob(c);
     dbms_lob.freetemporary(c);
-    v_amount := DBMS_LOB.GETLENGTH(b);
---    dbms_output.put_line('L B'||v_amount);
-    
-    bret := decodeBase642Blob(b);
-    dbms_lob.freetemporary(b);
     return bret;
-
+  
   end decode;
-
 
 end pljson_ext;
 /
