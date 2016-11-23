@@ -167,6 +167,26 @@ create or replace package body pljson_printer as
     end if;
   end;
   
+  function numberToString(pi_number number) return varchar2 is
+    l_buffer varchar2(4000);
+  begin
+    l_buffer := to_char(pi_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
+  
+    if -1 < pi_number
+       and pi_number < 0
+       and substr(l_buffer, 1, 2) = '-.'
+    then
+      l_buffer := '-0' || substr(l_buffer, 2);
+    elsif 0 < pi_number
+          and pi_number < 1
+          and substr(l_buffer, 1, 1) = '.'
+    then
+      l_buffer := '0' || l_buffer;
+    end if;
+  
+    return l_buffer;
+  end numbertostring;
+  
   /* Clob method start here */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
@@ -232,14 +252,7 @@ create or replace package body pljson_printer as
       if(elem is not null) then
       case elem.get_type
         when 'number' then
-          numbuf := '';
-          if (elem.get_number < 1 and elem.get_number > 0) then numbuf := '0'; end if;
-          if (elem.get_number < 0 and elem.get_number > -1) then
-            numbuf := '-0';
-            numbuf := numbuf || substr(to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-          else
-            numbuf := numbuf || to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-          end if;
+          numbuf := numberToString(elem.get_number);
           add_to_clob(buf, buf_str, llcheck(numbuf));
         when 'string' then
           ppString(elem, buf, buf_str);
@@ -270,13 +283,7 @@ create or replace package body pljson_printer as
     add_to_clob(buf, buf_str, llcheck(tab(indent, spaces)) || llcheck(getMemName(mem, spaces)));
     case mem.get_type
       when 'number' then
-        if (mem.get_number < 1 and mem.get_number > 0) then numbuf := '0'; end if;
-        if (mem.get_number < 0 and mem.get_number > -1) then
-          numbuf := '-0';
-          numbuf := numbuf || substr(to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-        else
-          numbuf := numbuf || to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-        end if;
+        numbuf := numberToString(mem.get_number);
         add_to_clob(buf, buf_str, llcheck(numbuf));
       when 'string' then
         ppString(mem, buf, buf_str);
@@ -347,13 +354,7 @@ create or replace package body pljson_printer as
     
     case json_part.get_type
       when 'number' then
-        if (json_part.get_number < 1 and json_part.get_number > 0) then numbuf := '0'; end if;
-        if (json_part.get_number < 0 and json_part.get_number > -1) then
-          numbuf := '-0';
-          numbuf := numbuf || substr(to_char(json_part.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-        else
-          numbuf := numbuf || to_char(json_part.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-        end if;
+        numbuf := numberToString(json_part.get_number);
         add_to_clob(buf, buf_str, numbuf);
       when 'string' then
         ppString(json_part, buf, buf_str);
@@ -434,13 +435,7 @@ create or replace package body pljson_printer as
       if(elem is not null) then
       case elem.get_type
         when 'number' then
-          str := '';
-          if (elem.get_number < 1 and elem.get_number > 0) then str := '0'; end if;
-          if (elem.get_number < 0 and elem.get_number > -1) then
-            str := '-0' || substr(to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-          else
-            str := str || to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-          end if;
+          str := numberToString(elem.get_number);
           add_buf(buf, llcheck(str));
         when 'string' then
           ppString(elem, buf);
@@ -471,12 +466,7 @@ create or replace package body pljson_printer as
     add_buf(buf, llcheck(tab(indent, spaces)) || getMemName(mem, spaces));
     case mem.get_type
       when 'number' then
-        if (mem.get_number < 1 and mem.get_number > 0) then str := '0'; end if;
-        if (mem.get_number < 0 and mem.get_number > -1) then
-          str := '-0' || substr(to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-        else
-          str := str || to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-        end if;
+        str := numberToString(mem.get_number);
         add_buf(buf, llcheck(str));
       when 'string' then
         ppString(mem, buf);
@@ -534,13 +524,7 @@ create or replace package body pljson_printer as
   begin
     case json_part.get_type
       when 'number' then
-        if (json_part.get_number() < 1 and json_part.get_number() > 0) then buf := '0'; end if;
-        if (json_part.get_number() < 0 and json_part.get_number() > -1) then
-          buf := '-0';
-          buf := buf || substr(to_char(json_part.get_number(), 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-        else
-          buf := buf || to_char(json_part.get_number(), 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-        end if;
+        buf := numberToString(json_part.get_number);
       when 'string' then
         ppString(json_part, buf);
       when 'bool' then
