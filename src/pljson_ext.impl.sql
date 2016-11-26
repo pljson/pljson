@@ -1,4 +1,4 @@
-create or replace package pljson_ext as
+create or replace package body pljson_ext as
   /*
   Copyright (c) 2009 Jonas Krogsboell
 
@@ -20,68 +20,14 @@ create or replace package pljson_ext as
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-  
-  /* This package contains extra methods to lookup types and
-     an easy way of adding date values in json - without changing the structure */
-  function parsePath(json_path varchar2, base number default 1) return pljson_list;
-  
-  --JSON Path getters
-  function get_json_value(obj pljson, v_path varchar2, base number default 1) return pljson_value;
-  function get_string(obj pljson, path varchar2,       base number default 1) return varchar2;
-  function get_number(obj pljson, path varchar2,       base number default 1) return number;
-  function get_json(obj pljson, path varchar2,         base number default 1) return pljson;
-  function get_json_list(obj pljson, path varchar2,    base number default 1) return pljson_list;
-  function get_bool(obj pljson, path varchar2,         base number default 1) return boolean;
-  
-  --JSON Path putters
-  procedure put(obj in out nocopy pljson, path varchar2, elem varchar2,   base number default 1);
-  procedure put(obj in out nocopy pljson, path varchar2, elem number,     base number default 1);
-  procedure put(obj in out nocopy pljson, path varchar2, elem pljson,       base number default 1);
-  procedure put(obj in out nocopy pljson, path varchar2, elem pljson_list,  base number default 1);
-  procedure put(obj in out nocopy pljson, path varchar2, elem boolean,    base number default 1);
-  procedure put(obj in out nocopy pljson, path varchar2, elem pljson_value, base number default 1);
-  
-  procedure remove(obj in out nocopy pljson, path varchar2, base number default 1);
-  
-  --Pretty print with JSON Path - obsolete in 0.9.4 - obj.path(v_path).(to_char,print,htp)
-  function pp(obj pljson, v_path varchar2) return varchar2;
-  procedure pp(obj pljson, v_path varchar2); --using dbms_output.put_line
-  procedure pp_htp(obj pljson, v_path varchar2); --using htp.print
-  
-  --extra function checks if number has no fraction
-  function is_integer(v pljson_value) return boolean;
-  
-  format_string varchar2(30 char) := 'yyyy-mm-dd hh24:mi:ss';
-  --extension enables json to store dates without comprimising the implementation
-  function to_json_value(d date) return pljson_value;
-  --notice that a date type in json is also a varchar2
-  function is_date(v pljson_value) return boolean;
-  --conversion is needed to extract dates
-  function to_date(v pljson_value) return date;
-  -- alias so that old code doesn't break
-  function to_date2(v pljson_value) return date;
-  --JSON Path with date
-  function get_date(obj pljson, path varchar2, base number default 1) return date;
-  procedure put(obj in out nocopy pljson, path varchar2, elem date, base number default 1);
-  
-  --experimental support of binary data with base64
-  function base64(binarydata blob) return pljson_list;
-  function base64(l pljson_list) return blob;
-  
-  function encode(binarydata blob) return pljson_value;
-  function decode(v pljson_value) return blob;
-
-end pljson_ext;
-/
-
-create or replace package body pljson_ext as
+ 
   scanner_exception exception;
   pragma exception_init(scanner_exception, -20100);
   parser_exception exception;
   pragma exception_init(parser_exception, -20101);
   jext_exception exception;
   pragma exception_init(jext_exception, -20110);
-  
+
   --extra function checks if number has no fraction
   function is_integer(v pljson_value) return boolean as
     myint number(38); --the oracle way to specify an integer
@@ -93,13 +39,13 @@ create or replace package body pljson_ext as
       return false;
     end if;
   end;
-  
+
   --extension enables json to store dates without comprimising the implementation
   function to_json_value(d date) return pljson_value as
   begin
     return pljson_value(to_char(d, format_string));
   end;
-  
+
   --notice that a date type in json is also a varchar2
   function is_date(v pljson_value) return boolean as
     temp date;
@@ -110,7 +56,7 @@ create or replace package body pljson_ext as
     when others then
       return false;
   end;
-  
+
   --conversion is needed to extract dates
   function to_date(v pljson_value) return date as
   begin
@@ -123,13 +69,13 @@ create or replace package body pljson_ext as
     when others then
       raise_application_error(-20110, 'Anydata did not contain a date on the format: '||format_string);
   end;
-  
+
   -- alias so that old code doesn't break
   function to_date2(v pljson_value) return date as
   begin
     return to_date(v);
   end;
-  
+
   --Json Path parser
   function parsePath(json_path varchar2, base number default 1) return pljson_list as
     build_path varchar2(32767) := '[';
@@ -137,7 +83,7 @@ create or replace package body pljson_ext as
     endstring varchar2(1);
     indx number := 1;
     ret pljson_list;
-    
+
     procedure next_char as
     begin
       if(indx <= length(json_path)) then
@@ -149,7 +95,7 @@ create or replace package body pljson_ext as
     end;
     --skip ws
     procedure skipws as begin while(buf in (chr(9),chr(10),chr(13),' ')) loop next_char; end loop; end;
-  
+
   begin
     next_char();
     while(buf is not null) loop
@@ -159,7 +105,7 @@ create or replace package body pljson_ext as
         if(not regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) then
           raise_application_error(-20110, 'JSON Path parse error: alpha-numeric character or space expected at position '||indx);
         end if;
-        
+
         if(build_path != '[') then build_path := build_path || ','; end if;
         build_path := build_path || '"';
         while(regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) loop
@@ -216,12 +162,12 @@ create or replace package body pljson_ext as
       else
         raise_application_error(-20110, 'JSON Path parse error: expected . or [ found '|| buf || ' at position '|| indx);
       end if;
-    
+
     end loop;
-    
+
     build_path := build_path || ']';
     build_path := replace(replace(replace(replace(replace(build_path, chr(9), '\t'), chr(10), '\n'), chr(13), '\f'), chr(8), '\b'), chr(14), '\r');
-    
+
     ret := pljson_list(build_path);
     if(base != 1) then
       --fix base 0 to base 1
@@ -236,10 +182,10 @@ create or replace package body pljson_ext as
         end loop;
       end;
     end if;
-    
+
     return ret;
   end parsePath;
-  
+
   --JSON Path getters
   function get_json_value(obj pljson, v_path varchar2, base number default 1) return pljson_value as
     path pljson_list;
@@ -249,7 +195,7 @@ create or replace package body pljson_ext as
     path := parsePath(v_path, base);
     ret := obj.to_json_value;
     if(path.count = 0) then return ret; end if;
-    
+
     for i in 1 .. path.count loop
       if(path.get(i).is_string()) then
         --string fetch only on json
@@ -267,7 +213,7 @@ create or replace package body pljson_ext as
         end if;
       end if;
     end loop;
-    
+
     return ret;
   exception
     when scanner_exception then raise;
@@ -275,7 +221,7 @@ create or replace package body pljson_ext as
     when jext_exception then raise;
     when others then return null;
   end get_json_value;
-  
+
   --JSON Path getters
   function get_string(obj pljson, path varchar2, base number default 1) return varchar2 as
     temp pljson_value;
@@ -287,7 +233,7 @@ create or replace package body pljson_ext as
       return temp.get_string;
     end if;
   end;
-  
+
   function get_number(obj pljson, path varchar2, base number default 1) return number as
     temp pljson_value;
   begin
@@ -298,7 +244,7 @@ create or replace package body pljson_ext as
       return temp.get_number;
     end if;
   end;
-  
+
   function get_json(obj pljson, path varchar2, base number default 1) return pljson as
     temp pljson_value;
   begin
@@ -309,7 +255,7 @@ create or replace package body pljson_ext as
       return pljson(temp);
     end if;
   end;
-  
+
   function get_json_list(obj pljson, path varchar2, base number default 1) return pljson_list as
     temp pljson_value;
   begin
@@ -320,7 +266,7 @@ create or replace package body pljson_ext as
       return pljson_list(temp);
     end if;
   end;
-  
+
   function get_bool(obj pljson, path varchar2, base number default 1) return boolean as
     temp pljson_value;
   begin
@@ -331,7 +277,7 @@ create or replace package body pljson_ext as
       return temp.get_bool;
     end if;
   end;
-  
+
   function get_date(obj pljson, path varchar2, base number default 1) return date as
     temp pljson_value;
   begin
@@ -342,13 +288,13 @@ create or replace package body pljson_ext as
       return pljson_ext.to_date(temp);
     end if;
   end;
-  
+
   /* JSON Path putter internal function */
   procedure put_internal(obj in out nocopy pljson, v_path varchar2, elem pljson_value, base number) as
     val pljson_value := elem;
     path pljson_list;
     backreference pljson_list := pljson_list();
-  
+
     keyval pljson_value; keynum number; keystring varchar2(4000);
     temp pljson_value := obj.to_json_value;
     obj_temp  pljson;
@@ -357,7 +303,7 @@ create or replace package body pljson_ext as
   begin
     path := pljson_ext.parsePath(v_path, base);
     if(path.count = 0) then raise_application_error(-20110, 'PLJSON_EXT put error: cannot put with empty string.'); end if;
-    
+
     --build backreference
     for i in 1 .. path.count loop
       --backreference.print(false);
@@ -371,7 +317,7 @@ create or replace package body pljson_ext as
           temp := pljson_list().to_json_value();
           backreference.append(temp);
         end if;
-        
+
         if(temp.is_object()) then
           obj_temp := pljson(temp);
           if(obj_temp.count < keynum) then
@@ -390,7 +336,7 @@ create or replace package body pljson_ext as
             backreference.remove_last;
             backreference.append(list_temp);
           end if;
-          
+
           temp := list_temp.get(keynum);
         end if;
       else
@@ -407,7 +353,7 @@ create or replace package body pljson_ext as
         obj_temp := pljson(temp);
         temp := obj_temp.get(keystring);
       end if;
-      
+
       if(temp is null) then
         if(val is null) then return; end if;
         --what to expect?
@@ -420,10 +366,10 @@ create or replace package body pljson_ext as
       end if;
       backreference.append(temp);
     end loop;
-    
+
     --  backreference.print(false);
     --  path.print(false);
-    
+
     --use backreference and path together
     inserter := val;
     for i in reverse 1 .. backreference.count loop
@@ -476,11 +422,11 @@ create or replace package body pljson_ext as
           end if;
         end if;
       end if;
-    
+
     end loop;
-  
+
   end put_internal;
-  
+
   /* JSON Path putters */
   procedure put(obj in out nocopy pljson, path varchar2, elem varchar2, base number default 1) as
   begin
@@ -490,7 +436,7 @@ create or replace package body pljson_ext as
         put_internal(obj, path, pljson_value(elem), base);
     end if;
   end;
-  
+
   procedure put(obj in out nocopy pljson, path varchar2, elem number, base number default 1) as
   begin
     if elem is null then
@@ -499,7 +445,7 @@ create or replace package body pljson_ext as
         put_internal(obj, path, pljson_value(elem), base);
     end if;
   end;
-  
+
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson, base number default 1) as
   begin
     if elem is null then
@@ -508,7 +454,7 @@ create or replace package body pljson_ext as
         put_internal(obj, path, elem.to_json_value, base);
     end if;
   end;
-  
+
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson_list, base number default 1) as
   begin
     if elem is null then
@@ -517,7 +463,7 @@ create or replace package body pljson_ext as
         put_internal(obj, path, elem.to_json_value, base);
     end if;
   end;
-  
+
   procedure put(obj in out nocopy pljson, path varchar2, elem boolean, base number default 1) as
   begin
     if elem is null then
@@ -526,7 +472,7 @@ create or replace package body pljson_ext as
         put_internal(obj, path, pljson_value(elem), base);
     end if;
   end;
-  
+
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson_value, base number default 1) as
   begin
     if elem is null then
@@ -535,7 +481,7 @@ create or replace package body pljson_ext as
         put_internal(obj, path, elem, base);
     end if;
   end;
-  
+
   procedure put(obj in out nocopy pljson, path varchar2, elem date, base number default 1) as
   begin
     if elem is null then
@@ -544,14 +490,14 @@ create or replace package body pljson_ext as
         put_internal(obj, path, pljson_ext.to_json_value(elem), base);
     end if;
   end;
-  
+
   procedure remove(obj in out nocopy pljson, path varchar2, base number default 1) as
   begin
     pljson_ext.put_internal(obj,path,null,base);
 --    if(json_ext.get_json_value(obj,path) is not null) then
 --    end if;
   end remove;
-  
+
   --Pretty print with JSON Path
   function pp(obj pljson, v_path varchar2) return varchar2 as
     json_part pljson_value;
@@ -563,12 +509,12 @@ create or replace package body pljson_ext as
       return pljson_printer.pretty_print_any(json_part); --escapes a possible internal string
     end if;
   end pp;
-  
+
   procedure pp(obj pljson, v_path varchar2) as --using dbms_output.put_line
   begin
     dbms_output.put_line(pp(obj, v_path));
   end pp;
-  
+
   -- spaces = false!
   procedure pp_htp(obj pljson, v_path varchar2) as --using htp.print
     json_part pljson_value;
@@ -578,19 +524,19 @@ create or replace package body pljson_ext as
       htp.print(pljson_printer.pretty_print_any(json_part, false));
     end if;
   end pp_htp;
-  
+
   function base64(binarydata blob) return pljson_list as
     obj pljson_list := pljson_list();
     c clob := empty_clob();
     benc blob;
-    
+
     v_blob_offset NUMBER := 1;
     v_clob_offset NUMBER := 1;
     v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
     v_warning NUMBER;
     v_amount PLS_INTEGER;
 --    temp varchar2(32767);
-    
+
     FUNCTION encodeBlob2Base64(pBlobIn IN BLOB) RETURN BLOB IS
       vAmount NUMBER := 45;
       vBlobEnc BLOB := empty_blob();
@@ -628,7 +574,7 @@ create or replace package body pljson_ext as
     dbms_lob.createtemporary(c, TRUE);
     v_amount := DBMS_LOB.GETLENGTH(benc);
     DBMS_LOB.CONVERTTOCLOB(c, benc, v_amount, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
-    
+
     v_amount := DBMS_LOB.GETLENGTH(c);
     v_clob_offset := 1;
     --dbms_output.put_line('V amount: '||v_amount);
@@ -644,21 +590,21 @@ create or replace package body pljson_ext as
   --dbms_output.put_line(obj.count);
   --dbms_output.put_line(obj.get_last().to_char);
     return obj;
-  
+
   end base64;
-  
-  
+
+
   function base64(l pljson_list) return blob as
     c clob := empty_clob();
     b blob := empty_blob();
     bret blob;
-    
+
     v_blob_offset NUMBER := 1;
     v_clob_offset NUMBER := 1;
     v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
     v_warning NUMBER;
     v_amount PLS_INTEGER;
-    
+
     FUNCTION decodeBase642Blob(pBlobIn IN BLOB) RETURN BLOB IS
       vAmount NUMBER := 256;--32;
       vBlobDec BLOB := empty_blob();
@@ -698,31 +644,31 @@ create or replace package body pljson_ext as
     end loop;
     v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);
-    
+
     dbms_lob.createtemporary(b, TRUE);
     DBMS_LOB.CONVERTTOBLOB(b, c, dbms_lob.lobmaxsize, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
     dbms_lob.freetemporary(c);
     v_amount := DBMS_LOB.GETLENGTH(b);
 --    dbms_output.put_line('L B'||v_amount);
-    
+
     bret := decodeBase642Blob(b);
     dbms_lob.freetemporary(b);
     return bret;
-  
+
   end base64;
-  
+
   function encode(binarydata blob) return pljson_value as
     obj pljson_value;
     c clob := empty_clob();
     benc blob;
-    
+
     v_blob_offset NUMBER := 1;
     v_clob_offset NUMBER := 1;
     v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
     v_warning NUMBER;
     v_amount PLS_INTEGER;
 --    temp varchar2(32767);
-    
+
     FUNCTION encodeBlob2Base64(pBlobIn IN BLOB) RETURN BLOB IS
       vAmount NUMBER := 45;
       vBlobEnc BLOB := empty_blob();
@@ -760,28 +706,28 @@ create or replace package body pljson_ext as
     dbms_lob.createtemporary(c, TRUE);
     v_amount := DBMS_LOB.GETLENGTH(benc);
     DBMS_LOB.CONVERTTOCLOB(c, benc, v_amount, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
-    
+
     obj := pljson_value(c);
-    
+
     dbms_lob.freetemporary(benc);
     dbms_lob.freetemporary(c);
   --dbms_output.put_line(obj.count);
   --dbms_output.put_line(obj.get_last().to_char);
     return obj;
-  
+
   end encode;
-  
+
   function decode(v pljson_value) return blob as
     c clob := empty_clob();
     b blob := empty_blob();
     bret blob;
-    
+
     v_blob_offset NUMBER := 1;
     v_clob_offset NUMBER := 1;
     v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
     v_warning NUMBER;
     v_amount PLS_INTEGER;
-    
+
     FUNCTION decodeBase642Blob(pBlobIn IN BLOB) RETURN BLOB IS
       vAmount NUMBER := 256;--32;
       vBlobDec BLOB := empty_blob();
@@ -819,13 +765,13 @@ create or replace package body pljson_ext as
     v.get_string(c);
     v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);
-    
+
     dbms_lob.createtemporary(b, TRUE);
     DBMS_LOB.CONVERTTOBLOB(b, c, dbms_lob.lobmaxsize, v_clob_offset, v_blob_offset, 1, v_lang_context, v_warning);
     dbms_lob.freetemporary(c);
     v_amount := DBMS_LOB.GETLENGTH(b);
 --    dbms_output.put_line('L B'||v_amount);
-    
+
     bret := decodeBase642Blob(b);
     dbms_lob.freetemporary(b);
     return bret;

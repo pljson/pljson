@@ -1,0 +1,40 @@
+/* http://www.cssnewbie.com/six-ways-style-blockquotes/#.VKldG6dgsfM */
+/* http://www.google.com/fonts#ChoosePlace:select/Collection:Parisienne|Tangerine|Pinyon+Script|Cinzel|Italianno */
+@import url(http://fonts.googleapis.com/css?family=Parisienne|Cinzel|Merriweather|Mandali);
+@import url(http://fonts.googleapis.com/css?family=Alegreya:400italic,700italic,400,700);
+
+blockquote {
+  border-left: 1px dashed #999;
+  font-family: sans-serif;
+  margin: 1em 2em 2em;
+  padding-left: 1em;
+}
+
+blockquote p:first-letter {
+  float: left;
+  /*font-family: "Monotype Corsiva", "Apple Chancery", fantasy;*/
+  font-family: "Parisienne", fantasy;
+  font-size: 240%;
+  font-weight: bold;
+  margin-right: 0.2em;
+  /*margin: -.2em .3em .1em 0;*/
+}
+
+blockquote p:first-line {
+  font-variant: small-caps;
+  font-family: "Cinzel";
+  font-size: 110%;
+  line-height: 1.3em;
+}
+
+h1 {
+  font-family: "Merriweather";
+  font-size: 300%;
+  letter-spacing: 0.1em;
+}
+
+p {
+  font-family: "Alegreya";
+  font-size: 115%;
+  font-weight: 400;
+}

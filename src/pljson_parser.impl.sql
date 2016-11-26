@@ -1,60 +1,3 @@
-create or replace package pljson_parser as
-  /*
-  Copyright (c) 2010 Jonas Krogsboell
-
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  THE SOFTWARE.
-  */
-  /* scanner tokens:
-    '{', '}', ',', ':', '[', ']', STRING, NUMBER, TRUE, FALSE, NULL
-  */
-  type rToken IS RECORD (
-    type_name VARCHAR2(7),
-    line PLS_INTEGER,
-    col PLS_INTEGER,
-    data VARCHAR2(32767),
-    data_overflow clob); -- max_string_size
-  
-  type lTokens is table of rToken index by pls_integer;
-  type json_src is record (len number, offset number, src varchar2(32767), s_clob clob);
-  
-  json_strict boolean not null := false;
-  
-  function next_char(indx number, s in out nocopy json_src) return varchar2;
-  function next_char2(indx number, s in out nocopy json_src, amount number default 1) return varchar2;
-  
-  function prepareClob(buf in clob) return pljson_parser.json_src;
-  function prepareVarchar2(buf in varchar2) return pljson_parser.json_src;
-  function lexer(jsrc in out nocopy json_src) return lTokens;
-  procedure print_token(t rToken);
-  
-  function parser(str varchar2) return pljson;
-  function parse_list(str varchar2) return pljson_list;
-  function parse_any(str varchar2) return pljson_value;
-  function parser(str clob) return pljson;
-  function parse_list(str clob) return pljson_list;
-  function parse_any(str clob) return pljson_value;
-  procedure remove_duplicates(obj in out nocopy pljson);
-  function get_version return varchar2;
-
-end pljson_parser;
-/
-
 create or replace package body pljson_parser as
   /*
   Copyright (c) 2009 Jonas Krogsboell
@@ -77,14 +20,14 @@ create or replace package body pljson_parser as
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-  
+
   decimalpoint varchar2(1 char) := '.';
-  
+
   procedure updateDecimalPoint as
   begin
     SELECT substr(VALUE,1,1) into decimalpoint FROM NLS_SESSION_PARAMETERS WHERE PARAMETER = 'NLS_NUMERIC_CHARACTERS';
   end updateDecimalPoint;
-  
+
   /* type json_src is record (len number, offset number, src varchar2(32767), s_clob clob); */
   /* assertions
     offset: contains 0-base offset of buffer,
@@ -109,7 +52,7 @@ create or replace package body pljson_parser as
     --read from s.src
     return substr(s.src, indx-s.offset, 1);
   end;
-  
+
   function next_char2(indx number, s in out nocopy json_src, amount number default 1) return varchar2 as
     buf varchar2(32767) := '';
   begin
@@ -118,7 +61,7 @@ create or replace package body pljson_parser as
     end loop;
     return buf;
   end;
-  
+
   function prepareClob(buf clob) return pljson_parser.json_src as
     temp pljson_parser.json_src;
   begin
@@ -128,7 +71,7 @@ create or replace package body pljson_parser as
     temp.len := dbms_lob.getlength(buf);
     return temp;
   end;
-  
+
   function prepareVarchar2(buf varchar2) return pljson_parser.json_src as
     temp pljson_parser.json_src;
   begin
@@ -138,28 +81,28 @@ create or replace package body pljson_parser as
     temp.len := length(buf);
     return temp;
   end;
-  
+
   procedure debug(text varchar2) as
   begin
     dbms_output.put_line(text);
   end;
-  
+
   procedure print_token(t rToken) as
   begin
     dbms_output.put_line('Line: '||t.line||' - Column: '||t.col||' - Type: '||t.type_name||' - Content: '||t.data);
   end print_token;
-  
+
   /* SCANNER FUNCTIONS START */
   procedure s_error(text varchar2, line number, col number) as
   begin
     raise_application_error(-20100, 'JSON Scanner exception @ line: '||line||' column: '||col||' - '||text);
   end;
-  
+
   procedure s_error(text varchar2, tok rToken) as
   begin
     raise_application_error(-20100, 'JSON Scanner exception @ line: '||tok.line||' column: '||tok.col||' - '||text);
   end;
-  
+
   function mt(t varchar2, l pls_integer, c pls_integer, d varchar2) return rToken as
     token rToken;
   begin
@@ -169,7 +112,7 @@ create or replace package body pljson_parser as
     token.data := d;
     return token;
   end;
-  
+
   function lexNumber(jsrc in out nocopy json_src, tok in out nocopy rToken, indx in out nocopy pls_integer) return pls_integer as
     numbuf varchar2(4000) := '';
     buf varchar2(4);
@@ -223,11 +166,11 @@ create or replace package body pljson_parser as
         s_error('Expected: digits in exp', tok);
       end if;
     end if;
-    
+
     tok.data := numbuf;
     return indx;
   end lexNumber;
-  
+
   -- [a-zA-Z]([a-zA-Z0-9])*
   function lexName(jsrc in out nocopy json_src, tok in out nocopy rToken, indx in out nocopy pls_integer) return pls_integer as
     varbuf varchar2(32767) := '';
@@ -245,19 +188,19 @@ create or replace package body pljson_parser as
       end if;
     end loop;
     <<retname>>
-    
+
     --could check for reserved keywords here
-    
+
     --debug(varbuf);
     tok.data := varbuf;
     return indx-1;
   end lexName;
-  
+
   procedure updateClob(v_extended in out nocopy clob, v_str varchar2) as
   begin
     dbms_lob.writeappend(v_extended, length(v_str), v_str);
   end updateClob;
-  
+
   function lexString(jsrc in out nocopy json_src, tok in out nocopy rToken, indx in out nocopy pls_integer, endChar char) return pls_integer as
     v_extended clob := null; v_count number := 0;
     varbuf varchar2(32767) := '';
@@ -346,12 +289,12 @@ create or replace package body pljson_parser as
         buf := next_char(indx, jsrc);
       end if;
     end loop;
-    
+
     if (buf is null) then
       s_error('string ending not found', tok);
       --debug('Premature string ending');
     end if;
-    
+
     --debug(varbuf);
     --dbms_output.put_line(varbuf);
     if(v_extended is not null) then
@@ -363,7 +306,7 @@ create or replace package body pljson_parser as
     end if;
     return indx;
   end lexString;
-  
+
   /* scanner tokens:
     '{', '}', ',', ':', '[', ']', STRING, NUMBER, TRUE, FALSE, NULL
   */
@@ -436,7 +379,7 @@ create or replace package body pljson_parser as
         when (buf = Chr(10)) then --linux newlines
           lin_no := lin_no + 1;
           col_no := 0;
-        
+
         when (buf = Chr(13)) then --Windows or Mac way
           lin_no := lin_no + 1;
           col_no := 0;
@@ -446,7 +389,7 @@ create or replace package body pljson_parser as
               indx := indx + 1;
             end if;
           end if;
-        
+
         when (buf = CHR(9)) then null; --tabbing
         when (buf in ('-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9')) then --number
           tokens(tok_indx) := mt('NUMBER', lin_no, col_no, null);
@@ -484,7 +427,7 @@ create or replace package body pljson_parser as
               exit when buf = '*/';
               exit when buf is null;
             end loop;
-            
+
             if(indx = saveindx+2) then
               --enter unescaped mode
               --dbms_output.put_line('Entering unescaped mode');
@@ -507,30 +450,28 @@ create or replace package body pljson_parser as
               tok_indx := tok_indx + 1;
               indx := indx + 2;
             end if;
-            
+
             indx := indx + 1;
           end;
         when buf = ' ' then null; --space
         else
           s_error('Unexpected char: '||buf, lin_no, col_no);
       end case;
-      
+
       indx := indx + 1;
     end loop;
-    
+
     return tokens;
   end lexer;
-  
+
   /* SCANNER END */
-  
+
   /* PARSER FUNCTIONS START */
   procedure p_error(text varchar2, tok rToken) as
   begin
     raise_application_error(-20101, 'JSON Parser exception @ line: '||tok.line||' column: '||tok.col||' - '||text);
   end;
-  
-  function parseObj(tokens lTokens, indx in out nocopy pls_integer) return pljson;
-  
+
   function parseArr(tokens lTokens, indx in out nocopy pls_integer) return pljson_list as
     e_arr pljson_value_array := pljson_value_array();
     ret_list pljson_list := pljson_list();
@@ -575,12 +516,12 @@ create or replace package body pljson_parser as
       elsif(tok.type_name != ']') then --error
         p_error('Expected , or ]', tok);
       end if;
-    
+
     end loop;
     ret_list.list_data := e_arr;
     return ret_list;
   end parseArr;
-  
+
   function parseMem(tokens lTokens, indx in out pls_integer, mem_name varchar2, mem_indx number) return pljson_value as
     mem pljson_value;
     tok rToken;
@@ -609,11 +550,11 @@ create or replace package body pljson_parser as
     end case;
     mem.mapname := mem_name;
     mem.mapindx := mem_indx;
-    
+
     indx := indx + 1;
     return mem;
   end parseMem;
-  
+
   /*procedure test_duplicate_members(arr in json_member_array, mem_name in varchar2, wheretok rToken) as
   begin
     for i in 1 .. arr.count loop
@@ -622,12 +563,12 @@ create or replace package body pljson_parser as
       end if;
     end loop;
   end test_duplicate_members;*/
-  
+
   function parseObj(tokens lTokens, indx in out nocopy pls_integer) return pljson as
     type memmap is table of number index by varchar2(4000); -- i've read somewhere that this is not possible - but it is!
     mymap memmap;
     nullelemfound boolean := false;
-    
+
     obj pljson;
     tok rToken;
     mem_name varchar(4000);
@@ -654,7 +595,7 @@ create or replace package body pljson_parser as
         exception
           when no_data_found then mymap(mem_name) := 1;
         end;
-        
+
         indx := indx + 1;
         if(indx > tokens.count) then p_error('Unexpected end of input', tok); end if;
         tok := tokens(indx);
@@ -676,7 +617,7 @@ create or replace package body pljson_parser as
         end if;
         --move indx forward if ',' is found
         if(indx > tokens.count) then p_error('Unexpected end of input', tok); end if;
-        
+
         tok := tokens(indx);
         if(tok.type_name = ',') then
           --debug('found ,');
@@ -696,13 +637,13 @@ create or replace package body pljson_parser as
         p_error('Expected string or }', tok);
       end case;
     end loop;
-    
+
     p_error('} not found', tokens(indx-1));
-    
+
     return obj;
-  
+
   end;
-  
+
   function parser(str varchar2) return pljson as
     tokens lTokens;
     obj pljson;
@@ -721,10 +662,10 @@ create or replace package body pljson_parser as
     if(tokens.count != indx) then
       p_error('} should end the JSON object', tokens(indx));
     end if;
-    
+
     return obj;
   end parser;
-  
+
   function parse_list(str varchar2) return pljson_list as
     tokens lTokens;
     obj pljson_list;
@@ -743,10 +684,10 @@ create or replace package body pljson_parser as
     if(tokens.count != indx) then
       p_error('] should end the JSON List object', tokens(indx));
     end if;
-    
+
     return obj;
   end parse_list;
-  
+
   function parse_list(str clob) return pljson_list as
     tokens lTokens;
     obj pljson_list;
@@ -765,10 +706,10 @@ create or replace package body pljson_parser as
     if(tokens.count != indx) then
       p_error('] should end the JSON List object', tokens(indx));
     end if;
-    
+
     return obj;
   end parse_list;
-  
+
   function parser(str clob) return pljson as
     tokens lTokens;
     obj pljson;
@@ -788,10 +729,10 @@ create or replace package body pljson_parser as
     if(tokens.count != indx) then
       p_error('} should end the JSON object', tokens(indx));
     end if;
-    
+
     return obj;
   end parser;
-  
+
   function parse_any(str varchar2) return pljson_value as
     tokens lTokens;
     obj pljson_list;
@@ -807,10 +748,10 @@ create or replace package body pljson_parser as
     if(tokens.count != indx) then
       p_error('] should end the JSON List object', tokens(indx));
     end if;
-    
+
     return obj.head();
   end parse_any;
-  
+
   function parse_any(str clob) return pljson_value as
     tokens lTokens;
     obj pljson_list;
@@ -824,10 +765,10 @@ create or replace package body pljson_parser as
     if(tokens.count != indx) then
       p_error('] should end the JSON List object', tokens(indx));
     end if;
-    
+
     return obj.head();
   end parse_any;
-  
+
   /* last entry is the one to keep */
   procedure remove_duplicates(obj in out nocopy pljson) as
     type memberlist is table of pljson_value index by varchar2(4000);
@@ -843,7 +784,7 @@ create or replace package body pljson_parser as
         members(obj.get(i).mapname) := obj.get(i);
       end if;
     end loop;
-    
+
     validated.check_duplicate(false);
     indx := members.first;
     loop
@@ -854,12 +795,12 @@ create or replace package body pljson_parser as
     if(nulljsonvalue is not null) then
       validated.put('', nulljsonvalue);
     end if;
-    
+
     validated.check_for_duplicate := obj.check_for_duplicate;
-    
+
     obj := validated;
   end;
-  
+
   function get_version return varchar2 as
   begin
     return 'PL/JSON v2.0.0';

@@ -21,17 +21,46 @@ create or replace type pljson_value as object
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-  
+
+  /**
+   * <p>Underlying type for all of <em>PL/JSON</em>. Each <code>pljson</code>
+   * or <code>pljson_list</code> object is composed of
+   * <code>pljson_value</code> objects.</p>
+   *
+   * <p>Generally, you should not need to directly the constructors provided
+   * by this portion of the API. The methods on <code>pljson</code> and
+   * <code>pljson_list</code> should be used instead.</p>
+   *
+   * @headcom
+   */
+
+  /**
+   * <p>Internal property that indicates the JSON type represented:<p>
+   * <ol>
+   *   <li><code>object</code></li>
+   *   <li><code>array</code></li>
+   *   <li><code>string</code></li>
+   *   <li><code>number</code></li>
+   *   <li><code>bool</code></li>
+   *   <li><code>null</code></li>
+   * </ol>
+   */
   typeval number(1), /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+  /** Private variable for internal processing. */
   str varchar2(32767),
+  /** Private variable for internal processing. */
   num number, /* store 1 as true, 0 as false */
+  /** Private variable for internal processing. */
   object_or_array sys.anydata, /* object or array in here */
+  /** Private variable for internal processing. */
   extended_str clob,
-  
+
   /* mapping */
+  /** Private variable for internal processing. */
   mapname varchar2(4000),
+  /** Private variable for internal processing. */
   mapindx number(32),
-  
+
   constructor function pljson_value(object_or_array sys.anydata) return self as result,
   constructor function pljson_value(str varchar2, esc boolean default true) return self as result,
   constructor function pljson_value(str clob, esc boolean default true) return self as result,
@@ -39,27 +68,41 @@ create or replace type pljson_value as object
   constructor function pljson_value(b boolean) return self as result,
   constructor function pljson_value return self as result,
   static function makenull return pljson_value,
-  
+
+  /**
+   * <p>Retrieve the name of the type represented by the <code>pljson_value</code>.</p>
+   * <p>Possible return values:</p>
+   * <ul>
+   *   <li><code>object</code></li>
+   *   <li><code>array</code></li>
+   *   <li><code>string</code></li>
+   *   <li><code>number</code></li>
+   *   <li><code>bool</code></li>
+   *   <li><code>null</code></li>
+   * </ul>
+   *
+   * @return The name of the type represented.
+   */
   member function get_type return varchar2,
   member function get_string(max_byte_size number default null, max_char_size number default null) return varchar2,
   member procedure get_string(self in pljson_value, buf in out nocopy clob),
   member function get_number return number,
   member function get_bool return boolean,
   member function get_null return varchar2,
-  
+
   member function is_object return boolean,
   member function is_array return boolean,
   member function is_string return boolean,
   member function is_number return boolean,
   member function is_bool return boolean,
   member function is_null return boolean,
-  
+
   /* Output methods */
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
   member procedure to_clob(self in pljson_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),
   member procedure print(self in pljson_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null), --32512 is maximum
   member procedure htp(self in pljson_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
-  
+
   member function value_of(self in pljson_value, max_byte_size number default null, max_char_size number default null) return varchar2
 
 ) not final;
