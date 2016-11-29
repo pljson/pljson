@@ -134,7 +134,7 @@ create or replace package body pljson_xml as
         toString(v_value, nvl(tagname, 'array'), xmlstr, xmlbuf);
       end loop;
     else
-      add_to_clob(xmlstr, xmlbuf, '<' || tagname || '>'||escapeStr(obj.value_of())||'</' || tagname || '>');
+      add_to_clob(xmlstr, xmlbuf, '<' || tagname || '>'||case when obj.value_of() is  not null then escapeStr(obj.value_of()) end ||'</' || tagname || '>');
     end if;
   end toString;
   
