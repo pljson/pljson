@@ -64,6 +64,27 @@ begin
     when others then fail(str);
   end;
   
+  str := 'Number test'; -- issue #69
+  declare
+    obj pljson_value;
+  begin
+    obj := pljson_value(0.5);
+    assertTrue(pljson_printer.pretty_print_any(obj) = '0.5');
+    
+    obj := pljson_value(-0.5);
+    assertTrue(pljson_printer.pretty_print_any(obj) = '-0.5');
+    
+    obj := pljson_value(1.1E-63);
+    assertTrue(pljson_printer.pretty_print_any(obj) = '1.1E-63');
+    
+    obj := pljson_value(-1.1E-63);
+    assertTrue(pljson_printer.pretty_print_any(obj) = '-1.1E-63');
+    
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+  
   begin
     execute immediate 'insert into pljson_testsuite values (:1, :2, :3, :4, :5)' using
     'pljson simple type test', pass_count, fail_count, total_count, 'pljson_simple_test.sql';
