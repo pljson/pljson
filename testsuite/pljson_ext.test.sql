@@ -48,6 +48,7 @@ declare
   end;
 
 begin
+  dbms_output.put_line('pljson_ext test:');
   
   str := 'Is Type Test';
   declare
@@ -69,18 +70,23 @@ begin
   declare
     mylist pljson_list; --im lazy
   begin
-    mylist := pljson_list('[23, 2.1, 0.0, 120, 0.00000001]');
+    mylist := pljson_list('[23, 2.1, 0.0, 120, 0.00000001, 2.718281828459e-210, 2718281828459e210]');
     assertTrue(mylist.get(1).is_number);
     assertTrue(mylist.get(2).is_number);
     assertTrue(mylist.get(3).is_number);
     assertTrue(mylist.get(4).is_number);
     assertTrue(mylist.get(5).is_number);
+    assertTrue(mylist.get(6).is_number);
+    assertTrue(mylist.get(7).is_number);
     
     assertTrue(pljson_ext.is_integer(mylist.get(1)));
     assertFalse(pljson_ext.is_integer(mylist.get(2)));
     assertTrue(pljson_ext.is_integer(mylist.get(3)));
     assertTrue(pljson_ext.is_integer(mylist.get(4)));
     assertFalse(pljson_ext.is_integer(mylist.get(5)));
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    assertFalse(pljson_ext.is_integer(mylist.get(6)));
+    assertTrue(pljson_ext.is_integer(mylist.get(7)));
     pass(str);
   exception
     when others then fail(str);

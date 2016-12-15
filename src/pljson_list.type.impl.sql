@@ -88,6 +88,16 @@ create or replace type body pljson_list as
     end if;
   end;
   
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure append(self in out nocopy pljson_list, elem binary_double, position pls_integer default null) as
+  begin
+    if(elem is null) then
+      append(pljson_value(), position);
+    else
+      append(pljson_value(elem), position);
+    end if;
+  end;
+  
   member procedure append(self in out nocopy pljson_list, elem boolean, position pls_integer default null) as
   begin
     if(elem is null) then
@@ -127,6 +137,16 @@ create or replace type body pljson_list as
   end;
   
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem number) as
+  begin
+    if(elem is null) then
+      replace(position, pljson_value());
+    else
+      replace(position, pljson_value(elem));
+    end if;
+  end;
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure replace(self in out nocopy pljson_list, position pls_integer, elem binary_double) as
   begin
     if(elem is null) then
       replace(position, pljson_value());
@@ -301,6 +321,25 @@ create or replace type body pljson_list as
     
     objlist := pljson(self);
     
+    if(elem is null) then
+      pljson_ext.put(objlist, json_path, pljson_value, base);
+    else
+      pljson_ext.put(objlist, json_path, elem, base);
+    end if;
+    self := objlist.get_values;
+  end path_put;
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem binary_double, base number default 1) as
+    objlist pljson;
+    jp pljson_list := pljson_ext.parsePath(json_path, base);
+  begin
+    while(jp.head().get_number() > self.count) loop
+      self.append(pljson_value());
+    end loop;
+
+    objlist := pljson(self);
+
     if(elem is null) then
       pljson_ext.put(objlist, json_path, pljson_value, base);
     else

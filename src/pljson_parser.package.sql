@@ -244,10 +244,9 @@ create or replace package body pljson_parser as
         --debug('Premature string ending');
       end if;
     end loop;
+    
     <<retname>>
-    
     --could check for reserved keywords here
-    
     --debug(varbuf);
     tok.data := varbuf;
     return indx-1;
@@ -331,8 +330,8 @@ create or replace package body pljson_parser as
               if(wrong) then
                 s_error('expected: " \u([0-9][A-F]){4}', tok);
               end if;
---              varbuf := varbuf || buf || four;
-              varbuf := varbuf || '\'||four;--chr(to_number(four,'XXXX'));
+              --varbuf := varbuf || buf || four;
+              varbuf := varbuf || '\'||four; --chr(to_number(four,'XXXX'));
               v_count := v_count + 5;
               indx := indx + 5;
               buf := next_char(indx, jsrc);
@@ -432,7 +431,7 @@ create or replace package body pljson_parser as
             indx := indx + 4;
             col_no := col_no + 4;
           end if;
-        /*   -- 9 = TAB, 10 = \n, 13 = \r (Linux = \n, Windows = \r\n, Mac = \r */
+        /* -- 9 = TAB, 10 = \n, 13 = \r (Linux = \n, Windows = \r\n, Mac = \r */
         when (buf = Chr(10)) then --linux newlines
           lin_no := lin_no + 1;
           col_no := 0;
@@ -536,6 +535,7 @@ create or replace package body pljson_parser as
     ret_list pljson_list := pljson_list();
     v_count number := 0;
     tok rToken;
+    pv pljson_value;
   begin
     --value, value, value ]
     if(indx > tokens.count) then p_error('more elements in array was excepted', tok); end if;
@@ -549,7 +549,12 @@ create or replace package body pljson_parser as
         when 'NULL' then e_arr(v_count) := pljson_value;
         when 'STRING' then e_arr(v_count) := case when tok.data_overflow is not null then pljson_value(tok.data_overflow) else pljson_value(tok.data) end;
         when 'ESTRING' then e_arr(v_count) := pljson_value(tok.data_overflow, false);
-        when 'NUMBER' then e_arr(v_count) := pljson_value(to_number(replace(tok.data, '.', decimalpoint)));
+        /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+        --when 'NUMBER' then e_arr(v_count) := pljson_value(to_number(replace(tok.data, '.', decimalpoint)));
+        when 'NUMBER' then
+          pv := pljson_value(0);
+          pv.parse_number(replace(tok.data, '.', decimalpoint));
+          e_arr(v_count) := pv;
         when '[' then
           declare e_list pljson_list; begin
             indx := indx + 1;
@@ -584,6 +589,7 @@ create or replace package body pljson_parser as
   function parseMem(tokens lTokens, indx in out pls_integer, mem_name varchar2, mem_indx number) return pljson_value as
     mem pljson_value;
     tok rToken;
+    pv pljson_value;
   begin
     tok := tokens(indx);
     case tok.type_name
@@ -592,7 +598,12 @@ create or replace package body pljson_parser as
       when 'NULL' then mem := pljson_value;
       when 'STRING' then mem := case when tok.data_overflow is not null then pljson_value(tok.data_overflow) else pljson_value(tok.data) end;
       when 'ESTRING' then mem := pljson_value(tok.data_overflow, false);
-      when 'NUMBER' then mem := pljson_value(to_number(replace(tok.data, '.', decimalpoint)));
+      /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+      --when 'NUMBER' then mem := pljson_value(to_number(replace(tok.data, '.', decimalpoint)));
+      when 'NUMBER' then
+        pv := pljson_value(0);
+        pv.parse_number(replace(tok.data, '.', decimalpoint));
+        mem := pv;
       when '[' then
         declare
           e_list pljson_list;
