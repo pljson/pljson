@@ -78,7 +78,8 @@ declare
   end;
 
 begin
-
+  dbms_output.put_line('pljson_unicode test:');
+  
   t_start := SYSTIMESTAMP;
   
   /* json with

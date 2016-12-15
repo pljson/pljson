@@ -48,6 +48,7 @@ declare
   end;
 
 begin
+  dbms_output.put_line('pljson_list test:');
   
   str := 'Empty list test';
   declare
@@ -125,10 +126,12 @@ begin
     l := pljson_list();
     l.append('varchar2');
     l.append(13);
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    l.append(2.718281828459e210d);
     l.append(pljson_value(false));
     l.append(pljson_value.makenull);
     l.append(pljson_list('[1,2,3]'));
-    assertTrue(l.count = 5);
+    assertTrue(l.count = 6);
     l.append(l.head);
     l.remove_first;
     for i in 1 .. l.count loop
@@ -359,6 +362,9 @@ begin
     assertTrue(obj.to_char(false) = '[1,2,3]');
     obj.replace(210, 4);
     assertTrue(obj.to_char(false) = '[1,2,3,4]');
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    obj.replace(4, 2.718281828459e210d);
+    assertTrue(obj.to_char(false) = '[1,2,3,2.7182818284589999E+210]'); -- double is approximate
     pass(str);
   exception
     when others then fail(str);

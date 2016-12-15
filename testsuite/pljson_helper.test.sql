@@ -48,6 +48,7 @@ declare
   end;
 
 begin
+  dbms_output.put_line('pljson_helper test:');
   
   str := 'merge empty objects';
   declare
@@ -224,6 +225,15 @@ begin
     when others then fail(str);
   end;
   
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  str := 'equals(pljson_value, binary_double)';
+  begin
+    assertTrue(pljson_helper.equals(pljson_value(2.718281828459e210d), 2.718281828459e210d));
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+  
   str := 'equals(pljson_value, varchar2)';
   begin
     assertTrue(pljson_helper.equals(pljson_value('xyz'),'xyz'));
@@ -340,6 +350,16 @@ begin
     when others then fail(str);
   end;
   
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  str := 'contains(pljson, binary_double)';
+  begin
+    assertTrue(pljson_helper.contains(pljson('{"a":[1,2],"b":2.718281828459e210}'), 2.718281828459e210d));
+    assertFalse(pljson_helper.contains(pljson('{"a":[1,2],"b":3}'), 2.718281828459e210d));
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+  
   str := 'contains(pljson, varchar2)';
   begin
     assertTrue(pljson_helper.contains(pljson('{"a":[1,2],"b":3,"c":"xyz"}'),'xyz'));
@@ -409,6 +429,16 @@ begin
   begin
     assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,5],{"a":6}]'),3));
     assertFalse(pljson_helper.contains(pljson_list('[1,2,7,"xyz",[4,5],{"a":6}]'),3));
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  str := 'contains(pljson_list, binary_double)';
+  begin
+    assertTrue(pljson_helper.contains(pljson_list('[1,2,2.718281828459e210,"xyz",[4,5],{"a":6}]'), 2.718281828459e210d));
+    assertFalse(pljson_helper.contains(pljson_list('[1,2,7,"xyz",[4,5],{"a":6}]'), 2.718281828459e210d));
     pass(str);
   exception
     when others then fail(str);

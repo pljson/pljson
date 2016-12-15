@@ -34,16 +34,20 @@ declare
 
 begin
   
+  dbms_output.put_line('pljson_path test:');
+  
   str := 'Getters simple';
   declare
     obj pljson;
   begin
-    obj := pljson('{"a": true, "b": {"c": 123}}');
+    obj := pljson('{"a": true, "b": {"c": 123}, "d": {"e": 2.718281828459e210}}');
     assertTrue(pljson_ext.get_json_value(obj, 'a').get_bool);
     assertTrue(pljson_ext.get_json(obj, 'a') is null);
     assertTrue(pljson_ext.get_json(obj, 'b') is not null);
-    assertTrue(nvl(pljson_ext.get_number(obj, 'b.c'),0)=123);
+    assertTrue(nvl(pljson_ext.get_number(obj, 'b.c'),0) = 123);
     assertTrue(pljson_ext.get_string(obj, 'b.c') is null);
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    assertTrue(nvl(pljson_ext.get_double(obj, 'd.e'),0) = 2.718281828459e210d);
     pass(str);
   exception
     when others then fail(str);
@@ -53,13 +57,15 @@ begin
   declare
     obj pljson;
   begin
-    obj := pljson('{"a": [1,[true,15]]}');
+    obj := pljson('{"a": [1,[true,15, 2.718281828459e210]]}');
     assertTrue(pljson_ext.get_json_value(obj, 'a').is_array);
     assertTrue(pljson_ext.get_json_list(obj, 'a') is not null);
-    assertTrue(nvl(pljson_ext.get_number(obj, 'a[1]'),0)=1);
-    assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][2]'),0)=15);
+    assertTrue(nvl(pljson_ext.get_number(obj, 'a[1]'),0) = 1);
+    assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][2]'),0) = 15);
     assertTrue(pljson_ext.get_json_value(obj, 'a[2][1]').get_bool);
---    assertFalse(nvl(pljson_ext.get_number(obj, 'a[0][13]'),0)=15); --will throw exception on invalid json path
+    --assertFalse(nvl(pljson_ext.get_number(obj, 'a[0][13]'),0)=15); --will throw exception on invalid json path
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][3]'),0) = 2.718281828459e210d);
     pass(str);
   exception
     when others then fail(str);
@@ -69,12 +75,14 @@ begin
   declare
     obj pljson;
   begin
-    obj := pljson('{"a": [1,[{"a":{"i":[{"A":2}]}},15] ] }');
+    obj := pljson('{"a": [1,[{"a":{"i":[{"A":2}, 2.718281828459e210]}},15] ] }');
     --obj.print;
     assertTrue(pljson_ext.get_json_value(obj, 'a').is_array);
     assertTrue(pljson_ext.get_json_list(obj, 'a') is not null);
-    assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][2]'),0)=15);
-    assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][1].a.i[1].A'),0)=2);
+    assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][2]'),0) = 15);
+    assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][1].a.i[1].A'),0) = 2);
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][1].a.i[2]'),0) = 2.718281828459e210d);    
     pass(str);
   exception
     when others then fail(str);
@@ -152,8 +160,8 @@ begin
     pljson_ext.put(obj, 'a.b[1].c', true);
     assertTrue(pljson_ext.get_json_list(obj, 'a.b') is not null);
     pljson_ext.put(obj, 'a.b[1].c', false);
---    dbms_output.put_line('Put false');
---    obj.print;
+    --dbms_output.put_line('Put false');
+    --obj.print;
     assertTrue(pljson_ext.get_json_list(obj, 'a.b') is not null);
     assertFalse(pljson_ext.get_json_value(obj, 'a.b[1].c').get_bool);
     pass(str);
@@ -173,6 +181,9 @@ begin
     assertTrue(nvl(pljson_ext.get_string(obj, 'a'),'a') = 'string');
     pljson_ext.put(obj, 'a', 123.456);
     assertTrue(nvl(pljson_ext.get_number(obj, 'a'),0) = 123.456);
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    pljson_ext.put(obj, 'a', 2.718281828459e210d);
+    assertTrue(nvl(pljson_ext.get_double(obj, 'a'),0) = 2.718281828459e210d);
     pass(str);
   exception
     when others then fail(str);
@@ -187,8 +198,10 @@ begin
     assertTrue(pljson_ext.get_json_value(obj, 'a[1][2][2]').is_null);
     assertTrue(pljson_ext.get_json_value(obj, 'a[1][2][1]').is_null);
     assertTrue(pljson_ext.get_json_value(obj, 'a[1][1]').is_null);
-    pljson_ext.put(obj, 'f[1]', pljson_list('[1,null,[[12],2],null]'));
+    pljson_ext.put(obj, 'f[1]', pljson_list('[1,null,[[12, 2.718281828459e210],2],null]'));
     assertTrue(nvl(pljson_ext.get_number(obj, 'f[1][3][1][1]'),0) = 12);
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    assertTrue(nvl(pljson_ext.get_double(obj, 'f[1][3][1][2]'),0) = 2.718281828459e210d);
     pass(str);
   exception
     when others then fail(str);
@@ -283,10 +296,13 @@ begin
   
   str := 'Getter index with [" "]';
   declare
-    obj pljson := pljson('{"a": [1,[{"a":{"i":[{"A":2}]}},15] ] }');
+    obj pljson := pljson('{"a": [1,[{"a":{"i":[{"A":2, "E": 2.718281828459e210}]}},15] ] }');
   begin
     assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][1].a.i[1].A'),0) = 2);
     assertTrue(nvl(pljson_ext.get_number(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]'),0) = 2);
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][1].a.i[1].E'),0) = 2.718281828459e210d);
+    assertTrue(nvl(pljson_ext.get_double(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["E"]'),0) = 2.718281828459e210d);
     pass(str);
   exception
     when others then fail(str);
@@ -297,7 +313,10 @@ begin
     obj pljson := pljson('{"a": [1,[{"a":{"i":[{"A":2}]}},15] ] }');
   begin
     pljson_ext.put(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]', 78);
-    assertTrue(nvl(pljson_ext.get_number(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]'),0)=78);
+    assertTrue(nvl(pljson_ext.get_number(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]'),0) = 78);
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    pljson_ext.put(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]', 2.718281828459e210d);
+    assertTrue(nvl(pljson_ext.get_double(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]'),0) = 2.718281828459e210d);
     pass(str);
   exception
     when others then fail(str);

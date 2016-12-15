@@ -33,6 +33,7 @@ declare
   end;
 
 begin
+  dbms_output.put_line('pljson test:');
   
   str := 'Empty PLJSON test';
   declare
@@ -103,6 +104,22 @@ begin
       assertTrue(obj.json_data(i).mapindx = i);
       assertTrue(obj.json_data(i).mapname = obj.json_data(i).get_string);
     end loop;
+    pass(str);
+  exception
+    when others then fail(str);
+  end;
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  str := 'Put method PLJSON test with number, binary_double';
+  declare
+    obj pljson; tester varchar2(4000);
+  begin
+    obj := pljson();
+    obj.put('I', 2.7182818284590452353602874713526624977e120);
+    obj.put('J', 2.718281828459e210d);
+    assertTrue(obj.get('I').get_number = 2.7182818284590452353602874713526624977e120);
+    assertTrue(obj.get('J').get_double = 2.718281828459e210d);
+    --obj.print;
     pass(str);
   exception
     when others then fail(str);

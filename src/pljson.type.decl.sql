@@ -37,6 +37,8 @@ create or replace type pljson as object (
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson_value, position pls_integer default null),
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value varchar2, position pls_integer default null),
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value number, position pls_integer default null),
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value binary_double, position pls_integer default null),
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value boolean, position pls_integer default null),
   member procedure check_duplicate(self in out nocopy pljson, v_set boolean),
   member procedure remove_duplicates(self in out nocopy pljson),
@@ -66,6 +68,8 @@ create or replace type pljson as object (
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_value, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem varchar2  , base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem number    , base number default 1),
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem binary_double, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem boolean   , base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_list , base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson      , base number default 1),

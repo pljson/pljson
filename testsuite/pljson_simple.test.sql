@@ -33,6 +33,7 @@ declare
   end;
 
 begin
+  dbms_output.put_line('pljson_simple test:');
   
   str := 'Bool test';
   declare
@@ -64,25 +65,153 @@ begin
     when others then fail(str);
   end;
   
-  str := 'Number test'; -- issue #69
+  str := 'Very small number test'; -- issue #69
   declare
     obj pljson_value;
   begin
     obj := pljson_value(0.5);
+    dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '0.5');
     
     obj := pljson_value(-0.5);
+    dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '-0.5');
     
     obj := pljson_value(1.1E-63);
+    dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '1.1E-63');
     
-    obj := pljson_value(-1.1E-63);
+    obj := pljson_value(-1.1e-63d); -- test double too
+    dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '-1.1E-63');
+    
+    obj := pljson_value(3.141592653589793238462643383279e-63);
+    dbms_output.put_line(pljson_printer.pretty_print_any(obj));
+    assertTrue(pljson_printer.pretty_print_any(obj) = '3.141592653589793238462643383279E-63');
+
+    obj := pljson_value(2.718281828459e-210d); -- test double too
+    dbms_output.put_line(pljson_printer.pretty_print_any(obj));
+    assertTrue(pljson_printer.pretty_print_any(obj) = '2.718281828459E-210');
     
     pass(str);
   exception
     when others then fail(str);
+  end;
+  
+  str := 'Parser/Printer number/binary_double handling test'; -- issue #70
+  declare
+    obj pljson_list;
+  begin
+    obj := pljson_list('[1.23456789012e-360]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    
+    obj := pljson_list('[1.234567890123456789012345678901234567890123e-308]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = False);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    
+    obj := pljson_list('[1.23456789012e-308]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = False);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    
+    obj := pljson_list('[1.234567890123456789012345678901234567890123e-129]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = False);
+    
+    obj := pljson_list('[1.23456789012e-129]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = False); -- false because double is approximate
+    
+    obj := pljson_list('[0]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    
+    obj := pljson_list('[1]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    
+    obj := pljson_list('[1.234567890123456789012345678901234567890123]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = False);
+    
+    obj := pljson_list('[1.23456789012]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = False); -- false because double is approximate
+    
+    obj := pljson_list('[1.234567890123456789012345678901234567890123e125]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = False);
+    
+    obj := pljson_list('[1.23456789012e125]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    
+    obj := pljson_list('[1.234567890123456789012345678901234567890123e308]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = False);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    
+    obj := pljson_list('[1.23456789012e308]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = False);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    
+    obj := pljson_list('[9.23456789012e308]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    assertTrue(pljson_printer.pretty_print_list(obj) = '[1e309]');
+    
+    obj := pljson_list('[-9.23456789012e308]');
+    dbms_output.put_line(pljson_printer.pretty_print_list(obj));
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_number then 'number true' else 'number false' end);
+    --dbms_output.put_line(case when obj.get(1).is_number_repr_double then 'double true' else 'double false' end);
+    assertTrue(obj.get(1).is_number_repr_number = True);
+    assertTrue(obj.get(1).is_number_repr_double = True);
+    assertTrue(pljson_printer.pretty_print_list(obj) = '[-1e309]');
+    
+    pass(str);
+  --exception
+  --  when others then fail(str);
   end;
   
   begin
