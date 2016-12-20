@@ -51,6 +51,12 @@ create or replace type pljson_value as object
   /** Private variable for internal processing. */
   num number, /* store 1 as true, 0 as false */
   /** Private variable for internal processing. */
+  num_double binary_double, -- both num and num_double are set, there is never exception (until Oracle 12c)
+  /** Private variable for internal processing. */
+  num_repr_number_p varchar2(1),
+  /** Private variable for internal processing. */
+  num_repr_double_p varchar2(1),
+  /** Private variable for internal processing. */
   object_or_array sys.anydata, /* object or array in here */
   /** Private variable for internal processing. */
   extended_str clob,
@@ -65,6 +71,8 @@ create or replace type pljson_value as object
   constructor function pljson_value(str varchar2, esc boolean default true) return self as result,
   constructor function pljson_value(str clob, esc boolean default true) return self as result,
   constructor function pljson_value(num number) return self as result,
+  /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers */
+  constructor function pljson_value(num_double binary_double) return self as result,
   constructor function pljson_value(b boolean) return self as result,
   constructor function pljson_value return self as result,
   static function makenull return pljson_value,
@@ -87,6 +95,8 @@ create or replace type pljson_value as object
   member function get_string(max_byte_size number default null, max_char_size number default null) return varchar2,
   member procedure get_string(self in pljson_value, buf in out nocopy clob),
   member function get_number return number,
+  /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers */
+  member function get_double return binary_double,
   member function get_bool return boolean,
   member function get_null return varchar2,
 
@@ -96,7 +106,24 @@ create or replace type pljson_value as object
   member function is_number return boolean,
   member function is_bool return boolean,
   member function is_null return boolean,
-
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers, is_number is still true, extra info */
+  /* return true if 'number' is representable by number */
+  member function is_number_repr_number return boolean,
+  /* return true if 'number' is representable by binary_double */
+  member function is_number_repr_double return boolean,
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers */
+  -- set value for number from string representation; to replace to_number in pljson_parser
+  -- can automatically decide and use binary_double if needed
+  -- less confusing than new constructor with dummy argument for overloading
+  -- centralized parse_number to use everywhere else and replace code in pljson_parser
+  member procedure parse_number(str varchar2),
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  -- centralized toString to use everywhere else and replace code in pljson_printer
+  member function number_toString return varchar2,
+  
   /* Output methods */
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
   member procedure to_clob(self in pljson_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),

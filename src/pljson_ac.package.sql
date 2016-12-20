@@ -5,6 +5,8 @@ create or replace package pljson_ac as
   procedure object_put(p_self in out nocopy pljson, pair_name varchar2, pair_value pljson_value, position pls_integer default null);
   procedure object_put(p_self in out nocopy pljson, pair_name varchar2, pair_value varchar2, position pls_integer default null);
   procedure object_put(p_self in out nocopy pljson, pair_name varchar2, pair_value number, position pls_integer default null);
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure object_put(p_self in out nocopy pljson, pair_name varchar2, pair_value binary_double, position pls_integer default null);
   procedure object_put(p_self in out nocopy pljson, pair_name varchar2, pair_value boolean, position pls_integer default null);
   procedure object_check_duplicate(p_self in out nocopy pljson, v_set boolean);
   procedure object_remove_duplicates(p_self in out nocopy pljson);
@@ -29,6 +31,8 @@ create or replace package pljson_ac as
   procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem pljson_value, base number default 1);
   procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem varchar2  , base number default 1);
   procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem number    , base number default 1);
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem binary_double, base number default 1);
   procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem boolean   , base number default 1);
   procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem pljson_list , base number default 1);
   procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem pljson      , base number default 1);
@@ -42,12 +46,16 @@ create or replace package pljson_ac as
   procedure array_append(p_self in out nocopy pljson_list, elem pljson_value, position pls_integer default null);
   procedure array_append(p_self in out nocopy pljson_list, elem varchar2, position pls_integer default null);
   procedure array_append(p_self in out nocopy pljson_list, elem number, position pls_integer default null);
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure array_append(p_self in out nocopy pljson_list, elem binary_double, position pls_integer default null);
   procedure array_append(p_self in out nocopy pljson_list, elem boolean, position pls_integer default null);
   procedure array_append(p_self in out nocopy pljson_list, elem pljson_list, position pls_integer default null);
   
   procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem pljson_value);
   procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem varchar2);
   procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem number);
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem binary_double);
   procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem boolean);
   procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem pljson_list);
   
@@ -69,6 +77,8 @@ create or replace package pljson_ac as
   procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem pljson_value, base number default 1);
   procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem varchar2  , base number default 1);
   procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem number    , base number default 1);
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem binary_double, base number default 1);
   procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem boolean   , base number default 1);
   procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem pljson_list , base number default 1);
   
@@ -83,6 +93,8 @@ create or replace package pljson_ac as
   function jv_get_string(p_self in pljson_value, max_byte_size number default null, max_char_size number default null) return varchar2;
   procedure jv_get_string(p_self in pljson_value, buf in out nocopy clob);
   function jv_get_number(p_self in pljson_value) return number;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function jv_get_double(p_self in pljson_value) return binary_double;
   function jv_get_bool(p_self in pljson_value) return boolean;
   function jv_get_null(p_self in pljson_value) return varchar2;
   
@@ -112,6 +124,9 @@ create or replace package body pljson_ac as
   procedure object_put(p_self in out nocopy pljson, pair_name varchar2, pair_value varchar2, position pls_integer default null) as
   begin p_self.put(pair_name, pair_value, position); end;
   procedure object_put(p_self in out nocopy pljson, pair_name varchar2, pair_value number, position pls_integer default null) as
+  begin p_self.put(pair_name, pair_value, position); end;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure object_put(p_self in out nocopy pljson, pair_name varchar2, pair_value binary_double, position pls_integer default null) as
   begin p_self.put(pair_name, pair_value, position); end;
   procedure object_put(p_self in out nocopy pljson, pair_name varchar2, pair_value boolean, position pls_integer default null) as
   begin p_self.put(pair_name, pair_value, position); end;
@@ -156,6 +171,9 @@ create or replace package body pljson_ac as
   begin p_self.path_put(json_path, elem, base); end;
   procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem number    , base number default 1) as
   begin p_self.path_put(json_path, elem, base); end;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem binary_double, base number default 1) as
+  begin p_self.path_put(json_path, elem, base); end;
   procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem boolean   , base number default 1) as
   begin p_self.path_put(json_path, elem, base); end;
   procedure object_path_put(p_self in out nocopy pljson, json_path varchar2, elem pljson_list , base number default 1) as
@@ -178,6 +196,9 @@ create or replace package body pljson_ac as
   begin p_self.append(elem, position); end;
   procedure array_append(p_self in out nocopy pljson_list, elem number, position pls_integer default null) as
   begin p_self.append(elem, position); end;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure array_append(p_self in out nocopy pljson_list, elem binary_double, position pls_integer default null) as
+  begin p_self.append(elem, position); end;
   procedure array_append(p_self in out nocopy pljson_list, elem boolean, position pls_integer default null) as
   begin p_self.append(elem, position); end;
   procedure array_append(p_self in out nocopy pljson_list, elem pljson_list, position pls_integer default null) as
@@ -188,6 +209,9 @@ create or replace package body pljson_ac as
   procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem varchar2) as
   begin p_self.replace(position, elem); end;
   procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem number) as
+  begin p_self.replace(position, elem); end;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem binary_double) as
   begin p_self.replace(position, elem); end;
   procedure array_replace(p_self in out nocopy pljson_list, position pls_integer, elem boolean) as
   begin p_self.replace(position, elem); end;
@@ -228,6 +252,9 @@ create or replace package body pljson_ac as
   begin p_self.path_put(json_path, elem, base); end;
   procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem number    , base number default 1) as
   begin p_self.path_put(json_path, elem, base); end;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem binary_double, base number default 1) as
+  begin p_self.path_put(json_path, elem, base); end;
   procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem boolean   , base number default 1) as
   begin p_self.path_put(json_path, elem, base); end;
   procedure array_path_put(p_self in out nocopy pljson_list, json_path varchar2, elem pljson_list , base number default 1) as
@@ -250,6 +277,9 @@ create or replace package body pljson_ac as
   begin p_self.get_string(buf); end;
   function jv_get_number(p_self in pljson_value) return number as
   begin return p_self.get_number; end;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function jv_get_double(p_self in pljson_value) return binary_double as
+  begin return p_self.get_double; end;
   function jv_get_bool(p_self in pljson_value) return boolean as
   begin return p_self.get_bool; end;
   function jv_get_null(p_self in pljson_value) return varchar2 as

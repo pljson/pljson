@@ -30,12 +30,16 @@ create or replace type pljson_list as object (
   member procedure append(self in out nocopy pljson_list, elem pljson_value, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem varchar2, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem number, position pls_integer default null),
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure append(self in out nocopy pljson_list, elem binary_double, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem boolean, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem pljson_list, position pls_integer default null),
   
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_value),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem varchar2),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem number),
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure replace(self in out nocopy pljson_list, position pls_integer, elem binary_double),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem boolean),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_list),
   
@@ -60,6 +64,8 @@ create or replace type pljson_list as object (
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem pljson_value, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem varchar2  , base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem number    , base number default 1),
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem binary_double, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem boolean   , base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem pljson_list , base number default 1),
   

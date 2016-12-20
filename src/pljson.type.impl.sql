@@ -185,6 +185,16 @@ create or replace type body pljson as
     end if;
   end;
   
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value binary_double, position pls_integer default null) as
+  begin
+    if(pair_value is null) then
+      put(pair_name, pljson_value(), position);
+    else
+      put(pair_name, pljson_value(pair_value), position);
+    end if;
+  end;
+  
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value boolean, position pls_integer default null) as
   begin
     if(pair_value is null) then
@@ -330,6 +340,16 @@ create or replace type body pljson as
   end path_put;
   
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem number, base number default 1) as
+  begin
+    if(elem is null) then
+      pljson_ext.put(self, json_path, pljson_value(), base);
+    else
+      pljson_ext.put(self, json_path, elem, base);
+    end if;
+  end path_put;
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem binary_double, base number default 1) as
   begin
     if(elem is null) then
       pljson_ext.put(self, json_path, pljson_value(), base);

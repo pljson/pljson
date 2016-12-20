@@ -1,4 +1,4 @@
-create or replace package body pljson_ext as
+create or replace package pljson_ext as
   /*
   Copyright (c) 2009 Jonas Krogsboell
 
@@ -30,11 +30,30 @@ create or replace package body pljson_ext as
 
   --extra function checks if number has no fraction
   function is_integer(v pljson_value) return boolean as
-    myint number(38); --the oracle way to specify an integer
+    num number;
+    num_double binary_double;
+    int_number number(38); --the oracle way to specify an integer
+    int_double binary_double; --the oracle way to specify an integer
   begin
+    /*
     if(v.is_number) then
       myint := v.get_number;
       return (myint = v.get_number); --no rounding errors?
+    else
+      return false;
+    end if;
+    */
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    if (v.is_number_repr_number) then
+      num := v.get_number;
+      int_number := trunc(num);
+      --dbms_output.put_line('number: ' || num || ' -> ' || int_number);
+      return (int_number = num); --no rounding errors?
+    elsif (v.is_number_repr_double) then
+      num_double := v.get_double;
+      int_double := trunc(num_double);
+      --dbms_output.put_line('double: ' || num_double || ' -> ' || int_double);
+      return (int_double = num_double); --no rounding errors?
     else
       return false;
     end if;
@@ -244,7 +263,19 @@ create or replace package body pljson_ext as
       return temp.get_number;
     end if;
   end;
-
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function get_double(obj pljson, path varchar2, base number default 1) return binary_double as
+    temp pljson_value;
+  begin
+    temp := get_json_value(obj, path, base);
+    if(temp is null or not temp.is_number) then
+      return null;
+    else
+      return temp.get_double;
+    end if;
+  end;
+  
   function get_json(obj pljson, path varchar2, base number default 1) return pljson as
     temp pljson_value;
   begin
@@ -445,7 +476,17 @@ create or replace package body pljson_ext as
         put_internal(obj, path, pljson_value(elem), base);
     end if;
   end;
-
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure put(obj in out nocopy pljson, path varchar2, elem binary_double, base number default 1) as
+  begin
+    if elem is null then
+        put_internal(obj, path, pljson_value(), base);
+    else
+        put_internal(obj, path, pljson_value(elem), base);
+    end if;
+  end;
+  
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson, base number default 1) as
   begin
     if elem is null then
@@ -592,8 +633,7 @@ create or replace package body pljson_ext as
     return obj;
 
   end base64;
-
-
+  
   function base64(l pljson_list) return blob as
     c clob := empty_clob();
     b blob := empty_blob();
@@ -777,7 +817,6 @@ create or replace package body pljson_ext as
     return bret;
 
   end decode;
-
 
 end pljson_ext;
 /

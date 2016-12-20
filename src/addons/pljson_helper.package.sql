@@ -33,6 +33,8 @@ create or replace package pljson_helper as
   function equals(p_v1 pljson_value, p_v2 pljson, exact boolean default true) return boolean;
   function equals(p_v1 pljson_value, p_v2 pljson_list, exact boolean default true) return boolean;
   function equals(p_v1 pljson_value, p_v2 number) return boolean;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function equals(p_v1 pljson_value, p_v2 binary_double) return boolean;  
   function equals(p_v1 pljson_value, p_v2 varchar2) return boolean;
   function equals(p_v1 pljson_value, p_v2 boolean) return boolean;
   function equals(p_v1 pljson_value, p_v2 clob) return boolean;
@@ -45,6 +47,8 @@ create or replace package pljson_helper as
   function contains(p_v1 pljson, p_v2 pljson, exact boolean default false) return boolean;
   function contains(p_v1 pljson, p_v2 pljson_list, exact boolean default false) return boolean;
   function contains(p_v1 pljson, p_v2 number, exact boolean default false) return boolean;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function contains(p_v1 pljson, p_v2 binary_double, exact boolean default false) return boolean;
   function contains(p_v1 pljson, p_v2 varchar2, exact boolean default false) return boolean;
   function contains(p_v1 pljson, p_v2 boolean, exact boolean default false) return boolean;
   function contains(p_v1 pljson, p_v2 clob, exact boolean default false) return boolean;
@@ -53,6 +57,8 @@ create or replace package pljson_helper as
   function contains(p_v1 pljson_list, p_v2 pljson, exact boolean default false) return boolean;
   function contains(p_v1 pljson_list, p_v2 pljson_list, exact boolean default false) return boolean;
   function contains(p_v1 pljson_list, p_v2 number, exact boolean default false) return boolean;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function contains(p_v1 pljson_list, p_v2 binary_double, exact boolean default false) return boolean;
   function contains(p_v1 pljson_list, p_v2 varchar2, exact boolean default false) return boolean;
   function contains(p_v1 pljson_list, p_v2 boolean, exact boolean default false) return boolean;
   function contains(p_v1 pljson_list, p_v2 clob, exact boolean default false) return boolean;
@@ -150,6 +156,20 @@ create or replace package body pljson_helper as
     end if;
     
     return p_v2 = p_v1.get_number;
+  end;
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function equals(p_v1 pljson_value, p_v2 binary_double) return boolean as
+  begin
+    if(p_v2 is null) then
+      return p_v1.is_null;
+    end if;
+
+    if(not p_v1.is_number) then
+      return false;
+    end if;
+
+    return p_v2 = p_v1.get_double;
   end;
   
   function equals(p_v1 pljson_value, p_v2 boolean) return boolean as
@@ -413,6 +433,9 @@ create or replace package body pljson_helper as
   begin return contains(p_v1, p_v2.to_json_value, exact); end;
   function contains(p_v1 pljson, p_v2 number, exact boolean ) return boolean as begin
   return contains(p_v1, pljson_value(p_v2), exact); end;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function contains(p_v1 pljson, p_v2 binary_double, exact boolean ) return boolean as begin
+  return contains(p_v1, pljson_value(p_v2), exact); end;
   function contains(p_v1 pljson, p_v2 varchar2, exact boolean ) return boolean as begin
   return contains(p_v1, pljson_value(p_v2), exact); end;
   function contains(p_v1 pljson, p_v2 boolean, exact boolean ) return boolean as begin
@@ -425,6 +448,9 @@ create or replace package body pljson_helper as
   function contains(p_v1 pljson_list, p_v2 pljson_list, exact boolean ) return boolean as begin
   return contains(p_v1, p_v2.to_json_value, exact); end;
   function contains(p_v1 pljson_list, p_v2 number, exact boolean ) return boolean as begin
+  return contains(p_v1, pljson_value(p_v2), exact); end;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function contains(p_v1 pljson_list, p_v2 binary_double, exact boolean ) return boolean as begin
   return contains(p_v1, pljson_value(p_v2), exact); end;
   function contains(p_v1 pljson_list, p_v2 varchar2, exact boolean ) return boolean as begin
   return contains(p_v1, pljson_value(p_v2), exact); end;
