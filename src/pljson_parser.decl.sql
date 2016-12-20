@@ -39,6 +39,7 @@ create or replace package pljson_parser as
 
   function next_char(indx number, s in out nocopy json_src) return varchar2;
   function next_char2(indx number, s in out nocopy json_src, amount number default 1) return varchar2;
+  function parseObj(tokens lTokens, indx in out nocopy pls_integer) return pljson;
 
   function prepareClob(buf in clob) return pljson_parser.json_src;
   function prepareVarchar2(buf in varchar2) return pljson_parser.json_src;
