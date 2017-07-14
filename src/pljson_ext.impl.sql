@@ -1,4 +1,4 @@
-create or replace package pljson_ext as
+create or replace package body pljson_ext as
   /*
   Copyright (c) 2009 Jonas Krogsboell
 
@@ -20,7 +20,7 @@ create or replace package pljson_ext as
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
- 
+
   scanner_exception exception;
   pragma exception_init(scanner_exception, -20100);
   parser_exception exception;
@@ -263,7 +263,7 @@ create or replace package pljson_ext as
       return temp.get_number;
     end if;
   end;
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   function get_double(obj pljson, path varchar2, base number default 1) return binary_double as
     temp pljson_value;
@@ -275,7 +275,7 @@ create or replace package pljson_ext as
       return temp.get_double;
     end if;
   end;
-  
+
   function get_json(obj pljson, path varchar2, base number default 1) return pljson as
     temp pljson_value;
   begin
@@ -476,7 +476,7 @@ create or replace package pljson_ext as
         put_internal(obj, path, pljson_value(elem), base);
     end if;
   end;
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   procedure put(obj in out nocopy pljson, path varchar2, elem binary_double, base number default 1) as
   begin
@@ -486,7 +486,7 @@ create or replace package pljson_ext as
         put_internal(obj, path, pljson_value(elem), base);
     end if;
   end;
-  
+
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson, base number default 1) as
   begin
     if elem is null then
@@ -633,7 +633,7 @@ create or replace package pljson_ext as
     return obj;
 
   end base64;
-  
+
   function base64(l pljson_list) return blob as
     c clob := empty_clob();
     b blob := empty_blob();
