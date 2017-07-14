@@ -29,11 +29,11 @@
   },
   "homepage": "http://pljson.github.io/pljson",
   "dependencies": {
-    "handlebars": "^4.0.6",
+    "handlebars": "^4.0.10",
     "metalsmith": "^2.3.0",
     "metalsmith-assets": "^0.1.0",
     "metalsmith-debug": "^1.1.0",
-    "metalsmith-layouts": "^1.7.0",
+    "metalsmith-layouts": "^1.8.1",
     "metalsmith-move-up": "^1.0.0",
     "metalsmith-start": "^2.0.1"
   }
