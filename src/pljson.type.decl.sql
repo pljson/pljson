@@ -35,14 +35,14 @@ create or replace type pljson as object (
    * <p>The primary method exported by this package is the <code>pljson</code>
    * method.</p>
    *
-   * <em>Example:</em>
+   * <strong>Example:</strong>
    * <pre>
    * declare
    *   myjson pljson := pljson('{ "foo": "foo", "bar": [0, 1, 2], "baz": { "foobar": "foobar" } }');
    * begin
-   *   pljson.get('foo').print(); // => dbms_output.put_line('foo')
-   *   pljson.get('bar[1]').print(); // => dbms_output.put_line('0')
-   *   pljson.get('baz.foobar').print(); // => dbms_output.put_line('foobar')
+   *   myjson.get('foo').print(); // => dbms_output.put_line('foo')
+   *   myjson.get('bar[1]').print(); // => dbms_output.put_line('0')
+   *   myjson.get('baz.foobar').print(); // => dbms_output.put_line('foobar')
    * end;
    * </pre>
    *
