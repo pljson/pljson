@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+  <title>PL/JSON - Tweaks</title>
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/overrides.css">
+
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdn.jsdelivr.net/highlight.js/9.8.0/styles/tomorrow.min.css" rel="stylesheet">
+</head>
+<body>
+  
+<h1>PL/JSON Tweaks</h1>
+
+<p>
+  You can tweak the behavior of <em>PL/JSON</em> by setting various variables in
+  the packages. The following sections are a description of the possible
+  adjustments you can do.
+</p>
+
+<h2 id="pljson_printer">pljson_printer</h2>
+
+<p>
+  In the printer package you can edit the line break method to Linux, Windows or
+  macOS style. You can also change the indentation to the tabular char, or change
+  the number of spaces.
+</p>
+
+<h2 id="pljson_parser">pljson_parser</h2>
+
+<p>
+  The parser is extended to accept more than just pure JSON. The variable
+  <code>json_strict</code> is defaulted to false and can be set to true to
+  force <em>PL/JSON</em> to only accept proper JSON. The current
+  implementation allows input to contain comments with the
+  <code>/* */</code> notation. Furthermore it extends the definition of a
+  string to allow single quotes and converts names into strings.
+  The grammar for names accepted by <em>PL/JSON</em> is:
+</p>
+
+<pre>name     : (letter) ((letter| digits | us)*);</pre>
+
+<p>
+  However, the values <code>true</code>, <code>false</code> and <code>null</code>
+  will not be handled as names.
+</p>
+
+<p>Example of usage with the extended grammar:</p>
+
+<pre><code class="hljs json">
+{
+  abc : '123"'
+}
+</code></pre>
+
+<p>Parsed and emitted:</p>
+
+<pre><code class="hljs json">
+{
+  "abc" : "123\""
+}
+</code></pre>
+
+<h3 id="pljson_parser_functions">pljson_parser functions</h3>
+
+<p>
+  Even though javascript functions are not a part of JSON, you might want to emit
+  functions if your receiving client is a browser. This is how you do it:
+</p>
+
+<pre><code class="hljs sql">
+declare
+  obj pljson := pljson();
+begin
+  obj.put('test', pljson_value('function() {return 1;}', esc => false ));
+  obj.print;
+end;
+</code></pre>
+
+<p>The output is:</p>
+<pre><code class="hljs javascript">
+{
+  "test": /**/function() {return 1;}/**/
+}
+</code></pre>
+
+<p>
+  Which is not valid JSON but will work in javascript.
+  The surrounding <code>/**/</code> is a message to the parser to start and
+  stop building a unescaped <code>pljson_value</code> string:
+</p>
+
+<pre><code class="hljs sql">
+declare
+  obj pljson := pljson('{"test": /**/function() {return 1;}/**/}');
+begin
+  obj.print;
+end;
+
+-- {
+--   "test": /**/function() {return 1;}/**/
+-- }
+</code></pre>
+
+
+  <script src="//cdn.jsdelivr.net/highlight.js/9.8.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

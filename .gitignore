@@ -1,8 +1,11 @@
+.DS_Store
 *.sublime-workspace
 node_modules/
 target/
 doc/html/*.html
 doc/html/*.jpg
+
+pldoc-*.jar
 
 *.zip
 

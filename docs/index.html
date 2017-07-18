@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+  <title>PL/JSON</title>
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/overrides.css">
+
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdn.jsdelivr.net/highlight.js/9.8.0/styles/tomorrow.min.css" rel="stylesheet">
+</head>
+<body>
+  
+<h1>PL/JSON</h1>
+
+<p>
+  The goal of <em>PL/JSON</em> is to create a correct implementation of
+  <a href="http://json.org/">JSON</a> to use in a
+  PL/SQL environment. The Oracle object syntax has been chosen to ensure a
+  straightforward and easy way to decode and encode JSON. <em>PL/JSON</em> is delivered <strong>AS
+  IS</strong> and we cannot make any guarantee or be held responsible to any unwanted
+  effects that may arise from using this software. However, we would like to
+  stress that we have tested, and used this software, and believe that
+  it is a safe product to use.
+</p>
+
+<p>Features of <em>PL/JSON</em> include:</p>
+<ul>
+  <li>Basic <a href="json_path.html">JSON Path</a> support</li>
+  <li><a href="tweaks.html">Optional "tweaks"</a> to adjust <em>PL/JSON</em>'s behavior</li>
+</ul>
+
+<p>The <em>PL/JSON</em> distribution consists of:</p>
+<ul>
+  <li>An install script</li>
+  <li>An uninstall script</li>
+  <li>Four new Oracle types ready to use in your database</li>
+  <li>Three packages (parser, printer and extension)</li>
+  <li>A few example files</li>
+  <li>Some testing scripts (creates and delete a table named <em>pljson_testsuite</em>)</li>
+  <li>
+    Optional add-ons packages:
+    <ul>
+      <li>
+        <code>pljson_dyn</code> A package that enables you to generate JSON
+        from sql. Nested queries are not supported. See example 16 for more information.
+      </li>
+      <li>
+        <code>pljson_ml</code> A package that converts from XML to JSON using
+        a XSLT stylesheet. See <a href="http://www.jsonml.org/">www.jsonml.org</a>.
+      </li>
+      <li>
+        <code>pljson_xml</code> A package that converts a JSON object to XML.
+      </li>
+      <li>
+        <code>pljson_helper</code> Work on JSON with set operations.
+      </li>
+      <li>
+        <code>pljson_util_pkg</code> Written by Morten Braten
+        (<a href="http://ora-00001.blogspot.com">http://ora-00001.blogspot.com</a>).
+        Generate JSON from sql using a XSLT stylesheet.
+      </li>
+      <li>
+        <code>pljson_ac</code> Autocomplete package. Some PL/SQL IDEs provide
+        autocompletion when using a package but not when using an object type.
+        This package is a wrapper around the methods on
+        <code>pljson</code>, <code>pljson_list</code> and <code>pljson_value</code>
+        to assist such IDEs.
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>Known limitations of <em>PL/JSON</em> are:</p>
+<ul>
+  <li>Key names are limited to 4000 characters</li>
+  <li>
+    The number parsing assumes that Oracle's number type can contain the input
+    (in most cases it can)
+  </li>
+</ul>
+
+<p>
+  If you need help with <em>PL/JSON</em>, you can post questions on
+  <a href="https://stackoverflow.com">StackOverflow</a>
+  using the <a href="http://stackoverflow.com/questions/tagged/pljson">pljson</a> tag.
+  Or create a new issue on our
+  <a href="https://github.com/pljson/pljson/issues">GitHub issues tracker</a>.
+  There are also quite a few good articles written about <em>PL/JSON</em>
+  that are a simple
+  <a href="https://google.com/search?q=pljson">Google search</a> away.
+</p>
+
+<p>
+  The remainder of this document provides an overview of using <em>PL/JSON</em>
+  along with some examples.
+  The <a href="http://pldoc.sourceforge.net/maven-site/">PLDoc</a> generated
+  documentation is <a href="api/">also available</a>.
+</p>
+
+<h2>Overview</h2>
+
+<p>
+  Basically <em>PL/JSON</em> can be used in two ways: Either you manually build up an object
+  structure and emit JSON text with the <code>to_char</code> method or you parse JSON text
+  into a object structure and use the objects in PL/SQL. Obviously you could also
+  parse JSON text into objects, modify these and then emit JSON text. There are
+  only three objects you should know:
+  <code>pljson</code>, <code>pljson_list</code> and <code>pljson_value</code>. The
+  <code>pljson</code> object can hold an object described by the <code>{ }</code> syntax
+  and is named <code>pljson</code> rather than <code>pljson_object</code> to keep
+  the name short. The <code>pljson_list</code> object can hold an
+  array described with the <code>[ ]</code> syntax. The postfix "list" was chosen over
+  "array" for two reasons, one: to keep it short, two: there seems to be a naming
+  standard in Oracle types that the postfix "array" is being used to describe
+  types with the "table of" construction. The last type <code>pljson_value</code> contains
+  the primitive simple types (strings, numbers, bools, null), but can also
+  contain an array or an object. The object model for <em>PL/JSON</em> is shown in figure
+  <a href="#objmodel">PL/JSON Object Model</a>:
+</p>
+
+<p id="objmodel">
+  <img src="assets/pljson_object_model.jpg" alt="object model graph">
+</p>
+
+<h2>Behavior and Error Handling</h2>
+
+<p>
+  Input to the parser is expected to be in the charset of the database. The
+  objects that are generated contain unescaped values that will be escaped when
+  emitted through the printer. To ensure correct JSON output, even from non-UTF
+  databases, only ASCII chars are emitted. All the characters which are not part
+  of ASCII will be escaped.
+</p>
+
+<p>
+  The errors or exceptions that <em>PL/JSON</em> may throw, can be caught with the
+  following code:
+</p>
+
+<pre><code class="hljs sql">
+declare
+  scanner_exception exception;
+  pragma exception_init(scanner_exception, -20100);
+  parser_exception exception;
+  pragma exception_init(parser_exception, -20101);
+  jext_exception exception;
+  pragma exception_init(jext_exception, -20110);
+  ...
+begin
+  -- &hellip; json code &hellip;
+exception
+  when scanner_exception exception then &hellip;
+  when parser_exception exception then &hellip;
+  when jext_exception exception then &hellip;
+end;
+</code></pre>
+
+
+  <script src="//cdn.jsdelivr.net/highlight.js/9.8.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

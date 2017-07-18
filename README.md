@@ -8,17 +8,18 @@ http://www.json.org.
 
 1.  Download the latest release -- https://github.com/pljson/pljson/releases/latest
 2.  Extract the zip file
-3.  Use sql*plus, or something capable of running sql*plus scripts, to
-    run the install.sql script
-4.  To test the implementation, run the /testsuite/testall.sql script
+3.  Use `sql*plus`, or something capable of running `sql*plus` scripts, to
+    run the `install.sql` script
+4.  To test the implementation, run the `/testsuite/testall.sql` script
 
 ## Documentation
 
-Our documentation is located at [doc/src/Index.md](doc/src/Index.md). The
-same documentation is browsable at http://pljson.github.io/pljson/.
+API documentation is located at http://pljson.github.io/pljson/api.
 
-If you can contribute better documentation, we would love to get a pull request
-from you.
+## Contributing
+
+Please follow the [contributing guidelines](CONTRIBUTING.md) to submit fixes
+or new features.
 
 ## License
 
