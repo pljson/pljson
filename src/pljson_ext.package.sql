@@ -174,6 +174,10 @@ create or replace package body pljson_ext as
     procedure skipws as begin while(buf in (chr(9),chr(10),chr(13),' ')) loop next_char; end loop; end;
   
   begin
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-30   support for '$.' in start of path */
+    if substr(json_path, 1, 2) = '$.' then
+      json_path := substr(json_path, 3);
+    end if;
     next_char();
     while(buf is not null) loop
       if(buf = '.') then
@@ -410,7 +414,7 @@ create or replace package body pljson_ext as
           obj_temp := pljson(temp);
           if(obj_temp.count < keynum) then
             if(val is null) then return; end if;
-            raise_application_error(-20110, 'PLJSON_EXT put error: access object with to few members.');
+            raise_application_error(-20110, 'PLJSON_EXT put error: access object with too few members.');
           end if;
           temp := obj_temp.get(keynum);
         else
