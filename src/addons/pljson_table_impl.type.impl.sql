@@ -84,7 +84,7 @@ create or replace type body pljson_table_impl as
     json_val pljson_value;
     buf varchar2(32767);
     --data_tab pljson_vtab := pljson_vtab();
-    json_array pljson_list;
+    json_arr pljson_list;
     json_elem pljson_value;
     value_array pljson_varray := pljson_varray();
   begin
@@ -100,10 +100,10 @@ create or replace type body pljson_table_impl as
       case json_val.typeval
         --when 1 then 'object';
         when 2 then -- 'array';
-          json_array := pljson_list(json_val);
+          json_arr := pljson_list(json_val);
           value_array.delete;
-          for j in 1 .. json_array.count loop
-            json_elem := json_array.get(j);
+          for j in 1 .. json_arr.count loop
+            json_elem := json_arr.get(j);
             case json_elem.typeval
               --when 1 then 'object';
               --when 2 then -- 'array';
