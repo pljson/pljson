@@ -1,0 +1,25 @@
+{
+  "source": "site_src",
+  "destination": "docs",
+  "metadata": {
+    "title": "PL/JSON"
+  },
+  "plugins": {
+    "metalsmith-debug": {},
+    "metalsmith-layouts": {
+      "engine": "handlebars",
+      "directory": "site_src/layouts",
+      "default": "main.html",
+      "pattern": "pages/**/*"
+    },
+    "metalsmith-move-up": {
+      "pattern": [
+        "pages/**"
+      ]
+    },
+    "metalsmith-assets": {
+      "source": "site_src/assets",
+      "destination": "assets"
+    }
+  }
+}
