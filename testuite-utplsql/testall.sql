@@ -33,7 +33,7 @@ set longchunksize 1000000
 set serveroutput on size unlimited format truncated
 
 PROMPT Installing tests
-@@test_parser.pck
+@@test_parser.sql
 
 PROMPT Executing tests
 exec ut.run(USER);
