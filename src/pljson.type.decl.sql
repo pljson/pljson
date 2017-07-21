@@ -189,16 +189,6 @@ create or replace type pljson as object (
   member procedure check_duplicate(self in out nocopy pljson, v_set boolean),
   member procedure remove_duplicates(self in out nocopy pljson),
 
-  /* deprecated putter use pljson_value */
-  /**
-   * @deprecated Use <code>pljson_value</code> method instead.
-   */
-  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson, position pls_integer default null),
-  /**
-   * @deprecated Use <code>pljson_value</code> method instead.
-   */
-  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson_list, position pls_integer default null),
-
   /* Member getter methods */
   /**
    * <p>Return the number values in the object. Essentially, the number of keys
