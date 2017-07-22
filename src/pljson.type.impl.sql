@@ -116,11 +116,11 @@ create or replace type body pljson as
   begin
     --dbms_output.put_line('PN '||pair_name);
     
---    if(pair_name is null) then
---      raise_application_error(-20102, 'JSON put-method type error: name cannot be null');
---    end if;
+    --if(pair_name is null) then
+    --  raise_application_error(-20102, 'JSON put-method type error: name cannot be null');
+    --end if;
     insert_value.mapname := pair_name;
---    self.remove(pair_name);
+    --self.remove(pair_name);
     if(self.check_for_duplicate = 1) then temp := get_member(pair_name); else temp := null; end if;
     if(temp is not null) then
       insert_value.mapindx := temp.mapindx;
@@ -129,15 +129,14 @@ create or replace type body pljson as
     elsif(position is null or position > self.count) then
       --insert at the end of the list
       --dbms_output.put_line('Test');
---      indx := self.count + 1;
+      --indx := self.count + 1;
       json_data.extend(1);
+      /* changed to common style of updating mapindx; fix bug in assignment order */
+      insert_value.mapindx := json_data.count;
       json_data(json_data.count) := insert_value;
---      insert_value.mapindx := json_data.count;
-      json_data(json_data.count).mapindx := json_data.count;
---      dbms_output.put_line('Test2'||insert_value.mapindx);
---      dbms_output.put_line('Test2'||insert_value.mapname);
---      insert_value.print(false);
---      self.print;
+      --dbms_output.put_line('Test2'||insert_value.mapindx);
+      --dbms_output.put_line('Test2'||insert_value.mapname);
+      --self.print;
     elsif(position < 2) then
       --insert at the start of the list
       indx := json_data.last;
@@ -149,26 +148,28 @@ create or replace type body pljson as
         json_data(temp.mapindx) := temp;
         indx := json_data.prior(indx);
       end loop;
-      json_data(1) := insert_value;
+      /* changed to common style of updating mapindx; fix bug in assignment order */
       insert_value.mapindx := 1;
+      json_data(1) := insert_value;
     else
       --insert somewhere in the list
       indx := json_data.last;
---      dbms_output.put_line('Test '||indx);
+      --dbms_output.put_line('Test '||indx);
       json_data.extend;
---      dbms_output.put_line('Test '||indx);
+      --dbms_output.put_line('Test '||indx);
       loop
---        dbms_output.put_line('Test '||indx);
+        --dbms_output.put_line('Test '||indx);
         temp := json_data(indx);
         temp.mapindx := indx + 1;
         json_data(temp.mapindx) := temp;
         exit when indx = position;
         indx := json_data.prior(indx);
       end loop;
+      /* changed to common style of updating mapindx; fix bug in assignment order */
+      insert_value.mapindx := position;
       json_data(position) := insert_value;
-      json_data(position).mapindx := position;
     end if;
---    num_elements := num_elements + 1;
+    --num_elements := num_elements + 1;
   end;
   
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value varchar2, position pls_integer default null) as
@@ -214,7 +215,6 @@ create or replace type body pljson as
   end;
   
   /* deprecated putters */
-  
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson, position pls_integer default null) as
   begin
     if(pair_value is null) then
@@ -416,8 +416,7 @@ create or replace type body pljson as
   begin
     pljson_parser.remove_duplicates(self);
   end remove_duplicates;
-
-
+  
 end;
 /
 sho err

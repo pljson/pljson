@@ -116,10 +116,6 @@ create or replace package body pljson_ext as
     procedure skipws as begin while(buf in (chr(9),chr(10),chr(13),' ')) loop next_char; end loop; end;
 
   begin
-    /* E.I.Sarmas (github.com/dsnz)   2016-12-30   support for '$.' in start of path */
-    if substr(json_path, 1, 2) = '$.' then
-      json_path := substr(json_path, 3);
-    end if;
     next_char();
     while(buf is not null) loop
       if(buf = '.') then
