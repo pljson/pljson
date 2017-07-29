@@ -59,6 +59,7 @@ PROMPT ------------------------------------------;
 @@src/addons/pljson_helper.package.sql --Set operations on JSON and JSON_LIST
 @@src/addons/pljson_table_impl.type.decl.sql -- dynamic table from json document
 @@src/addons/pljson_table_impl.type.impl.sql -- dynamic table from json document
+@@testsuite/pljson_ut.package.sql -- pljson unit test mini framework
 -- synonyms for backwards compatibility
 create synonym json_parser for pljson_parser;
 create synonym json_printer for pljson_printer;
