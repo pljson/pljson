@@ -60,6 +60,8 @@ declare begin
   begin execute immediate 'drop type pljson_vtab force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_varray force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_table_impl force'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_ut'; exception when others then null; end;
+  begin execute immediate 'drop table pljson_testsuite'; exception when others then null; end;
   begin execute immediate 'drop synonym pljson_table'; exception when others then null; end;
   begin execute immediate 'drop synonym json_parser'; exception when others then null; end;
   begin execute immediate 'drop synonym json_printer'; exception when others then null; end;

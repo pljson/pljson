@@ -1,91 +1,55 @@
+
 /**
  * Test of PLSQL JSON Object by Jonas Krogsboell
  **/
+
 set serveroutput on format wrapped
-declare
-  pass_count number := 0;
-  fail_count number := 0;
-  total_count number := 0;
-  str varchar2(200);
-  
-  procedure pass(str varchar2) as
-  begin
-    pass_count := pass_count + 1;
-    total_count := total_count + 1;
-    dbms_output.put_line('OK: '||str);
-  end;
-  
-  procedure fail(str varchar2) as
-  begin
-    fail_count := fail_count + 1;
-    total_count := total_count + 1;
-    dbms_output.put_line('FAILED: '||str);
-  end;
-  
-  procedure assertTrue(b boolean) as
-  begin
-    if(not b) then raise_application_error(-20111, 'Test error'); end if;
-  end;
-  
-  procedure assertFalse(b boolean) as
-  begin
-    if(b) then raise_application_error(-20111, 'Test error'); end if;
-  end;
 
 begin
-  dbms_output.put_line('pljson test:');
   
-  str := 'Empty PLJSON test';
+  pljson_ut.testsuite('pljson test', 'pljson.test.sql');
+  
+  -- empty pljson
+  pljson_ut.testcase('Test empty pljson');
   declare
     obj pljson;
   begin
     obj := pljson();
-    assertTrue(obj.count = 0);
-    assertTrue(obj.to_char(false) = '{}');
+    pljson_ut.assertTrue(obj.count = 0, 'obj.count = 0');
+    pljson_ut.assertTrue(obj.to_char(false) = '{}', 'obj.to_char(false) = ''{}''');
     --obj.print;
     obj := pljson('{     }');
-    assertTrue(obj.count = 0);
-    assertTrue(obj.to_char(false) = '{}');
-    pass(str);
-  exception
-    when others then fail(str);
+    pljson_ut.assertTrue(obj.count = 0, 'obj.count = 0');
+    pljson_ut.assertTrue(obj.to_char(false) = '{}', 'obj.to_char(false) = ''{}''');
   end;
   
-  str := 'Put method PLJSON test';
+  -- put method
+  pljson_ut.testcase('Test put method');
   declare
-    obj pljson; tester varchar2(4000);
+    obj pljson;
+    tester varchar2(4000);
     temp varchar2(10); --indent
-    test_no pls_integer := 1;
   begin
     obj := pljson();
     obj.put('A', 1);
     obj.put('B', 1);
     obj.put('C', 1);
-    assertTrue(obj.count = 3);
+    pljson_ut.assertTrue(obj.count = 3, 'obj.count = 3');
     obj.put('C', 2);
-    assertTrue(obj.count = 3);
+    pljson_ut.assertTrue(obj.count = 3, 'obj.count = 3');
     --obj.put('A', 'AAA');
     obj.put('A', 'E'); -- issue #32 test too
-    assertTrue(obj.count = 3);
+    pljson_ut.assertTrue(obj.count = 3, 'obj.count = 3');
     temp := pljson_printer.indent_string;
     pljson_printer.indent_string := '  ';
     tester := obj.to_char(false); --avoid newline problems
     pljson_printer.indent_string := temp;
-    assertTrue(substr(tester, 2, 3) = '"A"');
-    pass(str);
-    test_no := 2;
-    assertTrue(substr(tester, 6, 3) = '"E"'); -- issue #32 test too
-    pass('issue #32');
-  exception
-    when others then
-      if (test_no = 1) then
-        fail(str);
-      elsif (test_no = 2) then
-        fail('issue #32');
-      end if;
+    pljson_ut.assertTrue(substr(tester, 2, 3) = '"A"', 'substr(tester, 2, 3) = ''"A"''');
+    pljson_ut.assertTrue(substr(tester, 6, 3) = '"E"', 'substr(tester, 6, 3) = ''"E"'''); -- issue #32 test too
   end;
   
-  str := 'Put method PLJSON test with position';
+  -- put method with position
+  pljson_ut.testcase('Test put method with position');
   declare
     obj pljson; tester varchar2(4000);
   begin
@@ -98,36 +62,34 @@ begin
     obj.put('E', 'E', 3);
     obj.put('F', 'F', 5);
     obj.put('G', 'G', 7);
-    assertTrue(obj.count = 7);
+    pljson_ut.assertTrue(obj.count = 7, 'obj.count = 7');
     --obj.print;
     for i in 1 .. obj.count loop
-      assertTrue(obj.json_data(i).mapindx = i);
-      assertTrue(obj.json_data(i).mapname = obj.json_data(i).get_string);
+      pljson_ut.assertTrue(obj.json_data(i).mapindx = i, 'obj.json_data(i).mapindx = i = ' || i);
+      pljson_ut.assertTrue(obj.json_data(i).mapname = obj.json_data(i).get_string, 'obj.json_data(i).mapname = obj.json_data(i).get_string, i = ' || i);
     end loop;
-    pass(str);
-  exception
-    when others then fail(str);
   end;
   
+  -- put method with binary double number
+  pljson_ut.testcase('Test put method with binary double number');
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
-  str := 'Put method PLJSON test with number, binary_double';
   declare
-    obj pljson; tester varchar2(4000);
+    obj pljson;
+    tester varchar2(4000);
   begin
     obj := pljson();
     obj.put('I', 2.7182818284590452353602874713526624977e120);
     obj.put('J', 2.718281828459e210d);
-    assertTrue(obj.get('I').get_number = 2.7182818284590452353602874713526624977e120);
-    assertTrue(obj.get('J').get_double = 2.718281828459e210d);
+    pljson_ut.assertTrue(obj.get('I').get_number = 2.7182818284590452353602874713526624977e120, 'obj.get(''I'').get_number = 2.7182818284590452353602874713526624977e120');
+    pljson_ut.assertTrue(obj.get('J').get_double = 2.718281828459e210d, 'obj.get(''J'').get_double = 2.718281828459e210d');
     --obj.print;
-    pass(str);
-  exception
-    when others then fail(str);
   end;
   
-  str := 'Put method type test';
+  -- put method type
+  pljson_ut.testcase('Test put method type');
   declare
-    obj pljson; tester varchar2(4000);
+    obj pljson;
+    tester varchar2(4000);
   begin
     obj := pljson();
     obj.put('A', 'varchar2');
@@ -136,17 +98,15 @@ begin
     obj.put('A', pljson_value());
     obj.put('A', pljson());
     obj.put('A', pljson_list('[34,34]'));
-    assertTrue(obj.count = 1);
+    pljson_ut.assertTrue(obj.count = 1, 'obj.count = 1');
     --obj.print;
     for i in 1 .. obj.count loop
-      assertTrue(obj.json_data(i).mapindx = i);
+      pljson_ut.assertTrue(obj.json_data(i).mapindx = i, 'obj.json_data(i).mapindx = i = ' || i);
     end loop;
-    pass(str);
-  exception
-    when others then fail(str);
   end;
   
-  str := 'Remove method test';
+  -- remove method
+  pljson_ut.testcase('Test remove method');
   declare
     obj pljson;
   begin
@@ -159,34 +119,31 @@ begin
     obj.put('E', 'E', 3);
     obj.put('F', 'F', 5);
     obj.put('G', 'G', 7);
-    assertTrue(obj.count = 7);
+    pljson_ut.assertTrue(obj.count = 7, 'obj.count = 7');
     obj.remove('F');
-    assertTrue(obj.count = 6);
+    pljson_ut.assertTrue(obj.count = 6, 'obj.count = 6');
     obj.remove('F');
-    assertTrue(obj.count = 6);
+    pljson_ut.assertTrue(obj.count = 6, 'obj.count = 6');
     obj.remove('D');
-    assertTrue(obj.count = 5);
-    assertFalse(obj.exist('D'));
+    pljson_ut.assertTrue(obj.count = 5, 'obj.count = 5');
+    pljson_ut.assertFalse(obj.exist('D'), 'obj.exist(''D'')');
     --obj.print;
     for i in 1 .. obj.count loop
-      assertTrue(obj.json_data(i).mapindx = i);
+      pljson_ut.assertTrue(obj.json_data(i).mapindx = i, 'obj.json_data(i).mapindx = i = ' || i);
     end loop;
     obj := pljson();
     obj.put('A', 'A', 1);
     obj.remove('A');
-    assertTrue(obj.count = 0);
+    pljson_ut.assertTrue(obj.count = 0, 'obj.count = 0');
     obj.remove('A');
-    assertTrue(obj.count = 0);
+    pljson_ut.assertTrue(obj.count = 0, 'obj.count = 0');
     for i in 1 .. obj.count loop
-      assertTrue(obj.json_data(i).mapindx = i);
+      pljson_ut.assertTrue(obj.json_data(i).mapindx = i, 'obj.json_data(i).mapindx = i = ' || i);
     end loop;
-    
-    pass(str);
-  exception
-    when others then fail(str);
   end;
   
-  str := 'Get method test';
+  -- get method
+  pljson_ut.testcase('Test get method');
   declare
     obj pljson;
   begin
@@ -199,22 +156,19 @@ begin
     obj.put('E', 'E', 3);
     obj.put('F', 'F', 5);
     obj.put('G', 'G', 7);
-    assertFalse(obj.get('A') is null);
-    assertFalse(obj.get('B') is null);
-    assertFalse(obj.get('C') is null);
-    assertFalse(obj.get('D') is null);
-    assertFalse(obj.get('E') is null);
-    assertFalse(obj.get('F') is null);
+    pljson_ut.assertFalse(obj.get('A') is null, 'obj.get(''A'') is null');
+    pljson_ut.assertFalse(obj.get('B') is null, 'obj.get(''B'') is null');
+    pljson_ut.assertFalse(obj.get('C') is null, 'obj.get(''C'') is null');
+    pljson_ut.assertFalse(obj.get('D') is null, 'obj.get(''D'') is null');
+    pljson_ut.assertFalse(obj.get('E') is null, 'obj.get(''E'') is null');
+    pljson_ut.assertFalse(obj.get('F') is null, 'obj.get(''F'') is null');
     --obj.print;
     obj := pljson();
-    assertTrue(obj.get('F') is null);
-    
-    pass(str);
-  exception
-    when others then fail(str);
+    pljson_ut.assertTrue(obj.get('F') is null, 'obj.get(''F'') is null');
   end;
   
-  str := 'Number null insert test';
+  -- insert null number
+  pljson_ut.testcase('Test insert null number');
   declare
     obj pljson := pljson();
     x number := null;
@@ -222,28 +176,39 @@ begin
   begin
     obj.put('X', x);
     n := obj.get('X');
-    assertTrue(n.is_null); --may seem odd -- but initialized vars are best!
-    pass(str);
-  exception
-    when others then fail(str);
+    pljson_ut.assertTrue(n.is_null, 'n.is_null'); --may seem odd -- but initialized vars are best!
   end;
   
-  str := 'Varchar2 null insert test';
+  -- insert null varchar2
+  pljson_ut.testcase('Test insert null varchar2');
   declare
     obj pljson := pljson();
     x1 varchar2(20) := null;
     x2 varchar2(20) := '';
+    test_name varchar2(100);
   begin
     obj.put('X1', x1);
     obj.put('X2', x2);
-    x1 := obj.get('X1').get_string;
-    x2 := obj.get('X2').get_string;
-    pass(str);
-  exception
-    when others then fail(str);
+    begin
+      test_name := 'x1 := obj.get(''X1'').get_string;';
+      x1 := obj.get('X1').get_string;
+      pljson_ut.pass(test_name);
+    exception
+      when others then
+        pljson_ut.fail(test_name);
+    end;
+    begin
+      test_name := 'x1 := obj.get(''X2'').get_string;';
+      x2 := obj.get('X2').get_string;
+      pljson_ut.pass(test_name);
+    exception
+      when others then
+        pljson_ut.fail(test_name);
+    end;
   end;
   
-  str := 'Bool null insert test';
+  -- insert null boolean
+  pljson_ut.testcase('Test insert null boolean');
   declare
     obj pljson := pljson();
     x boolean := null;
@@ -251,13 +216,11 @@ begin
   begin
     obj.put('X', x);
     n := obj.get('X');
-    assertFalse(n is null); --may seem odd -- but initialized vars are best!
-    pass(str);
-  exception
-    when others then fail(str);
+    pljson_ut.assertFalse(n is null, 'n is null'); --may seem odd -- but initialized vars are best!
   end;
   
-  str := 'Null null insert test';
+  -- insert null pljson_value
+  pljson_ut.testcase('Test insert null pljson_value');
   declare
     obj pljson := pljson();
     x pljson_value := null;
@@ -265,13 +228,11 @@ begin
   begin
     obj.put('X', x);
     n := obj.get('X');
-    assertFalse(n is null); --may seem odd -- but initialized vars are best!
-    pass(str);
-  exception
-    when others then fail(str);
+    pljson_ut.assertFalse(n is null, 'n is null'); --may seem odd -- but initialized vars are best!
   end;
   
-  str := 'pljson null insert test';
+  -- insert null pljson
+  pljson_ut.testcase('Test insert null pljson');
   declare
     obj pljson := pljson();
     x pljson := null;
@@ -279,13 +240,11 @@ begin
   begin
     obj.put('X', x);
     n := obj.get('X');
-    assertFalse(n is null); --may seem odd -- but initialized vars are best!
-    pass(str);
-  exception
-    when others then fail(str);
+    pljson_ut.assertFalse(n is null, 'n is null'); --may seem odd -- but initialized vars are best!
   end;
   
-  str := 'pljson_list null insert test';
+  -- insert null pljson_list
+  pljson_ut.testcase('Test insert null pljson_list');
   declare
     obj pljson := pljson();
     x pljson_list := null;
@@ -293,27 +252,24 @@ begin
   begin
     obj.put('X', x);
     n := obj.get('X');
-    assertFalse(n is null); --may seem odd -- but initialized vars are best!
-    pass(str);
-  exception
-    when others then fail(str);
+    pljson_ut.assertFalse(n is null, 'n is null'); --may seem odd -- but initialized vars are best
   end;
   
-  str := 'pljson null pair_name insert test';
+  -- insert null pair name
+  pljson_ut.testcase('Test insert null pair name');
   declare
     obj pljson := pljson();
+    test_name varchar2(100);
   begin
+    test_name := 'obj.put(null, ''test'');';
     obj.put(null, 'test');
-    pass(str); -- new behavior
+    pljson_ut.pass(test_name);
   exception
-    when others then fail(str);
+    when others then
+      pljson_ut.fail(test_name);
   end;
   
-  begin
-    execute immediate 'insert into pljson_testsuite values (:1, :2, :3, :4, :5)' using
-    'pljson test', pass_count, fail_count, total_count,'pljson_test.sql';
-  exception
-    when others then null;
-  end;
+  pljson_ut.testsuite_report;
+  
 end;
 /

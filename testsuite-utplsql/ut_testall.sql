@@ -18,22 +18,29 @@
   */
 
 PROMPT run with NLS_LANG='AMERICAN_AMERICA.AL32UTF8'
+
 set trimspool on
 set echo off
 set feedback off
 set verify off
-Clear Screen
 set linesize 32767
 set pagesize 0
 set long 200000000
 set longchunksize 1000000
 set serveroutput on size unlimited format truncated
 
+clear screen
+
 PROMPT Installing tests
-@@pljson_parser_test
+@@ut_pljson_parser_test.sql
+@@ut_pljson_test.sql
+@@ut_pljson_list_test.sql
+@@ut_pljson_simple_test.sql
+@@ut_pljson_ext_test.sql
+@@ut_pljson_path_test.sql
+@@ut_pljson_helper_test.sql
+@@ut_pljson_unicode_test.sql
 
 PROMPT Executing tests
 REM exec ut.run(ut_coverage_html_reporter());
 exec ut.run(USER);
-
-drop package pljson_parser_test;

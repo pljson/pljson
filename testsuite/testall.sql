@@ -22,13 +22,9 @@
 
 PROMPT run with NLS_LANG='AMERICAN_AMERICA.AL32UTF8'
 
-CREATE TABLE pljson_testsuite (
-  COLLECTION VARCHAR2(30 BYTE),
-  PASSED NUMBER,
-  FAILED NUMBER,
-  TOTAL NUMBER,
-  FILENAME VARCHAR2(30 BYTE)
-);
+set linesize 200
+
+exec pljson_ut.startup;
 
 --run each test here
 @@pljson_parser.test.sql
@@ -40,10 +36,4 @@ CREATE TABLE pljson_testsuite (
 @@pljson_helper.test.sql
 @@pljson_unicode.test.sql
 
-PROMPT Unit-testing of PLJSON implementation:
-COLUMN PASSED HEADING 'PASS' FORMAT 999
-COLUMN FAILED HEADING 'FAIL' FORMAT 999
-COLUMN TOTAL  HEADING 'TOT'  FORMAT 999
-select * from pljson_testsuite;
---select 'All tests', sum(passed), sum(failed), sum(total), ' ' from pljson_testsuite;
-drop table pljson_testsuite;
+exec pljson_ut.shutdown;
