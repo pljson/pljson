@@ -1,19 +1,18 @@
-
 create or replace type body pljson_table_impl as
 
   /*
   Copyright (c) 2016 E.I.Sarmas (github.com/dsnz)
-
+  
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
   copies of the Software, and to permit persons to whom the Software is
   furnished to do so, subject to the following conditions:
-
+  
   The above copyright notice and this permission notice shall be included in
   all copies or substantial portions of the Software.
-
+  
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,7 +24,7 @@ create or replace type body pljson_table_impl as
   
   /*
   E.I.Sarmas (github.com/dsnz)   2016-02-09
-
+  
   implementation and demo for json_table.json_table() functionality
   modelled after Oracle 12c json_table()
   
@@ -78,7 +77,7 @@ create or replace type body pljson_table_impl as
     sctx := pljson_table_impl(str, paths, names, pljson_vtab(), pljson_narray(), elem_typ);
     return odciconst.success;
   end;
-
+  
   static function ODCITableStart(sctx in out pljson_table_impl,
     str clob, paths pljson_varray, names pljson_varray := null) return number is
     json_obj json;
@@ -174,7 +173,14 @@ create or replace type body pljson_table_impl as
     j number;
     num_rows number := 0;
   begin
-    --dbms_output.put_line('>>Fetch');
+    --dbms_output.put_line('>>Fetch, nrows = ' || nrows);
+    
+    outset := null;
+    
+    if (row_inds(1) = 0) then
+      --dbms_output.put_line('>>Fetch End');
+      return odciconst.success;
+    end if;
     
     anydataset.begincreate(dbms_types.typecode_object, self.ret_type, outset);
     
@@ -213,6 +219,7 @@ create or replace type body pljson_table_impl as
         end if;
       end loop;
     end loop;
+    --dbms_output.put_line('>>Fetch Complete, rows = ' || num_rows || ', row_inds(1) = ' || row_inds(1));
     
     /* check for possible bug if by chance no new rows produced */
     --dbms_output.put_line('finish, num_rows='||ltrim(to_char(num_rows)));
@@ -226,6 +233,6 @@ create or replace type body pljson_table_impl as
     --dbms_output.put_line('>>Close');
     return odciconst.success;
   end;
-
+  
 end;
 /
