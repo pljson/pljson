@@ -65,7 +65,7 @@ create or replace package pljson_ext as
   function is_integer(v pljson_value) return boolean;
 
   format_string varchar2(30 char) := 'yyyy-mm-dd hh24:mi:ss';
-  --extension enables json to store dates without comprimising the implementation
+  --extension enables json to store dates without compromising the implementation
   function to_json_value(d date) return pljson_value;
   --notice that a date type in json is also a varchar2
   function is_date(v pljson_value) return boolean;
