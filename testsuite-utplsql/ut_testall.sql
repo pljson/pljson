@@ -44,3 +44,12 @@ PROMPT Installing tests
 PROMPT Executing tests
 REM exec ut.run(ut_coverage_html_reporter());
 exec ut.run(USER);
+
+drop package ut_pljson_parser_test;
+drop package ut_pljson_test;
+drop package ut_pljson_list_test;
+drop package ut_pljson_simple_test;
+drop package ut_pljson_ext_test;
+drop package ut_pljson_path_test;
+drop package ut_pljson_helper_test;
+drop package ut_pljson_unicode_test;

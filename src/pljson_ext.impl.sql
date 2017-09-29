@@ -59,7 +59,7 @@ create or replace package body pljson_ext as
     end if;
   end;
 
-  --extension enables json to store dates without comprimising the implementation
+  --extension enables json to store dates without compromising the implementation
   function to_json_value(d date) return pljson_value as
   begin
     return pljson_value(to_char(d, format_string));
