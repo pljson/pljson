@@ -44,19 +44,17 @@ create or replace package body pljson_printer as
   max_line_len number := 0;
   cur_line_len number := 0;
   
-  
   -- associative array used inside escapeString to cache the escaped version of every character
   -- escaped so far  (example: char_map('"') contains the  '\"' string)
   -- (if the character does not need to be escaped, the character is stored unchanged in the array itself)
-  --type Rmap_char is record(buf varchar2(40), len integer);
+  -- type Rmap_char is record(buf varchar2(40), len integer);
   type Tmap_char_string is table of varchar2(40) index by varchar2(1 char); /* index by unicode char */
-       char_map Tmap_char_string;
-       -- since char_map the associative array is a global variable reused across multiple calls to escapeString,
-       -- i need to be able to detect that the escape_solidus or ascii_output global parameters have been changed,
-       -- in order to clear it and avoid using escape sequences that have been cached using the previous values
-       char_map_escape_solidus boolean := escape_solidus;
-       char_map_ascii_output boolean := ascii_output;
-  
+  char_map Tmap_char_string;
+  -- since char_map the associative array is a global variable reused across multiple calls to escapeString,
+  -- i need to be able to detect that the escape_solidus or ascii_output global parameters have been changed,
+  -- in order to clear it and avoid using escape sequences that have been cached using the previous values
+  char_map_escape_solidus boolean := escape_solidus;
+  char_map_ascii_output boolean := ascii_output;
   
   function llcheck(str in varchar2) return varchar2 as
   begin
@@ -98,8 +96,6 @@ create or replace package body pljson_printer as
       end case;
       return result;
   end;
-  
-  
   
   function escapeString(str varchar2) return varchar2 as
     sb varchar2(32767 byte) := '';
@@ -181,7 +177,7 @@ create or replace package body pljson_printer as
   
   procedure flush_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2) as
   begin
---    dbms_lob.append(buf_lob, buf_str);
+    --dbms_lob.append(buf_lob, buf_str);
     dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
   end flush_clob;
   
@@ -232,14 +228,7 @@ create or replace package body pljson_printer as
       if(elem is not null) then
       case elem.get_type
         when 'number' then
-          numbuf := '';
-          if (elem.get_number < 1 and elem.get_number > 0) then numbuf := '0'; end if;
-          if (elem.get_number < 0 and elem.get_number > -1) then
-            numbuf := '-0';
-            numbuf := numbuf || substr(to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-          else
-            numbuf := numbuf || to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-          end if;
+          numbuf := elem.number_toString;
           add_to_clob(buf, buf_str, llcheck(numbuf));
         when 'string' then
           ppString(elem, buf, buf_str);
@@ -270,13 +259,7 @@ create or replace package body pljson_printer as
     add_to_clob(buf, buf_str, llcheck(tab(indent, spaces)) || llcheck(getMemName(mem, spaces)));
     case mem.get_type
       when 'number' then
-        if (mem.get_number < 1 and mem.get_number > 0) then numbuf := '0'; end if;
-        if (mem.get_number < 0 and mem.get_number > -1) then
-          numbuf := '-0';
-          numbuf := numbuf || substr(to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-        else
-          numbuf := numbuf || to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-        end if;
+        numbuf := mem.number_toString;
         add_to_clob(buf, buf_str, llcheck(numbuf));
       when 'string' then
         ppString(mem, buf, buf_str);
@@ -347,13 +330,7 @@ create or replace package body pljson_printer as
     
     case json_part.get_type
       when 'number' then
-        if (json_part.get_number < 1 and json_part.get_number > 0) then numbuf := '0'; end if;
-        if (json_part.get_number < 0 and json_part.get_number > -1) then
-          numbuf := '-0';
-          numbuf := numbuf || substr(to_char(json_part.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-        else
-          numbuf := numbuf || to_char(json_part.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-        end if;
+        numbuf := json_part.number_toString;
         add_to_clob(buf, buf_str, numbuf);
       when 'string' then
         ppString(json_part, buf, buf_str);
@@ -434,13 +411,7 @@ create or replace package body pljson_printer as
       if(elem is not null) then
       case elem.get_type
         when 'number' then
-          str := '';
-          if (elem.get_number < 1 and elem.get_number > 0) then str := '0'; end if;
-          if (elem.get_number < 0 and elem.get_number > -1) then
-            str := '-0' || substr(to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-          else
-            str := str || to_char(elem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-          end if;
+          str := elem.number_toString;
           add_buf(buf, llcheck(str));
         when 'string' then
           ppString(elem, buf);
@@ -471,12 +442,7 @@ create or replace package body pljson_printer as
     add_buf(buf, llcheck(tab(indent, spaces)) || getMemName(mem, spaces));
     case mem.get_type
       when 'number' then
-        if (mem.get_number < 1 and mem.get_number > 0) then str := '0'; end if;
-        if (mem.get_number < 0 and mem.get_number > -1) then
-          str := '-0' || substr(to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-        else
-          str := str || to_char(mem.get_number, 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-        end if;
+        str := mem.number_toString;
         add_buf(buf, llcheck(str));
       when 'string' then
         ppString(mem, buf);
@@ -534,13 +500,7 @@ create or replace package body pljson_printer as
   begin
     case json_part.get_type
       when 'number' then
-        if (json_part.get_number() < 1 and json_part.get_number() > 0) then buf := '0'; end if;
-        if (json_part.get_number() < 0 and json_part.get_number() > -1) then
-          buf := '-0';
-          buf := buf || substr(to_char(json_part.get_number(), 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,'''),2);
-        else
-          buf := buf || to_char(json_part.get_number(), 'TM9', 'NLS_NUMERIC_CHARACTERS=''.,''');
-        end if;
+        buf := json_part.number_toString;
       when 'string' then
         ppString(json_part, buf);
       when 'bool' then
@@ -567,12 +527,12 @@ create or replace package body pljson_printer as
     while(indx != 0) loop
       --read every line
       indx := dbms_lob.instr(my_clob, delim, prev+1);
- --     dbms_output.put_line(prev || ' to ' || indx);
+      --dbms_output.put_line(prev || ' to ' || indx);
       
       if(indx = 0) then
         --emit from prev to end;
         amount := 8191; /* max unicode chars */
- --       dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
+        --dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
         loop
           dbms_lob.read(my_clob, amount, prev, v_str);
           dbms_output.put_line(v_str);
@@ -583,7 +543,7 @@ create or replace package body pljson_printer as
         amount := indx - prev;
         if(amount > 8191) then /* max unicode chars */
           amount := 8191; /* max unicode chars */
---          dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
+          --dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
           loop
             dbms_lob.read(my_clob, amount, prev, v_str);
             dbms_output.put_line(v_str);
@@ -626,7 +586,6 @@ create or replace package body pljson_printer as
     if(jsonp is not null) then dbms_output.put_line(')'); end if;*/
   end;
   
-  
 /*  procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as
     prev number := 1;
     indx number := 1;
@@ -638,20 +597,20 @@ create or replace package body pljson_printer as
     while (indx != 0) loop
       indx := dbms_lob.instr(my_clob, delim, prev+1);
 
---      dbms_output.put_line(prev || ' to ' || indx);
+      --dbms_output.put_line(prev || ' to ' || indx);
       if(indx-prev > 32767) then
         indx := prev+32767;
       end if;
---      dbms_output.put_line(prev || ' to ' || indx);
+      --dbms_output.put_line(prev || ' to ' || indx);
       --substr doesnt work properly on all platforms! (come on oracle - error on Oracle VM for virtualbox)
       if(indx = 0) then
---        dbms_output.put_line(dbms_lob.substr(my_clob, dbms_lob.getlength(my_clob)-prev+size_of_nl, prev));
+        --dbms_output.put_line(dbms_lob.substr(my_clob, dbms_lob.getlength(my_clob)-prev+size_of_nl, prev));
         amount := dbms_lob.getlength(my_clob)-prev+size_of_nl;
         dbms_lob.read(my_clob, amount, prev, v_str);
       else
---        dbms_output.put_line(dbms_lob.substr(my_clob, indx-prev, prev));
+        --dbms_output.put_line(dbms_lob.substr(my_clob, indx-prev, prev));
         amount := indx-prev;
---        dbms_output.put_line('amount'||amount);
+        --dbms_output.put_line('amount'||amount);
         dbms_lob.read(my_clob, amount, prev, v_str);
       end if;
       dbms_output.put_line(v_str);
@@ -661,6 +620,7 @@ create or replace package body pljson_printer as
     if(jsonp is not null) then dbms_output.put_line(')'); end if;
   end;
 */
+  
   procedure htp_output_clob(my_clob clob, jsonp varchar2 default null) as
     /*amount number := 4096;
     pos number := 1;
@@ -669,7 +629,6 @@ create or replace package body pljson_printer as
     l_amt    number default 30;
     l_off   number default 1;
     l_str   varchar2(4096);
-  
   begin
     if(jsonp is not null) then htp.prn(jsonp||'('); end if;
     

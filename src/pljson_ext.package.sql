@@ -29,6 +29,8 @@ create or replace package pljson_ext as
   function get_json_value(obj pljson, v_path varchar2, base number default 1) return pljson_value;
   function get_string(obj pljson, path varchar2,       base number default 1) return varchar2;
   function get_number(obj pljson, path varchar2,       base number default 1) return number;
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function get_double(obj pljson, path varchar2,       base number default 1) return binary_double;
   function get_json(obj pljson, path varchar2,         base number default 1) return pljson;
   function get_json_list(obj pljson, path varchar2,    base number default 1) return pljson_list;
   function get_bool(obj pljson, path varchar2,         base number default 1) return boolean;
@@ -36,6 +38,8 @@ create or replace package pljson_ext as
   --JSON Path putters
   procedure put(obj in out nocopy pljson, path varchar2, elem varchar2,   base number default 1);
   procedure put(obj in out nocopy pljson, path varchar2, elem number,     base number default 1);
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure put(obj in out nocopy pljson, path varchar2, elem binary_double, base number default 1);
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson,       base number default 1);
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson_list,  base number default 1);
   procedure put(obj in out nocopy pljson, path varchar2, elem boolean,    base number default 1);
@@ -84,11 +88,30 @@ create or replace package body pljson_ext as
   
   --extra function checks if number has no fraction
   function is_integer(v pljson_value) return boolean as
-    myint number(38); --the oracle way to specify an integer
+    num number;
+    num_double binary_double;
+    int_number number(38); --the oracle way to specify an integer
+    int_double binary_double; --the oracle way to specify an integer
   begin
+    /*
     if(v.is_number) then
       myint := v.get_number;
       return (myint = v.get_number); --no rounding errors?
+    else
+      return false;
+    end if;
+    */
+    /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+    if (v.is_number_repr_number) then
+      num := v.get_number;
+      int_number := trunc(num);
+      --dbms_output.put_line('number: ' || num || ' -> ' || int_number);
+      return (int_number = num); --no rounding errors?
+    elsif (v.is_number_repr_double) then
+      num_double := v.get_double;
+      int_double := trunc(num_double);
+      --dbms_output.put_line('double: ' || num_double || ' -> ' || int_double);
+      return (int_double = num_double); --no rounding errors?
     else
       return false;
     end if;
@@ -241,7 +264,6 @@ create or replace package body pljson_ext as
       else
         raise_application_error(-20110, 'JSON Path parse error: expected . or [ found '|| buf || ' at position '|| indx);
       end if;
-    
     end loop;
     
     build_path := build_path || ']';
@@ -324,6 +346,18 @@ create or replace package body pljson_ext as
     end if;
   end;
   
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  function get_double(obj pljson, path varchar2, base number default 1) return binary_double as
+    temp pljson_value;
+  begin
+    temp := get_json_value(obj, path, base);
+    if(temp is null or not temp.is_number) then
+      return null;
+    else
+      return temp.get_double;
+    end if;
+  end;
+  
   function get_json(obj pljson, path varchar2, base number default 1) return pljson as
     temp pljson_value;
   begin
@@ -373,7 +407,7 @@ create or replace package body pljson_ext as
     val pljson_value := elem;
     path pljson_list;
     backreference pljson_list := pljson_list();
-  
+    
     keyval pljson_value; keynum number; keystring varchar2(4000);
     temp pljson_value := obj.to_json_value;
     obj_temp  pljson;
@@ -452,7 +486,7 @@ create or replace package body pljson_ext as
     --use backreference and path together
     inserter := val;
     for i in reverse 1 .. backreference.count loop
-  --    inserter.print(false);
+      --inserter.print(false);
       if( i = 1 ) then
         keyval := path.get(1);
         if(keyval.is_string()) then
@@ -501,7 +535,6 @@ create or replace package body pljson_ext as
           end if;
         end if;
       end if;
-    
     end loop;
   
   end put_internal;
@@ -517,6 +550,16 @@ create or replace package body pljson_ext as
   end;
   
   procedure put(obj in out nocopy pljson, path varchar2, elem number, base number default 1) as
+  begin
+    if elem is null then
+        put_internal(obj, path, pljson_value(), base);
+    else
+        put_internal(obj, path, pljson_value(elem), base);
+    end if;
+  end;
+  
+  /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
+  procedure put(obj in out nocopy pljson, path varchar2, elem binary_double, base number default 1) as
   begin
     if elem is null then
         put_internal(obj, path, pljson_value(), base);
@@ -573,8 +616,8 @@ create or replace package body pljson_ext as
   procedure remove(obj in out nocopy pljson, path varchar2, base number default 1) as
   begin
     pljson_ext.put_internal(obj,path,null,base);
---    if(json_ext.get_json_value(obj,path) is not null) then
---    end if;
+    --if(json_ext.get_json_value(obj, path) is not null) then
+    --end if;
   end remove;
   
   --Pretty print with JSON Path
@@ -614,7 +657,7 @@ create or replace package body pljson_ext as
     v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
     v_warning NUMBER;
     v_amount PLS_INTEGER;
---    temp varchar2(32767);
+    --temp varchar2(32767);
     
     FUNCTION encodeBlob2Base64(pBlobIn IN BLOB) RETURN BLOB IS
       vAmount NUMBER := 45;
@@ -624,9 +667,9 @@ create or replace package body pljson_ext as
       vBuffer RAW(45);
       vOffset NUMBER := 1;
     BEGIN
---      dbms_output.put_line('Start base64 encoding.');
+      --dbms_output.put_line('Start base64 encoding.');
       vBlobInLen := dbms_lob.getlength(pBlobIn);
---      dbms_output.put_line('<BlobInLength>' || vBlobInLen);
+      --dbms_output.put_line('<BlobInLength>' || vBlobInLen);
       dbms_lob.createtemporary(vBlobEnc, TRUE);
       LOOP
         IF vOffset >= vBlobInLen THEN
@@ -644,8 +687,8 @@ create or replace package body pljson_ext as
         vOffset := vOffset + vAmount;
       END LOOP;
       vBlobEncLen := dbms_lob.getlength(vBlobEnc);
---      dbms_output.put_line('<BlobEncLength>' || vBlobEncLen);
---      dbms_output.put_line('Finshed base64 encoding.');
+      --dbms_output.put_line('<BlobEncLength>' || vBlobEncLen);
+      --dbms_output.put_line('Finshed base64 encoding.');
       RETURN vBlobEnc;
     END encodeBlob2Base64;
   begin
@@ -666,8 +709,8 @@ create or replace package body pljson_ext as
     end loop;
     dbms_lob.freetemporary(benc);
     dbms_lob.freetemporary(c);
-  --dbms_output.put_line(obj.count);
-  --dbms_output.put_line(obj.get_last().to_char);
+    --dbms_output.put_line(obj.count);
+    --dbms_output.put_line(obj.get_last().to_char);
     return obj;
   
   end base64;
@@ -687,7 +730,7 @@ create or replace package body pljson_ext as
       dbms_lob.append(c, l.get(i).get_string());
     end loop;
     v_amount := DBMS_LOB.GETLENGTH(c);
---    dbms_output.put_line('L C'||v_amount);
+    --dbms_output.put_line('L C'||v_amount);
     bret := decodeBase64Clob2Blob(c);
     dbms_lob.freetemporary(c);
     return bret;
@@ -703,7 +746,7 @@ create or replace package body pljson_ext as
     v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
     v_warning NUMBER;
     v_amount PLS_INTEGER;
---    temp varchar2(32767);
+    --temp varchar2(32767);
     
     FUNCTION encodeBlob2Base64(pBlobIn IN BLOB) RETURN BLOB IS
       vAmount NUMBER := 45;
@@ -713,9 +756,9 @@ create or replace package body pljson_ext as
       vBuffer RAW(45);
       vOffset NUMBER := 1;
     BEGIN
---      dbms_output.put_line('Start base64 encoding.');
+      --dbms_output.put_line('Start base64 encoding.');
       vBlobInLen := dbms_lob.getlength(pBlobIn);
---      dbms_output.put_line('<BlobInLength>' || vBlobInLen);
+      --dbms_output.put_line('<BlobInLength>' || vBlobInLen);
       dbms_lob.createtemporary(vBlobEnc, TRUE);
       LOOP
         IF vOffset >= vBlobInLen THEN
@@ -733,8 +776,8 @@ create or replace package body pljson_ext as
         vOffset := vOffset + vAmount;
       END LOOP;
       vBlobEncLen := dbms_lob.getlength(vBlobEnc);
---      dbms_output.put_line('<BlobEncLength>' || vBlobEncLen);
---      dbms_output.put_line('Finshed base64 encoding.');
+      --dbms_output.put_line('<BlobEncLength>' || vBlobEncLen);
+      --dbms_output.put_line('Finshed base64 encoding.');
       RETURN vBlobEnc;
     END encodeBlob2Base64;
   begin
@@ -747,8 +790,8 @@ create or replace package body pljson_ext as
     
     dbms_lob.freetemporary(benc);
     dbms_lob.freetemporary(c);
-  --dbms_output.put_line(obj.count);
-  --dbms_output.put_line(obj.get_last().to_char);
+    --dbms_output.put_line(obj.count);
+    --dbms_output.put_line(obj.get_last().to_char);
     return obj;
   
   end encode;
@@ -766,7 +809,7 @@ create or replace package body pljson_ext as
     dbms_lob.createtemporary(c, TRUE);
     v.get_string(c);
     v_amount := DBMS_LOB.GETLENGTH(c);
---    dbms_output.put_line('L C'||v_amount);
+    --dbms_output.put_line('L C'||v_amount);
     bret := decodeBase64Clob2Blob(c);
     dbms_lob.freetemporary(c);
     return bret;

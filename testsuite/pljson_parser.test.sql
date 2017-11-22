@@ -78,8 +78,9 @@ declare
   end;
 
 begin
+  dbms_output.put_line('pljson_parser test, Scanner testing:');
+  
   pljson_parser.json_strict := true;
-  dbms_output.put_line('Scanner testing:');
   --number start with 0-9
   assertFail('{ "a": .23 }','number test A');
   --error described: no digits in fraction
@@ -125,7 +126,8 @@ begin
   end;
   
   dbms_output.put_line('');
-  dbms_output.put_line('Parser testing:');
+  dbms_output.put_line('pljson_parser test, Parser testing:');
+  
   assertFail('{ "a": [}]}','array expecting value got }');
   assertFail('{ "a": [,]}','premature exit from array');
   assertFail('{ "a": [,','premature exit from array2');
@@ -164,6 +166,9 @@ begin
     "abcdefghijklmnopqrstuvxyzabcdefghijklmnopqrstuvxyz2" : 53
   }', 'Duplicate 2');
   
+  dbms_output.put_line('');
+  dbms_output.put_line('pljson_parser test, issues:');
+  
   /*
     E.I.Sarmas (github.com/dsnz)   2016-04-12
     issue #37 test
@@ -183,7 +188,8 @@ begin
     
     src := pljson_parser.prepareClob(test_clob);
     for i in reverse 3995..4005 loop
-      dbms_output.put_line('issue #37: '|| i ||' '|| substr(test_buff, i-3995+1, 1)|| ' - ' || pljson_parser.next_char(i, src));
+      dbms_output.put_line('issue #37: ' || i || ' ' ||
+        substr(test_buff, i-3995+1, 1) || ' - ' || pljson_parser.next_char(i, src));
       assertTrue(substr(test_buff, i-3995+1, 1) = pljson_parser.next_char(i, src));
     end loop;
     
@@ -205,6 +211,5 @@ begin
   exception
     when others then null;
   end;
-  
 end;
 /
