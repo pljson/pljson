@@ -35,14 +35,14 @@ declare
 begin
   dbms_output.put_line('pljson base64 test:');
   
-  str := 'Base64 encode/decode 32K';
+  str := 'Base64 encode/decode size > 32K';
   declare
     w_tmp_string varchar2(32000);
     w_clob clob;
     w_json_clob clob;
-    obj_json json;
-    tmp_json json;
-    obj_value json_value;
+    obj_json pljson;
+    tmp_json pljson;
+    obj_value pljson_value;
     w_blob blob;
     w_hash1 varchar2(40);
     w_hash2 varchar2(40);
@@ -631,7 +631,7 @@ begin
     dbms_lob.writeappend(w_clob, length(w_tmp_string), w_tmp_string);
 
     -- blob decoding
-    w_blob := json_ext.decodeBase64Clob2Blob(w_clob);
+    w_blob := pljson_ext.decodeBase64Clob2Blob(w_clob);
     dbms_output.put_line('ORIGINAL FILE');
     dbms_output.put_line('-----------------------------------------------------------------------------');
     dbms_output.put_line('BLOB length: ' || dbms_lob.getlength(w_blob));
@@ -645,11 +645,11 @@ begin
     dbms_lob.writeappend(w_json_clob, length('{"pdf": "'), '{"pdf": "');
     dbms_lob.append(w_json_clob, w_clob);
     dbms_lob.writeappend(w_json_clob, length('"}'), '"}');
-    obj_json := new json(w_json_clob);                           
-    obj_value := json_ext.get_json_value(obj_json, 'pdf');
+    obj_json := new pljson(w_json_clob);                           
+    obj_value := pljson_ext.get_json_value(obj_json, 'pdf');
     dbms_lob.createtemporary(w_clob, true);
     json_value.get_string(obj_value, w_clob);
-    w_blob := json_ext.decode(new json_value(w_clob));
+    w_blob := pljson_ext.decode(new json_value(w_clob));
     dbms_output.put_line('');
     dbms_output.put_line('PARSED FILE');
     dbms_output.put_line('-----------------------------------------------------------------------------');  
