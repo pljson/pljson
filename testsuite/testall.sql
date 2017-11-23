@@ -39,6 +39,7 @@ CREATE TABLE pljson_testsuite (
 @@pljson_path.test.sql
 @@pljson_helper.test.sql
 @@pljson_unicode.test.sql
+@@pljson_base64.test.sql
 
 PROMPT Unit-testing of PLJSON implementation:
 COLUMN PASSED HEADING 'PASS' FORMAT 999

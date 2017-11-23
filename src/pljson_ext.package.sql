@@ -69,6 +69,7 @@ create or replace package pljson_ext as
   procedure put(obj in out nocopy pljson, path varchar2, elem date, base number default 1);
   
   --experimental support of binary data with base64
+  function decodeBase64Clob2Blob(p_clob clob) return blob;
   function base64(binarydata blob) return pljson_list;
   function base64(l pljson_list) return blob;
   
