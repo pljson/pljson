@@ -21,8 +21,6 @@ create or replace package body pljson_ext as
   THE SOFTWARE.
   */
 
-  function encodeBase64Blob2Clob (p_blob in  blob) return clob;
-  function decodeBase64Clob2Blob(p_clob clob) return blob;
   scanner_exception exception;
   pragma exception_init(scanner_exception, -20100);
   parser_exception exception;
