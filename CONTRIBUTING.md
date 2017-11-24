@@ -1,28 +1,16 @@
-PL/JSON development follows the [git flow][flow-blog] branching model. A
-plugin for git is available to facilitate this model:
-https://github.com/nvie/gitflow
-
-So, with the plugin installed, your contribution flow should look like:
+Your contribution flow should look like:
 
 ```sh
 $ git clone git+ssh://github.com/your-fork/pljson.git
 $ cd pljson
-$ git flow init # use default for everything except version prefix which is 'v'
-$ # you should now be on the 'develop' branch
-$ git flow feature start your-feature-name
-$ # do your work while adding commits
-$ git flow feature finish your-feature-name
-$ git push # the feature was merged into the 'develop' branch
+$ git checkout -b name-for-your-feature-or-fix
+$ git commit # your changes
+$ git push -u origin name-for-your-feature-or-fix
 ```
 
-[flow-blog]: http://nvie.com/posts/a-successful-git-branching-model/
-
-## Creating Your Pull Request
-
-When creating your pull request, make sure you are targeting the 'develop'
-branch of the official repository. Pull requests that target the 'master'
-branch **will not** be accepted until they have been re-targeted at the
-'develop' branch.
+Once your feature branch is synchronized to your fork on GitHub, you can use
+the web interface to create a pull request agains the "master" branch of the
+PL/JSON repository.
 
 ## Stay Synchronized
 
@@ -32,8 +20,11 @@ done prior to finishing your feature:
 
 ```sh
 $ git remote add upstream https://github.com/pljson/pljson.git
-$ git pull upstream develop
-$ git merge develop # while on your feature branch
+$ git checkout master
+$ git pull upstream master
+$ git checkout name-for-your-feature-or-fix
+$ git merge master
+$ git push
 ```
 
 ## General Guidelines
@@ -55,4 +46,7 @@ $ git merge develop # while on your feature branch
 + Add an example if your have added a completely new feature
 + Make sure unit tests pass
 + Add/update unit tests to cover your change
-+ Add/update documentation to cover your change
++ Add/update documentation to cover your change. Documentation should be
+  added to the `decl` file using PLDOC syntax. See
+  [http://pldoc.sourceforge.net/maven-site/docs/Users_Guide/index.html](http://pldoc.sourceforge.net/maven-site/docs/Users_Guide/index.html)
+  for details on PLDOC.

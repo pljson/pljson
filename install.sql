@@ -38,10 +38,12 @@ PROMPT -----------------------------------;
 @@src/pljson_value.type.decl.sql
 @@src/pljson_list.type.decl.sql
 @@src/pljson.type.decl.sql
-@@src/pljson_parser.package.sql
+@@src/pljson_parser.decl.sql
+@@src/pljson_parser.impl.sql
 @@src/pljson_printer.package.sql
 @@src/pljson_value.type.impl.sql
-@@src/pljson_ext.package.sql --extra helper functions
+@@src/pljson_ext.decl.sql --extra helper functions
+@@src/pljson_ext.impl.sql
 @@src/pljson.type.impl.sql
 @@src/pljson_list.type.impl.sql
 --@@src/grantsandsynonyms.sql --grants to core API
@@ -57,6 +59,7 @@ PROMPT ------------------------------------------;
 @@src/addons/pljson_helper.package.sql --Set operations on JSON and JSON_LIST
 @@src/addons/pljson_table_impl.type.decl.sql -- dynamic table from json document
 @@src/addons/pljson_table_impl.type.impl.sql -- dynamic table from json document
+@@testsuite/pljson_ut.package.sql -- pljson unit test mini framework
 -- synonyms for backwards compatibility
 create synonym json_parser for pljson_parser;
 create synonym json_printer for pljson_printer;

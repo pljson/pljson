@@ -33,52 +33,9 @@ declare
   t_stop  timestamp;
   t_sec NUMBER;
   
-  pass_count number := 0;
-  fail_count number := 0;
-  total_count number := 0;
-  str varchar2(200);
-  
-  /* useful for debugging to show clearly symbols for CR, NL (CR => '[', NL => '!') */
-  function print_symbols(str varchar2) return varchar2 as
-    eol constant varchar2(10) := CHR(13) || CHR(10);
-  begin
-    return replace(replace(replace(str, '\n', eol), CHR(13), '['), CHR(10), '!');
-  end;
-  
-  /* use to pass tests even if json print output changes and produces extra/fewer eols(s) */
-  function strip_eol(str varchar2) return varchar2 as
-    eol constant varchar2(10) := CHR(13) || CHR(10);
-  begin
-    --dbms_output.put_line('string='||print_symbols(replace(str, '\n', eol)));
-    return replace(str, eol, '');
-  end;
-  
-  procedure pass(str varchar2) as
-  begin
-    pass_count := pass_count + 1;
-    total_count := total_count + 1;
-    dbms_output.put_line('OK: '||str);
-  end;
-  
-  procedure fail(str varchar2) as
-  begin
-    fail_count := fail_count + 1;
-    total_count := total_count + 1;
-    dbms_output.put_line('FAILED: '||str);
-  end;
-  
-  procedure assertTrue(b boolean) as
-  begin
-    if(not b) then raise_application_error(-20111, 'Test error'); end if;
-  end;
-  
-  procedure assertFalse(b boolean) as
-  begin
-    if(b) then raise_application_error(-20111, 'Test error'); end if;
-  end;
-
 begin
-  dbms_output.put_line('pljson_unicode test:');
+  
+  pljson_ut.testsuite('pljson_unicode test', 'pljson_unicode.test.sql');
   
   t_start := SYSTIMESTAMP;
   
@@ -139,7 +96,8 @@ begin
   1 varchar2 string of 32767 1-byte chars
   1 varchar2 string of 5000 2-byte chars
   */
-  str := 'json with clob(s), varchar2(s) both 1-byte, 2-byte chars using to_clob()';
+  -- json with clob(s), varchar2(s) both 1-byte, 2-byte chars using to_clob()
+  pljson_ut.testcase('Test json with clob(s), varchar2(s) both 1-byte, 2-byte chars using to_clob()');
   begin
     test_json := pljson();
     test_json.put('publish', true);
@@ -155,16 +113,9 @@ begin
     test_json.to_clob(json_clob);
     --dbms_output.put_line('test all kinds of big strings, clob final chars = ' || to_char(dbms_lob.getlength(json_clob)));
     
-    assertTrue(dbms_lob.getlength(json_clob) = 1896656);
-    pass(str);
+    pljson_ut.assertTrue(dbms_lob.getlength(json_clob) = 1896656, 'dbms_lob.getlength(json_clob) = 1896656');
     
     dbms_lob.freetemporary(json_clob);
-  exception
-    when others then
-      fail(str);
-      if dbms_lob.istemporary(json_clob) = 1 then
-        dbms_lob.freetemporary(json_clob);
-      end if;
   end;
   
   dbms_lob.freetemporary(clob_buf_1);
@@ -173,39 +124,36 @@ begin
   /* json with
   1 varchar2 string of 32767 1-byte chars
   */
-  str := 'json with varchar2 string of 32767 1-byte chars using to_char()';
+  -- json with varchar2 string of 32767 1-byte chars using to_char()
+  pljson_ut.testcase('Test json with varchar2 string of 32767 1-byte chars using to_char()');
   begin
     test_json := pljson();
     test_json.put('var_1', var_buf_1);
     json_var := test_json.to_char();
     --dbms_output.put_line('test 1 varchar2 string of 32000 1-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
     
-    assertTrue(lengthb(json_var) = 32012);
-    pass(str); 
-  exception
-    when others then fail(str);
+    pljson_ut.assertTrue(lengthb(json_var) = 32012, 'lengthb(json_var) = 32012');
   end;
   
   /* json with
   1 varchar2 string of 5000  2-byte chars
   */
-  str := 'json with varchar2 string of 5000 2-byte chars using to_char()';
-  begin 
+  -- json with varchar2 string of 5000 2-byte chars using to_char()
+  pljson_ut.testcase('Test json with varchar2 string of 5000 2-byte chars using to_char()');
+  begin
     test_json := pljson();
     test_json.put('var_2', var_buf_2);
     json_var := test_json.to_char();
     --dbms_output.put_line('test 1 varchar2 string of 5000 2-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
     
-    assertTrue(lengthb(json_var) = 29972);
-    pass(str); 
-  exception
-    when others then fail(str);
+    pljson_ut.assertTrue(lengthb(json_var) = 29972, 'lengthb(json_var) = 29972');
   end;
   
   /* json list with many small strings of 62 1-byte chars
      but up to 32767 bytes total
   */
-  str := 'json list with many small strings of 62 1-byte chars using to_char()';
+  -- json list with many small strings of 62 1-byte chars using to_char()
+  pljson_ut.testcase('Test json list with many small strings of 62 1-byte chars using to_char()');
   begin
     test_json := pljson();
     test_json_list := pljson_list();
@@ -218,16 +166,14 @@ begin
     json_var := test_json.to_char();
     --dbms_output.put_line('test list of 1-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
     
-    assertTrue(lengthb(json_var) = 31698);
-    pass(str); 
-  exception
-    when others then fail(str);
+    pljson_ut.assertTrue(lengthb(json_var) = 31698, 'lengthb(json_var) = 31698');
   end;
   
   /* json list with many small strings of 64 2-byte chars
      but up to 32767 bytes total
   */
-  str := 'json list with many small strings of 64 2-byte chars using to_char()';
+  -- json list with many small strings of 64 2-byte chars using to_char()
+  pljson_ut.testcase('Test json list with many small strings of 64 2-byte chars using to_char()');
   begin
     test_json := pljson();
     test_json_list := pljson_list();
@@ -238,17 +184,14 @@ begin
     json_var := test_json.to_char();
     --dbms_output.put_line('test list of 2-byte chars, varchar2 final bytes = ' || to_char(lengthb(json_var)));
     
-    assertTrue(lengthb(json_var) = 32222);
-    pass(str); 
-  exception
-    when others then fail(str);
+    pljson_ut.assertTrue(lengthb(json_var) = 32222, 'lengthb(json_var) = 32222');
   end;
   
   t_stop := SYSTIMESTAMP;
   t_sec := extract(second from t_stop - t_start);
   dbms_output.put_line('total sec = ' || to_char(t_sec));
   
-  /* 
+  /*
   expected output
   
   clob_1 1-byte buffer, chars = 262136
@@ -262,11 +205,8 @@ begin
   test list of 2-byte chars, varchar2 final bytes = 32222
   total sec = [4.8 - 5.2 sec on old Pentium 2.80 GHz development machine]
   */
-  begin
-    execute immediate 'insert into pljson_testsuite values (:1, :2, :3, :4, :5)' using
-    'pljson unicode test', pass_count, fail_count, total_count, 'pljson_unicode_test.sql';
---  exception
---    when others then null;
-  end;
+  
+  pljson_ut.testsuite_report;
+  
 end;
 /

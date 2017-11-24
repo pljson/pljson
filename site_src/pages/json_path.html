@@ -1,0 +1,132 @@
+---
+title: 'PL/JSON - JSON Path'
+---
+
+<h1>PL/JSON - JSON Path</h1>
+
+<p>
+  A JSON Path is a way to navigate in a JSON object. The implementation in
+  <em>PL/JSON</em> is quite simple and does not support all the features that
+  are available in
+  <a href="http://goessner.net/articles/JsonPath/">Stefan Goessner's</a>
+  JavaScript, Python and PHP implementation of JSON Path. Actually, all
+  that it does is to add the support for navigation in JSON, which are already
+  built in into those languages. When navigating with JSON Path in <em>PL/JSON</em>,
+  members of JSON objects are found with the dot operator while elements in lists
+  are found with square brackets. Accepted input in path navigation is formalized
+  in the grammar (ws is insignificant whitespace):
+</p>
+
+<pre>
+jsonpath : ((alphanum | 'space')*) (( '.' ((alphanum | 'space')+) | '[' ('ws') (string | integer) ('ws') ']' ('ws') )*);
+string   : (dquote ((unia|esc)*) dquote) | (quote ((unib|esc)*) quote);
+integer  : pdigits (() + digits);
+</pre>
+
+<p>
+  From version 0.9.6 the implementation accepts an extended grammar where you use
+  a zero-indexed JSON Path. The following examples show how you can use JSON Path
+  to extract from a JSON object.
+</p>
+
+<p>The JSON object:</p>
+
+<pre><code class="hljs json">
+{
+  "xyz" : {
+    "abc" : [1,2,3,[4,5,{"123":45}]]
+  }
+}
+</code></pre>
+
+<p>Extract the <code>abc</code> list:</p>
+
+<pre><code class="hljs sql">
+pljson_ext.get_json_list(obj, 'xyz.abc').print;
+
+-- [1, 2, 3, [4 ,5 , {
+--   "123" : 45
+-- }]]
+</code></pre>
+
+<p>Extract the <code>123</code> number:</p>
+
+<pre><code class="hljs sql">
+pljson_ext.get_number(obj, 'xyz.abc[4][3].123').print;
+
+-- 45
+</code></pre>
+
+<p>As of version 0.8.4, square brackets can be used to extract JSON members like
+you would do in JavaScript:</p>
+
+<pre><code class="hljs sql">
+pljson_ext.get_number(obj, '["xyz"]["abc"][4][3]["123"]').print;
+
+-- 45
+</code></pre>
+
+<p>You can also use JSON Path to modify an existing JSON object:</p>
+
+<pre><code class="hljs sql">
+pljson_ext.put(obj, 'xyz.abc', pljson('{"val":123}'));
+
+-- {
+--   "xyz" : {
+--     "abc" : {
+--       "val" : 123
+--     }
+--   }
+-- }
+</code></pre>
+
+<p>Removing unwanted elements is also an option:</p>
+
+<pre><code class="hljs sql">
+pljson_ext.remove(obj, 'xyz.abc');
+
+-- {
+--   "xyz" : {
+--   }
+-- }
+</code></pre>
+
+<p>
+  In the 0.9.1 release, both <code>pljson</code> and <code>pljson_list</code>
+  are hooked to the JSON Path implementation:</p>
+
+<pre><code class="hljs sql">
+declare
+  v_obj pljson := pljson('{a:true}');
+  v_list pljson_list := pljson_list('[1,2,[3,4]]');
+begin
+  v_obj.path('a').print;
+  v_list.path('[3][1]').print;
+end;
+
+-- true
+-- 3
+</code></pre>
+
+<!-- TODO: link to examples -->
+<p>The example files 8 to 10 provides a more detailed explanation.</p>
+
+<p>In the 0.9.2 release, it is also possible to use path to modify objects and
+arrays:</p>
+
+<pre><code class="hljs sql">
+declare
+  v_obj pljson := pljson('{a:true}');
+  v_list pljson_list := pljson_list('[1,2,[3,4]]');
+begin
+  v_obj.path_put('a[2]', pljson_list('[true, true]'));
+  v_obj.print;
+  v_list.path_put('[3][1]', 'test');
+  v_list.print;
+end;
+
+-- {
+--   "a" : [null, [true, true]]
+-- }
+-- [1, 2, ["test", 4]]
+</code></pre>
