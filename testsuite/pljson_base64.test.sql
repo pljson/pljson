@@ -39,9 +39,9 @@ begin
   declare
     w_tmp_string varchar2(32000);
     w_clob clob;
-    w_json_clob clob;
     obj_json pljson;
     tmp_json pljson;
+    w_json_tag varchar2(32) := 'binaryFile';
     obj_value pljson_value;
     w_blob blob;
     w_hash1 varchar2(40);
@@ -640,16 +640,14 @@ begin
     dbms_output.put_line('SHA1 base64: ' || utl_raw.cast_to_varchar2(utl_encode.base64_encode((dbms_crypto.hash(w_blob, dbms_crypto.hash_sh1)))));
     dbms_output.put_line('-----------------------------------------------------------------------------');
 
-    -- JSON creation/parsing
-    dbms_lob.createtemporary(w_json_clob, true, dbms_lob.call);
-    dbms_lob.writeappend(w_json_clob, length('{"pdf": "'), '{"pdf": "');
-    dbms_lob.append(w_json_clob, w_clob);
-    dbms_lob.writeappend(w_json_clob, length('"}'), '"}');
-    obj_json := new pljson(w_json_clob);                           
-    obj_value := pljson_ext.get_json_value(obj_json, 'pdf');
+    -- JSON creation/parsing  
+    obj_json := new pljson();                             
+    obj_json.put(w_json_tag, pljson_ext.encode(w_blob));  
+    obj_value := pljson_ext.get_json_value(obj_json, w_json_tag);
     dbms_lob.createtemporary(w_clob, true);
-    json_value.get_string(obj_value, w_clob);
-    w_blob := pljson_ext.decode(new json_value(w_clob));
+    pljson_value.get_string(obj_value, w_clob);
+    w_blob := pljson_ext.decode(new pljson_value(w_clob));
+
     dbms_output.put_line('');
     dbms_output.put_line('PARSED FILE');
     dbms_output.put_line('-----------------------------------------------------------------------------');  
@@ -659,7 +657,6 @@ begin
     dbms_output.put_line('SHA1 base64: ' || utl_raw.cast_to_varchar2(utl_encode.base64_encode((dbms_crypto.hash(w_blob, dbms_crypto.hash_sh1)))));
     dbms_output.put_line('-----------------------------------------------------------------------------');
     dbms_lob.freetemporary(w_clob);        
-    dbms_lob.freetemporary(w_json_clob);     
     assertTrue(w_hash1 = w_hash2);
     pass(str);
   exception
