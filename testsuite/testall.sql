@@ -35,5 +35,6 @@ exec pljson_ut.startup;
 @@pljson_path.test.sql
 @@pljson_helper.test.sql
 @@pljson_unicode.test.sql
+@@pljson_base64.test.sql
 
 exec pljson_ut.shutdown;
