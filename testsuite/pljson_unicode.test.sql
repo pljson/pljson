@@ -29,9 +29,18 @@ declare
   VARCHAR2_2_CHAR_MAX_SIZE NUMBER := 5000;
   i NUMBER;
   k NUMBER;
+  
   t_start timestamp;
   t_stop  timestamp;
-  t_sec NUMBER;
+  t_sec number;
+  
+  function time_diff(a timestamp, b timestamp) return number is 
+  begin
+    return extract (day    from (a-b))*24*60*60 +
+           extract (hour   from (a-b))*60*60+
+           extract (minute from (a-b))*60+
+           extract (second from (a-b));
+  end;
   
 begin
   
@@ -188,7 +197,7 @@ begin
   end;
   
   t_stop := SYSTIMESTAMP;
-  t_sec := extract(second from t_stop - t_start);
+  t_sec := time_diff(t_stop, t_start);
   dbms_output.put_line('total sec = ' || to_char(t_sec));
   
   /*
