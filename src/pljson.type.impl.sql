@@ -19,8 +19,9 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-create or replace type body pljson as
 
+create or replace type body pljson as
+  
   /* Constructors */
   constructor function pljson return self as result as
   begin
@@ -43,10 +44,9 @@ create or replace type body pljson as
     return;
   end;
   
-  constructor function pljson(cast pljson_value) return self as result as
-    x number;
+  constructor function pljson(elem pljson_value) return self as result as
   begin
-    x := cast.object_or_array.getobject(self);
+    self := treat(elem.object_or_array as pljson);
     self.check_for_duplicate := 1;
     return;
   end;
@@ -59,7 +59,7 @@ create or replace type body pljson as
       end if;
       l.list_data(i).mapindx := i;
     end loop;
-  
+    
     self.json_data := l.list_data;
     self.check_for_duplicate := 1;
     return;
@@ -319,7 +319,7 @@ create or replace type body pljson as
   
   member function to_json_value return pljson_value as
   begin
-    return pljson_value(sys.anydata.convertobject(self));
+    return pljson_value(self);
   end;
   
   /* json path */

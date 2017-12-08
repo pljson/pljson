@@ -1,13 +1,13 @@
 create or replace type body pljson_value as
   
-  constructor function pljson_value(object_or_array sys.anydata) return self as result as
+  constructor function pljson_value(elem pljson_element) return self as result as
   begin
-    case object_or_array.gettypename
-      when sys_context('userenv', 'current_schema')||'.PLJSON_LIST' then self.typeval := 2;
-      when sys_context('userenv', 'current_schema')||'.PLJSON' then self.typeval := 1;
+    case
+      when elem is of (pljson)      then self.typeval := 1;
+      when elem is of (pljson_list) then self.typeval := 2;
       else raise_application_error(-20102, 'PLJSON_VALUE init error (PLJSON or PLJSON_LIST allowed)');
     end case;
-    self.object_or_array := object_or_array;
+    self.object_or_array := elem;
     if(self.object_or_array is null) then self.typeval := 6; end if;
     
     return;
@@ -84,6 +84,14 @@ create or replace type body pljson_value as
     self.typeval := 6; /* for JSON null */
     return;
   end pljson_value;
+  
+  member function get_element return pljson_element as
+  begin
+    if (self.typeval in (1,2)) then
+      return self.object_or_array;
+    end if;
+    return null;
+  end get_element;
   
   static function makenull return pljson_value as
   begin
@@ -302,7 +310,7 @@ create or replace type body pljson_value as
     else return null;
     end case;
   end;
-
+  
 end;
 /
 sho err
