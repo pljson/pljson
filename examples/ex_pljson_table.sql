@@ -23,7 +23,7 @@
 
 /*
   E.I.Sarmas (github.com/dsnz)   2016-02-09
-
+  
   implementation and demo for json_table.json_table() functionality
   modelled after Oracle 12c json_table()
   
@@ -79,26 +79,26 @@ commit;
 
 /*
   the call format is
-
+  
   <type>.json_table(<json document>, pljson_varray(...), pljson_varray())
   
   where <type> is pljson_table or json_table or pljson_table_impl
-
+  
   pljson_varray is a type used to pass multiple string arguments
-
+  
   1st pljson_varray contains 'paths' in the document to select and project as columns
   2nd pljson_varray contains 'names' for respective paths that will serve as 'column names'
-
+  
   the names array is optional, if not present the columns are named JSON_1, JSON_2, ...
-
+  
   the value for a column may be a single one (string/number/boolean/number)
   or an array of single values
-
+  
   the final table contains the 'cartesian product' of all column values
   (this is equivalent to the 'NESTED PATH' of json_table() in Oracle12c)
-
+  
   all returned columns are of type varchar2
-
+  
   it could be easy for the columns to be automatically of type varchar2/number/...
   but this would involve excessive number of transformations from and to
   varchar representation in the implementation and would impact performance
@@ -167,3 +167,111 @@ pljson_varray('name', 'extra', 'map', 'count', 'whatelse'))
 )
 order by num
 /
+
+/*
+  NEW 'nested' mode, same as NESTED PATH in Oracle 12c json_table but easier and less verbose
+  (previous mode is called 'cartessian' and is default)
+  each path is nested at same level or deeper than previous path
+  in order to express this, the path syntax supports '[*]' to indicate a json array
+  in this example
+  column 1 = value of "id" in each object of main json array
+  column 2 = value of "displayname" in same object
+  column 3 = value of "qty" in same object
+  column 4 = value of "xid" in each object within array "extras" inside object in previous columns
+  column 5 = value of "xtra" in same object as previous column
+  
+  === NOTE ===
+  in Oracle 12c, any run of json_table will produce 2 new types with Oracle generated names (like ST00001F3lDKZRT/+Zit/T5XWqsw=)
+  for each different select (different in number or names of columns)
+  these are temporary and should be cleared automatically within 12 hours
+*/
+select * from table(pljson_table.json_table(
+  '[
+    { "id": 0, "displayname": "Back",  "qty": 5, "extras": [ { "xid": 1, "xtra": "extra_1" }, { "xid": 21, "xtra": "extra_21" } ] },
+    { "id": 2, "displayname": "Front", "qty": 2, "extras": [ { "xid": 9, "xtra": "extra_9" }, { "xid": 90, "xtra": "extra_90" } ] },
+    { "id": 3, "displayname": "Middle", "qty": 9, "extras": [ { "xid": 5, "xtra": "extra_5" }, { "xid": 20, "xtra": "extra_20" } ] }
+  ]',
+  pljson_varray('[*].id', '[*].displayname', '[*].qty', '[*].extras[*].xid', '[*].extras[*].xtra'),
+  pljson_varray('id', 'displayname', 'qty', 'xid', 'xtra'),
+  table_mode => 'nested'
+));
+
+/*
+  NEW 'nested' mode, same as NESTED PATH in Oracle 12c json_table but easier and less verbose
+  (previous mode is called 'cartessian' and is default)
+  each path is nested at same level or deeper than previous path
+  in order to express this, the path syntax supports '[*]' to indicate a json array
+  an example from Oracle Database JSON Developer's Guide 12c Release 2 (12.2)
+  json document in pg. 4-2 and query in pg. 17-6 (enhanced with 2 extra initial columns)
+*/
+select * from table(pljson_table.json_table('{
+  "PONumber" : 1600,
+  "Reference" : "ABULL-20140421",
+  "Requestor" : "Alexis Bull",
+  "User" : "ABULL",
+  "CostCenter" : "A50",
+  "ShippingInstructions" : {"name" : "Alexis Bull",
+                            "Address" : {"street" : "200 Sporting Green",
+                                         "city" : "South San Francisco",
+                                         "state" : "CA",
+                                         "zipCode" : 99236,
+                                         "country" : "United States of America"},
+                            "Phone"   : [{"type" : "Office", "number" : "909-555-7307"},
+                                         {"type" : "Mobile", "number" : "415-555-1234"}]},
+  "Special Instructions" : null,
+  "AllowPartialShipment" : true,
+  "LineItems" : [{"ItemNumber" : 1,
+                  "Part" : {"Description" : "One Magic Christmas",
+                            "UnitPrice" : 19.95,
+                            "UPCCode" : 13131092899},
+                            "Quantity" : 9.0},
+                 {"ItemNumber" : 2,
+                  "Part" : {"Description" : "Lethal Weapon",
+                            "UnitPrice" : 19.95,
+                            "UPCCode" : 85391628927},
+                            "Quantity" : 5.0}]
+} ',
+  pljson_varray('Requestor', 'ShippingInstructions.Address.state', 'ShippingInstructions.Phone[*].type', 'ShippingInstructions.Phone[*].number'),
+  pljson_varray('requestor', 'state', 'phone_type', 'phone_num'),
+  table_mode => 'nested'
+));
+
+/*
+  NEW 'nested' mode, same as NESTED PATH in Oracle 12c json_table but easier and less verbose
+  (previous mode is called 'cartessian' and is default)
+  each path is nested at same level or deeper than previous path
+  in order to express this, the path syntax supports '[*]' to indicate a json array
+  an example from Oracle Database JSON Developer's Guide 12c Release 2 (12.2)
+  json document in pg. 4-2 and based on query in pg. 17-6 but with new columns illustrating more flexibility
+*/
+select * from table(pljson_table.json_table('{
+  "PONumber" : 1600,
+  "Reference" : "ABULL-20140421",
+  "Requestor" : "Alexis Bull",
+  "User" : "ABULL",
+  "CostCenter" : "A50",
+  "ShippingInstructions" : {"name" : "Alexis Bull",
+                            "Address" : {"street" : "200 Sporting Green",
+                                         "city" : "South San Francisco",
+                                         "state" : "CA",
+                                         "zipCode" : 99236,
+                                         "country" : "United States of America"},
+                            "Phone"   : [{"type" : "Office", "number" : "909-555-7307"},
+                                         {"type" : "Mobile", "number" : "415-555-1234"}]},
+  "Special Instructions" : null,
+  "AllowPartialShipment" : true,
+  "LineItems" : [{"ItemNumber" : 1,
+                  "Part" : {"Description" : "One Magic Christmas",
+                            "UnitPrice" : 19.95,
+                            "UPCCode" : 13131092899},
+                            "Quantity" : 9.0},
+                 {"ItemNumber" : 2,
+                  "Part" : {"Description" : "Lethal Weapon",
+                            "UnitPrice" : 19.95,
+                            "UPCCode" : 85391628927},
+                            "Quantity" : 5.0}]
+}',
+  pljson_varray('LineItems[*].ItemNumber', 'LineItems[*].Part.Description', 'LineItems[*].Quantity'),
+  pljson_varray('item_number', 'description', 'quantity'),
+  table_mode => 'nested'
+));
