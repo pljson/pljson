@@ -32,7 +32,7 @@
 <HR>
 <H2>
 <FONT SIZE="-1"></FONT>
-<BR>Object Type&nbsp;PLJSON</H2> <p>This package defines <em>PL/JSON</em>'s representation of the JSON
+<BR>Subtype&nbsp;PLJSON</H2> <p>This package defines <em>PL/JSON</em>'s representation of the JSON
  object type, e.g.:</p>
  <pre>
  {
@@ -84,6 +84,18 @@
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
        Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_ELEMENT
+       localTypeName=
+       schema=
+       fieldType=PLJSON_ELEMENT
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_ELEMENT.html">PLJSON_ELEMENT</A></CODE></FONT></TD><TD><CODE>SUPERTYPE</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
 </TR>
 </TABLE>
 <P></P>
@@ -497,7 +509,7 @@
 		siblingCount=4 
 		argumentCount=1 
 		predecessorCount=3 
-		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(PLJSON_VALUE)">PLJSON</A></B>(CAST IN PLJSON_VALUE)</CODE>
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(PLJSON_VALUE)">PLJSON</A></B>(ELEM IN PLJSON_VALUE)</CODE>
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
        <p>Create a new <code>pljson</code> object from a current <code>pljson_value</code>.</TD>
@@ -647,7 +659,7 @@
 		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PUT(PLJSON,VARCHAR2,PLJSON,PLS_INTEGER)">PUT</A></B>(SELF IN OUT NOCOPY PLJSON, PAIR_NAME IN VARCHAR2, PAIR_VALUE IN PLJSON, POSITION IN PLS_INTEGER DEFAULT NULL)</CODE>
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <B>Deprecated.</B>&nbsp;<I>Use <code>pljson_value</code> method instead.</I></TD>
+      </TD>
 </TR>
 <TR CLASS="TableRowColor">
 <TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
@@ -664,7 +676,7 @@
 		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PUT(PLJSON,VARCHAR2,PLJSON_LIST,PLS_INTEGER)">PUT</A></B>(SELF IN OUT NOCOPY PLJSON, PAIR_NAME IN VARCHAR2, PAIR_VALUE IN PLJSON_LIST, POSITION IN PLS_INTEGER DEFAULT NULL)</CODE>
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <B>Deprecated.</B>&nbsp;<I>Use <code>pljson_value</code> method instead.</I></TD>
+      </TD>
 </TR>
 <TR CLASS="TableRowColor">
 <TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
@@ -1326,7 +1338,7 @@
        localTypeName=
        schema=
        fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
-       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(CAST IN PLJSON_VALUE)</PRE>
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(ELEM IN PLJSON_VALUE)</PRE>
 <DL>
 <DD> <p>Create a new <code>pljson</code> object from a current <code>pljson_value</code>.
  <pre>
@@ -1342,11 +1354,11 @@
 <DL>
 <DT>Parameters:
         <DD>
-<CODE>CAST</CODE> -
-              The value to create a new object from.</DD>
+<CODE>ELEM</CODE> -
+              The <code>pljson_value</code> to cast to a <code>pljson</code> object.</DD>
 </DT>
 <DT>Returns:
-          <DD>A <code>pljson</code> instance.</DD>
+          <DD>An instance of <code>pljson</code>.</DD>
 </DT>
 </DL>
 </DD>
@@ -1374,7 +1386,7 @@
               The array to create a new object from.</DD>
 </DT>
 <DT>Returns:
-          <DD>A <code>pljson</code> instance.</DD>
+          <DD>An instance of <code>pljson</code>.</DD>
 </DT>
 </DL>
 </DD>
@@ -1568,17 +1580,12 @@
        fieldType=MEMBER PROCEDURE
        synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                            PAIR_NAME IN VARCHAR2, <BR>                            PAIR_VALUE IN PLJSON, <BR>                            POSITION IN PLS_INTEGER DEFAULT NULL)</PRE>
 <DL>
-<DD>
-      </DD>
+<DD></DD>
 <DD>
 <DL></DL>
 </DD>
 <P></P>
-<DL>
-<DT>Deprecated:</DT>
-<DD>Use <code>pljson_value</code> method instead.</DD>
-<P></P>
-</DL>
+<DL></DL>
 </DL>
 <HR>
 <A NAME="PUT(PLJSON,VARCHAR2,PLJSON_LIST,PLS_INTEGER)"></A>
@@ -1591,17 +1598,12 @@
        fieldType=MEMBER PROCEDURE
        synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                            PAIR_NAME IN VARCHAR2, <BR>                            PAIR_VALUE IN PLJSON_LIST, <BR>                            POSITION IN PLS_INTEGER DEFAULT NULL)</PRE>
 <DL>
-<DD>
-      </DD>
+<DD></DD>
 <DD>
 <DL></DL>
 </DD>
 <P></P>
-<DL>
-<DT>Deprecated:</DT>
-<DD>Use <code>pljson_value</code> method instead.</DD>
-<P></P>
-</DL>
+<DL></DL>
 </DL>
 <HR>
 <A NAME="REMOVE(VARCHAR2)"></A>

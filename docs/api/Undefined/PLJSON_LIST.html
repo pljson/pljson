@@ -32,7 +32,7 @@
 <HR>
 <H2>
 <FONT SIZE="-1"></FONT>
-<BR>Object Type&nbsp;PLJSON_LIST</H2> <p>This package defines <em>PL/JSON</em>'s representation of the JSON
+<BR>Subtype&nbsp;PLJSON_LIST</H2> <p>This package defines <em>PL/JSON</em>'s representation of the JSON
  array type, e.g. <code>[1, 2, "foo", "bar"]</code>.</p>
  <p>The primary method exported by this package is the <code>pljson_list</code>
  method.</p>
@@ -65,6 +65,18 @@
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
        Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_ELEMENT
+       localTypeName=
+       schema=
+       fieldType=PLJSON_ELEMENT
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_ELEMENT.html">PLJSON_ELEMENT</A></CODE></FONT></TD><TD><CODE>SUPERTYPE</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
 </TR>
 </TABLE>
 <P></P>
@@ -477,7 +489,7 @@
 		siblingCount=3 
 		argumentCount=1 
 		predecessorCount=3 
-		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_LIST(PLJSON_VALUE)">PLJSON_LIST</A></B>(CAST IN PLJSON_VALUE)</CODE>
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_LIST(PLJSON_VALUE)">PLJSON_LIST</A></B>(ELEM IN PLJSON_VALUE)</CODE>
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
        <p>Create an instance from a given instance of <code>pljson_value</code>
@@ -1194,7 +1206,7 @@
        localTypeName=
        schema=
        fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
-       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_LIST</B>(CAST IN PLJSON_VALUE)</PRE>
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_LIST</B>(ELEM IN PLJSON_VALUE)</PRE>
 <DL>
 <DD> <p>Create an instance from a given instance of <code>pljson_value</code>
  that represents an array.</p>
@@ -1203,7 +1215,7 @@
 <DL>
 <DT>Parameters:
         <DD>
-<CODE>CAST</CODE> -
+<CODE>ELEM</CODE> -
               The <code>pljson_value</code> to cast to a <code>pljson_list</code>.</DD>
 </DT>
 <DT>Returns:
