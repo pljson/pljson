@@ -56,6 +56,7 @@ declare begin
   begin execute immediate 'drop type pljson_list force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_value_array force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_value force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_element force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_narray force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_vtab force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_varray force'; exception when others then null; end;

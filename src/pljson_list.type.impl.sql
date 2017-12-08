@@ -18,10 +18,10 @@
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
-  */
+*/
 
 create or replace type body pljson_list as
-
+  
   constructor function pljson_list return self as result as
   begin
     self.list_data := pljson_value_array();
@@ -40,10 +40,9 @@ create or replace type body pljson_list as
     return;
   end;
   
-  constructor function pljson_list(cast pljson_value) return self as result as
-    x number;
+  constructor function pljson_list(elem pljson_value) return self as result as
   begin
-    x := cast.object_or_array.getobject(self);
+    self := treat(elem.object_or_array as pljson_list);
     return;
   end;
   
@@ -71,7 +70,7 @@ create or replace type body pljson_list as
       end loop;
       self.list_data(position) := insert_value;
     end if;
-  
+
   end;
   
   member procedure append(self in out nocopy pljson_list, elem varchar2, position pls_integer default null) as
@@ -232,7 +231,7 @@ create or replace type body pljson_list as
     t pljson_list;
   begin
     if(self.count > 0) then
-      t := pljson_list(self.list_data);
+      t := pljson_list(self.to_json_value);
       t.remove(1);
       return t;
     else return pljson_list(); end if;
@@ -337,9 +336,9 @@ create or replace type body pljson_list as
     while(jp.head().get_number() > self.count) loop
       self.append(pljson_value());
     end loop;
-
+    
     objlist := pljson(self);
-
+    
     if(elem is null) then
       pljson_ext.put(objlist, json_path, pljson_value, base);
     else
@@ -393,7 +392,7 @@ create or replace type body pljson_list as
   
   member function to_json_value return pljson_value as
   begin
-    return pljson_value(sys.anydata.convertobject(self));
+    return pljson_value(self);
   end;
   
   /* --backwards compatibility

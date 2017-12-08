@@ -1,4 +1,5 @@
-create or replace type pljson_list as object (
+create or replace type pljson_list force under pljson_element (
+  
   /*
   Copyright (c) 2010 Jonas Krogsboell
   
@@ -44,7 +45,7 @@ create or replace type pljson_list as object (
   
   /** Private variable for internal processing. */
   list_data pljson_value_array,
-
+  
   /**
    * <p>Create an empty list.</p>
    *
@@ -89,10 +90,10 @@ create or replace type pljson_list as object (
    * <p>Create an instance from a given instance of <code>pljson_value</code>
    * that represents an array.</p>
    *
-   * @param cast The <code>pljson_value</code> to cast to a <code>pljson_list</code>.
+   * @param elem The <code>pljson_value</code> to cast to a <code>pljson_list</code>.
    * @return An instance of <code>pljson_list</code>.
    */
-  constructor function pljson_list(cast pljson_value) return self as result,
+  constructor function pljson_list(elem pljson_value) return self as result,
   
   member procedure append(self in out nocopy pljson_list, elem pljson_value, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem varchar2, position pls_integer default null),

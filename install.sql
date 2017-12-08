@@ -35,6 +35,7 @@ PROMPT -- Compiling objects for PL/JSON --;
 PROMPT -----------------------------------;
 @@uninstall.sql
 
+@@src/pljson_element.type.decl.sql
 @@src/pljson_value.type.decl.sql
 @@src/pljson_list.type.decl.sql
 @@src/pljson.type.decl.sql

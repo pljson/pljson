@@ -1,4 +1,5 @@
-create or replace type pljson as object (
+create or replace type pljson force under pljson_element (
+  
   /*
   Copyright (c) 2010 Jonas Krogsboell
   
@@ -111,16 +112,16 @@ create or replace type pljson as object (
    *   end;
    * </pre>
    *
-   * @param cast The value to create a new object from.
-   * @return A <code>pljson</code> instance.
+   * @param elem The <code>pljson_value</code> to cast to a <code>pljson</code> object.
+   * @return An instance of <code>pljson</code>.
    */
-  constructor function pljson(cast pljson_value) return self as result,
+  constructor function pljson(elem pljson_value) return self as result,
   
   /**
    * <p>Create a new <code>pljson</code> object from a current <code>pljson_list</code>.
    *
    * @param l The array to create a new object from.
-   * @return A <code>pljson</code> instance.
+   * @return An instance of <code>pljson</code>.
    */
   constructor function pljson(l in out nocopy pljson_list) return self as result,
   
@@ -189,7 +190,7 @@ create or replace type pljson as object (
   member procedure check_duplicate(self in out nocopy pljson, v_set boolean),
   member procedure remove_duplicates(self in out nocopy pljson),
   
-  /* 
+  /*
    * had been marked as deprecated in favor of the overloaded method with pljson_value
    * the reason is unknown even though it is useful in coding
    * and removes the need for the user to do a conversion
@@ -203,7 +204,7 @@ create or replace type pljson as object (
    * it is possible to compile the project without error and keep these procedures
    */
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson, position pls_integer default null),
-  /* 
+  /*
    * had been marked as deprecated in favor of the overloaded method with pljson_value
    * the reason is unknown even though it is useful in coding
    * and removes the need for the user to do a conversion
