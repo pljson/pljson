@@ -1,41 +1,15 @@
+
 /**
- * Test of PLSQL JSON Object by Jonas Krogsboell
+ * Test of Base64 encode/decode, submitted by @lolekthegreat
  **/
+
 set serveroutput on format wrapped
-declare
-  pass_count number := 0;
-  fail_count number := 0;
-  total_count number := 0;
-  str varchar2(200);
-  
-  procedure pass(str varchar2) as
-  begin
-    pass_count := pass_count + 1;
-    total_count := total_count + 1;
-    dbms_output.put_line('OK: '||str);
-  end;
-  
-  procedure fail(str varchar2) as
-  begin
-    fail_count := fail_count + 1;
-    total_count := total_count + 1;
-    dbms_output.put_line('FAILED: '||str);
-  end;
-  
-  procedure assertTrue(b boolean) as
-  begin
-    if(not b) then raise_application_error(-20111, 'Test error'); end if;
-  end;
-  
-  procedure assertFalse(b boolean) as
-  begin
-    if(b) then raise_application_error(-20111, 'Test error'); end if;
-  end;
+set linesize 100
 
 begin
-  dbms_output.put_line('pljson base64 test:');
+  pljson_ut.testsuite('pljson_ext base64 test', 'pljson_base64.test.sql');
   
-  str := 'Base64 encode/decode size > 32K';
+  pljson_ut.testcase('Base64 encode/decode size > 32K');
   declare
     w_tmp_string varchar2(32000);
     w_clob clob;
@@ -46,7 +20,25 @@ begin
     w_blob blob;
     w_hash1 varchar2(40);
     w_hash2 varchar2(40);
+    
+    /* debugging
+    w_clob1 clob;
+    w_clob2 clob;
+    w_char varchar2(1000);
+    w_blob1 blob;
+    w_blob2 blob;
+    */
+    test_name varchar2(100);
   begin
+    test_name := 'hash check';
+    
+    /* debugging
+    dbms_lob.createtemporary(w_clob1, true, dbms_lob.call);
+    dbms_lob.createtemporary(w_clob2, true, dbms_lob.call);
+    dbms_lob.createtemporary(w_blob1, true, dbms_lob.call);
+    dbms_lob.createtemporary(w_blob2, true, dbms_lob.call);
+    */
+    
     -- test file creation
     dbms_lob.createtemporary(w_clob, true, dbms_lob.call);
     w_tmp_string := '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';
@@ -629,9 +621,29 @@ begin
     dbms_lob.writeappend(w_clob, length(w_tmp_string), w_tmp_string);
     w_tmp_string := 'IG4gCjAwMDAyMDI4NDIgMDAwMDAgbiAKMDAwMDI5MzI4MyAwMDAwMCBuIAowMDAwNDE4ODg1IDAwMDAwIG4gCjAwMDA0MTk5MTMgMDAwMDAgbiAKMDAwMDM5MTgzMSAwMDAwMCBuIAowMDAwMzkxODYzIDAwMDAwIG4gCjAwMDAzOTI1MDUgMDAwMDAgbiAKMDAwMDM5MjM1NiAwMDAwMCBuIAowMDAwMzkyMjAzIDAwMDAwIG4gCjAwMDAyOTMzMDUgMDAwMDAgbiAKMDAwMDM4NjgzNiAwMDAwMCBuIAowMDAwNDE1ODExIDAwMDAwIG4gCjAwMDA0MTc4NjEgMDAwMDAgbiAKMDAwMDM5MjI4MSAwMDAwMCBuIAowMDAwMzkyMzEzIDAwMDAwIG4gCjAwMDAzOTU4NjMgMDAwMDAgbiAKMDAwMDM5OTIxMiAwMDAwMCBuIAowMDAwNDA2MzMyIDAwMDAwIG4gCjAwMDA0MTA1MTYgMDAwMDAgbiAKMDAwMDQxNTc5MCAwMDAwMCBuIAowMDAwNDI0MTY3IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgOTUgL1Jvb3QgMSAwIFIgL0luZm8gMiAwIFIKPj4Kc3RhcnR4cmVmCjQzMjAxNAolJUVPRgo=';
     dbms_lob.writeappend(w_clob, length(w_tmp_string), w_tmp_string);
-
+    
+    /* debugging
+    dbms_output.put_line('c1>>');
+    dbms_output.put_line(dbms_lob.substr(w_clob, 200, 1));
+    dbms_output.put_line('===');
+    dbms_output.put_line(dbms_lob.substr(w_clob, 200, dbms_lob.getlength(w_clob) - 199));
+    dbms_output.put_line('<<c1');
+    dbms_lob.copy(w_clob1, w_clob, 2000000);
+    */
+    
     -- blob decoding
     w_blob := pljson_ext.decodeBase64Clob2Blob(w_clob);
+    
+    /* debugging
+    dbms_output.put_line('b1>>' || dbms_lob.substr(w_blob, 200, 1));
+    dbms_output.put_line(dbms_lob.substr(w_blob, 200, dbms_lob.getlength(w_blob) - 199) || '<<b1');
+    select dump(dbms_lob.substr(w_blob, 3, dbms_lob.getlength(w_blob) - 2), 16)
+    into w_char
+    from dual;
+    dbms_output.put_line('b1>>' || w_char || '<<b1');
+    dbms_lob.copy(w_blob1, w_blob, 2000000);
+    */
+    
     dbms_output.put_line('ORIGINAL FILE');
     dbms_output.put_line('-----------------------------------------------------------------------------');
     dbms_output.put_line('BLOB length: ' || dbms_lob.getlength(w_blob));
@@ -639,15 +651,113 @@ begin
     dbms_output.put_line('SHA1 hash: ' || dbms_crypto.hash(w_blob, dbms_crypto.hash_sh1));
     dbms_output.put_line('SHA1 base64: ' || utl_raw.cast_to_varchar2(utl_encode.base64_encode((dbms_crypto.hash(w_blob, dbms_crypto.hash_sh1)))));
     dbms_output.put_line('-----------------------------------------------------------------------------');
-
+    
+    --dbms_lob.createtemporary(w_clob, true);
+    dbms_lob.trim(w_clob, 0);
+    
     -- JSON creation/parsing  
-    obj_json := new pljson();                             
-    obj_json.put(w_json_tag, pljson_ext.encode(w_blob));  
+    obj_json := new pljson();
+    obj_json.put(w_json_tag, pljson_ext.encode(w_blob));
     obj_value := pljson_ext.get_json_value(obj_json, w_json_tag);
-    dbms_lob.createtemporary(w_clob, true);
-    pljson_value.get_string(obj_value, w_clob);
+    --pljson_value.get_string(obj_value, w_clob);
+    obj_value.get_string(w_clob);
+    
+    /* debugging
+    dbms_output.put_line('c2>>');
+    dbms_output.put_line(dbms_lob.substr(w_clob, 200, 1));
+    dbms_output.put_line('===');
+    dbms_output.put_line(dbms_lob.substr(w_clob, 200, dbms_lob.getlength(w_clob) - 199));
+    dbms_output.put_line('<<c2');
+    dbms_lob.copy(w_clob2, w_clob, 2000000);
+    
+    select dump(dbms_lob.substr(w_clob, 150, 1), 16)
+    into w_char
+    from dual;
+    dbms_output.put_line('c2(dump)>>' || w_char || '<<c2(dump)');
+    */
+    
     w_blob := pljson_ext.decode(new pljson_value(w_clob));
-
+    
+    /* debugging
+    dbms_output.put_line('b2>>' || dbms_lob.substr(w_blob, 200, 1));
+    dbms_output.put_line(dbms_lob.substr(w_blob, 200, dbms_lob.getlength(w_blob) - 199) || '<<b2');
+    select dump(dbms_lob.substr(w_blob, 3, dbms_lob.getlength(w_blob) - 2), 16)
+    into w_char
+    from dual;
+    dbms_output.put_line('b2>>' || w_char || '<<b2');
+    dbms_lob.copy(w_blob2, w_blob, 2000000);
+    */
+    
+    /* debugging
+    declare
+      i number;
+      j number;
+      lim number;
+    begin
+      dbms_output.put_line('clob compare');
+      i := 1; j := 1;
+      lim := dbms_lob.getlength(w_clob1);
+      while i <= lim loop
+        if dbms_lob.substr(w_clob1, 1, i) != dbms_lob.substr(w_clob2, 1, j) then
+          dbms_output.put_line('clob diff at char pos = ' || i || ',' || j);
+          select dump(dbms_lob.substr(w_clob1, 10, i), 16)
+          into w_char
+          from dual;
+          dbms_output.put_line('c1>>' || w_char || '<<c1');
+          select dump(dbms_lob.substr(w_clob2, 10, i), 16)
+          into w_char
+          from dual;
+          dbms_output.put_line('c2>>' || w_char || '<<c2');
+          exit;
+        end if;
+        i := i + 1;
+        while dbms_lob.substr(w_clob1, 1, i) = chr(10) or dbms_lob.substr(w_clob1, 1, i) = chr(13) loop
+          dbms_output.put_line('skip 1, ' || i);
+          i := i + 1;
+        end loop;
+        j := j + 1;
+        while dbms_lob.substr(w_clob2, 1, j) = chr(10) or dbms_lob.substr(w_clob2, 1, j) = chr(13) loop
+          --dbms_output.put_line('skip 2, ' || j);
+          j := j + 1;
+        end loop;
+      end loop;
+      i := i - 1;
+      j := j - 1;
+      dbms_output.put_line('clob compare, checked up to ' || i || ',' || j);
+    end;
+    */
+    
+    /* debugging
+    declare
+      i number;
+      lim number;
+    begin
+      dbms_output.put_line('blob compare');
+      i := 1;
+      lim := dbms_lob.getlength(w_blob1);
+      while i <= lim loop
+        if dbms_lob.substr(w_blob1, 1, i) != dbms_lob.substr(w_blob2, 1, i) then
+          dbms_output.put_line('diff at char pos = ' || i);
+          select dump(dbms_lob.substr(w_blob1, 10, i), 16)
+          into w_char
+          from dual;
+          dbms_output.put_line('b1>>' || w_char || '<<b1');
+          select dump(dbms_lob.substr(w_blob2, 10, i), 16)
+          into w_char
+          from dual;
+          dbms_output.put_line('b2>>' || w_char || '<<b2');
+          exit;
+        end if;
+        i := i + 1;
+      end loop;
+    end;
+    */
+    
+    /* debugging
+    utl.save_file(w_blob1, 'w_blob1.pdf', 'DATA_PUMP_DIR');
+    utl.save_file(w_blob2, 'w_blob2.pdf', 'DATA_PUMP_DIR');
+    */
+    
     dbms_output.put_line('');
     dbms_output.put_line('PARSED FILE');
     dbms_output.put_line('-----------------------------------------------------------------------------');  
@@ -656,18 +766,16 @@ begin
     dbms_output.put_line('SHA1 hash: ' || w_hash2);
     dbms_output.put_line('SHA1 base64: ' || utl_raw.cast_to_varchar2(utl_encode.base64_encode((dbms_crypto.hash(w_blob, dbms_crypto.hash_sh1)))));
     dbms_output.put_line('-----------------------------------------------------------------------------');
-    dbms_lob.freetemporary(w_clob);        
-    assertTrue(w_hash1 = w_hash2);
-    pass(str);
+    
+    dbms_lob.freetemporary(w_clob);
+    
+    pljson_ut.assertTrue(w_hash1 = w_hash2);
   exception
-    when others then fail(str);
+    when others then
+      pljson_ut.fail(test_name);
   end;
-
-  begin
-    execute immediate 'insert into pljson_testsuite values (:1, :2, :3, :4, :5)' using
-    'pljson_base64 test', pass_count, fail_count, total_count,'pljson_base64_test.sql';
-  exception
-    when others then null;
-  end;
+  
+  pljson_ut.testsuite_report;
+  
 end;
 /
