@@ -196,6 +196,22 @@ begin
     pljson_ut.assertTrue(lengthb(json_var) = 32222, 'lengthb(json_var) = 32222');
   end;
   
+  pljson_ut.testcase('Creation of JSON from BLOB');
+  declare
+    json_char varchar2(4000) := '{"'||text_2_byte||'":"'||text_2_byte||'"}';
+    json_raw varchar2(4000) := utl_i18n.string_to_raw(json_char,'AL32UTF8');
+    b blob;
+  begin
+    dbms_lob.createtemporary(b, true);
+    dbms_lob.writeappend(b, utl_raw.length(json_raw), json_raw);
+    test_json := pljson(b);
+    dbms_lob.freetemporary(b);
+    
+    --dbms_output.put_line(test_json.to_char(false));
+    
+    pljson_ut.assertTrue(json_char = test_json.to_char(false), 'json_char = test_json.to_char()');    
+  end;
+
   t_stop := SYSTIMESTAMP;
   t_sec := time_diff(t_stop, t_start);
   dbms_output.put_line('total sec = ' || to_char(t_sec));

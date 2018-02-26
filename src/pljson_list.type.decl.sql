@@ -87,6 +87,15 @@ create or replace type pljson_list force under pljson_element (
   constructor function pljson_list(str clob) return self as result,
   
   /**
+   * <p>Create an instance from a given JSON array representation stored in
+   * a <code>BLOB</code>.</p>
+   *
+   * @param str The <code>BLOB</code> to parse.
+   * @return An instance of <code>pljson_list</code>.
+   */
+  constructor function pljson_list(str blob) return self as result,
+  
+  /**
    * <p>Create an instance from a given instance of <code>pljson_value</code>
    * that represents an array.</p>
    *

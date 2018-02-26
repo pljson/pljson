@@ -44,6 +44,16 @@ create or replace type body pljson as
     return;
   end;
   
+  constructor function pljson(str in blob) return self as result as
+    c_str clob;
+  begin
+    pljson_ext.blob2clob(str, c_str);
+    self := pljson_parser.parser(c_str);
+    self.check_for_duplicate := 1;
+    dbms_lob.freetemporary(c_str);
+    return;
+  end;
+  
   constructor function pljson(elem pljson_value) return self as result as
   begin
     self := treat(elem.object_or_array as pljson);
