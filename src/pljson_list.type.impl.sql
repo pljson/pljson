@@ -40,10 +40,10 @@ create or replace type body pljson_list as
     return;
   end;
   
-  constructor function pljson_list(str blob) return self as result as
+  constructor function pljson_list(str blob, charset varchar2 default 'UTF8') return self as result as
     c_str clob;
   begin
-    pljson_ext.blob2clob(str, c_str);
+    pljson_ext.blob2clob(str, c_str, charset);
     self := pljson_parser.parse_list(c_str);
     dbms_lob.freetemporary(c_str);
     return;

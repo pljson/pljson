@@ -209,7 +209,7 @@ begin
     
     --dbms_output.put_line(test_json.to_char(false));
     
-    pljson_ut.assertTrue(json_char = test_json.to_char(false), 'json_char = test_json.to_char()');    
+    pljson_ut.assertTrue(json_char = test_json.to_char(false), 'json_char = test_json.to_char(false)');    
   end;
 
   t_stop := SYSTIMESTAMP;

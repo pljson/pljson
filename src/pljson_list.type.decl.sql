@@ -91,9 +91,10 @@ create or replace type pljson_list force under pljson_element (
    * a <code>BLOB</code>.</p>
    *
    * @param str The <code>BLOB</code> to parse.
+   * @param charset The character set of the BLOB data (defaults to UTF-8).
    * @return An instance of <code>pljson_list</code>.
    */
-  constructor function pljson_list(str blob) return self as result,
+  constructor function pljson_list(str blob, charset varchar2 default 'UTF8') return self as result,
   
   /**
    * <p>Create an instance from a given instance of <code>pljson_value</code>
