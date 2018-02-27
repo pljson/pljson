@@ -725,5 +725,23 @@ create or replace package body pljson_ext as
     
   end decode;
   
+  procedure blob2clob(b blob, c out clob, charset varchar2 default 'UTF8') as
+    v_dest_offset integer := 1;
+    v_src_offset integer := 1;
+    v_lang_context integer := 0;
+    v_warning integer := 0;
+  begin
+    dbms_lob.createtemporary(c, TRUE);
+    dbms_lob.converttoclob(
+      dest_lob => c,
+      src_blob => b,
+      amount => dbms_lob.LOBMAXSIZE,
+      dest_offset => v_dest_offset,
+      src_offset => v_src_offset,
+      blob_csid => nls_charset_id(charset),
+      lang_context => v_lang_context,
+      warning => v_warning);
+  end;
+  
 end pljson_ext;
 /

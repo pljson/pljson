@@ -134,11 +134,11 @@
 <TR CLASS="TableRowColor">
 <TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
        schemaName=
-       typeName=SYS.ANYDATA
+       typeName=PLJSON_ELEMENT
        localTypeName=
        schema=
-       fieldType=SYS.ANYDATA
-       synonymsFile=,,--><!--GenerateTypeLink: default reached-->SYS.ANYDATA</CODE></FONT></TD><TD><CODE><B><A HREF="#OBJECT_OR_ARRAY">OBJECT_OR_ARRAY</A></B></CODE>
+       fieldType=PLJSON_ELEMENT
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_ELEMENT.html">PLJSON_ELEMENT</A></CODE></FONT></TD><TD><CODE><B><A HREF="#OBJECT_OR_ARRAY">OBJECT_OR_ARRAY</A></B></CODE>
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
        Private variable for internal processing.</TD>
@@ -218,6 +218,23 @@
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
        <p>Retrieve the value as a <code>binary_double</code>.</p>
 </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_ELEMENT
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_ELEMENT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_ELEMENT</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_ELEMENT">GET_ELEMENT</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
 </TR>
 <TR CLASS="TableRowColor">
 <TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
@@ -550,7 +567,7 @@
 		siblingCount=6 
 		argumentCount=1 
 		predecessorCount=0 
-		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_VALUE(SYS.ANYDATA)">PLJSON_VALUE</A></B>(OBJECT_OR_ARRAY IN SYS.ANYDATA)</CODE>
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_VALUE(PLJSON_ELEMENT)">PLJSON_VALUE</A></B>(ELEM IN PLJSON_ELEMENT)</CODE>
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       </TD>
@@ -827,7 +844,7 @@
 <A NAME="OBJECT_OR_ARRAY"></A>
 <H3>OBJECT_OR_ARRAY</H3>
 <PRE>
-        public SYS.ANYDATA <B>OBJECT_OR_ARRAY</B>
+        public PLJSON_ELEMENT <B>OBJECT_OR_ARRAY</B>
 </PRE>
 <DL>
 <DD> Private variable for internal processing. 
@@ -918,6 +935,24 @@
           <DD>An instance of <code>binary_double</code> or <code>null</code> if the value isn't a number.</DD>
 </DT>
 </DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_ELEMENT"></A>
+<H3>GET_ELEMENT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_ELEMENT
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_ELEMENT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_ELEMENT <B>GET_ELEMENT</B>()</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
 </DD>
 <P></P>
 <DL></DL>
@@ -1342,7 +1377,7 @@
 <DL></DL>
 </DL>
 <HR>
-<A NAME="PLJSON_VALUE(SYS.ANYDATA)"></A>
+<A NAME="PLJSON_VALUE(PLJSON_ELEMENT)"></A>
 <H3>PLJSON_VALUE</H3>
 <PRE>public <!--
        schemaName=
@@ -1350,7 +1385,7 @@
        localTypeName=
        schema=
        fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
-       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_VALUE</B>(OBJECT_OR_ARRAY IN SYS.ANYDATA)</PRE>
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_VALUE</B>(ELEM IN PLJSON_ELEMENT)</PRE>
 <DL>
 <DD></DD>
 <DD>
