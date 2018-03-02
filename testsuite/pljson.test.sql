@@ -23,6 +23,17 @@ begin
     pljson_ut.assertTrue(obj.to_char(false) = '{}', 'obj.to_char(false) = ''{}''');
   end;
   
+  -- constructor with pljson_varray
+  pljson_ut.testcase('Test constructor with pljson_varray');
+  declare
+    obj pljson;
+  begin
+    obj := pljson(pljson_varray('key1', 'val1', 'key2', 'val2', 'key3', 'val3'));
+    pljson_ut.assertTrue(nvl(pljson_ext.get_string(obj, 'key1'), 'x1') = 'val1', 'nvl(pljson_ext.get_string(obj, ''key1''), ''x1'') = ''val1''');
+    pljson_ut.assertTrue(nvl(pljson_ext.get_string(obj, 'key2'), 'x2') = 'val2', 'nvl(pljson_ext.get_string(obj, ''key2''), ''x2'') = ''val2''');
+    pljson_ut.assertTrue(nvl(pljson_ext.get_string(obj, 'key3'), 'x3') = 'val3', 'nvl(pljson_ext.get_string(obj, ''key3''), ''x3'') = ''val3''');
+  end;
+  
   -- put method
   pljson_ut.testcase('Test put method');
   declare

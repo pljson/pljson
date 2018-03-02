@@ -1,6 +1,8 @@
-
+set termout off
 create or replace type pljson_varray as table of varchar2(32767);
 /
+
+set termout on
 
 create or replace type pljson_vtab as table of pljson_varray;
 /

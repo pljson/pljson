@@ -87,7 +87,20 @@ begin
     l := pljson_list('[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15'); --missing end
     pljson_ut.fail(test_name);
   exception
-    when others then pljson_ut.pass(test_name);
+    when others then
+      pljson_ut.pass(test_name);
+  end;
+  
+  -- constructor with pljson_varray
+  pljson_ut.testcase('Test constructor with pljson_varray');
+  declare
+    l pljson_list;
+  begin
+    l := pljson_list(pljson_varray('val1', 'val2', 'val3'));
+    pljson_ut.assertTrue(l.count = 3, 'l.count = 3');
+    pljson_ut.assertTrue(nvl(l.get(1).get_string, 'x1') = 'val1', 'nvl(l.get(1).get_string, ''x1'') = ''val1''');
+    pljson_ut.assertTrue(nvl(l.get(2).get_string, 'x2') = 'val2', 'nvl(l.get(2).get_string, ''x2'') = ''val2''');
+    pljson_ut.assertTrue(nvl(l.get(3).get_string, 'x3') = 'val3', 'nvl(l.get(3).get_string, ''x3'') = ''val3''');
   end;
   
   -- add different types
@@ -262,7 +275,8 @@ begin
     x2 := n.get_string;
     pljson_ut.pass(test_name);
   exception
-    when others then pljson_ut.fail(test_name);
+    when others then
+      pljson_ut.fail(test_name);
   end;
   
   -- insert null boolean

@@ -19,6 +19,9 @@ create or replace package ut_pljson_list_test is
   --%test(Test list parser constructor, 2)   
   procedure test_parser_2;
   
+  --%test(Test constructor with pljson_varray)
+  procedure test_blob;
+  
   --%test(Test add different types)
   procedure test_add_types;
   
@@ -62,7 +65,7 @@ end ut_pljson_list_test;
 /
 
 create or replace package body ut_pljson_list_test is
-    
+  
   EOL varchar2(10) := chr(13);
   
   -- INDENT_1 varchar2(10) := '  ';
@@ -174,7 +177,19 @@ create or replace package body ut_pljson_list_test is
     l := pljson_list('[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15'); --missing end
     fail(test_name);
   exception
-    when others then pass(test_name);
+    when others then
+      pass(test_name);
+  end;
+  
+  -- constructor with pljson_varray
+  procedure test_blob is
+    l pljson_list;
+  begin
+    l := pljson_list(pljson_varray('val1', 'val2', 'val3'));
+    assertTrue(l.count = 3, 'l.count = 3');
+    assertTrue(nvl(l.get(1).get_string, 'x1') = 'val1', 'nvl(l.get(1).get_string, ''x1'') = ''val1''');
+    assertTrue(nvl(l.get(2).get_string, 'x2') = 'val2', 'nvl(l.get(2).get_string, ''x2'') = ''val2''');
+    assertTrue(nvl(l.get(3).get_string, 'x3') = 'val3', 'nvl(l.get(3).get_string, ''x3'') = ''val3''');
   end;
   
   -- add different types
@@ -340,7 +355,8 @@ create or replace package body ut_pljson_list_test is
     x2 := n.get_string;
     pass(test_name);
   exception
-    when others then fail(test_name);
+    when others then
+      fail(test_name);
   end;
   
   -- insert null boolean
