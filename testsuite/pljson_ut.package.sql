@@ -174,7 +174,23 @@ create or replace package body pljson_ut as
         lpad('FILE_NAME', 30) file_name
         from dual
       union
+        select 5 s, 0,
+        lpad('ALL TESTS', 30) suite_name,
+        to_char(sum(passed), '999999') passed,
+        to_char(sum(failed), '999999') failed,
+        to_char(sum(total), '999999') total,
+        lpad(' ', 30) file_name
+        from pljson_testsuite
+      union
         select 2 s, 0 suite_id,
+        lpad('-', 30, '-') suite_name,
+        lpad('-', 7, '-') passed,
+        lpad('-', 7, '-') failed,
+        lpad('-', 7, '-') total,
+        lpad('-', 30, '-') file_name
+        from dual
+      union
+        select 4 s, 0 suite_id,
         lpad('-', 30, '-') suite_name,
         lpad('-', 7, '-') passed,
         lpad('-', 7, '-') failed,

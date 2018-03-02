@@ -30,6 +30,9 @@ create or replace package ut_pljson_unicode_test is
   --%test(Test json list with many small strings of 64 2-byte chars using to_char())
   procedure test_list_strings_2;
   
+  --%test(Test creation of json from blob)
+  procedure test_blob;
+  
 end ut_pljson_unicode_test;
 /
 
@@ -52,6 +55,8 @@ create or replace package body ut_pljson_unicode_test is
   VARCHAR2_2_CHAR_MAX_SIZE NUMBER := 5000;
   i NUMBER;
   k NUMBER;
+  
+  ascii_output_saved_setting boolean;
   
   t_start timestamp;
   t_stop  timestamp;
@@ -103,6 +108,28 @@ create or replace package body ut_pljson_unicode_test is
            extract (hour   from (a-b))*60*60+
            extract (minute from (a-b))*60+
            extract (second from (a-b));
+  end;
+  
+  --%beforeall
+  procedure before_all is
+  begin
+    t_start := SYSTIMESTAMP;
+    
+    -- save ascii_output setting
+    ascii_output_saved_setting := pljson_printer.ascii_output;
+    -- default setting
+    pljson_printer.ascii_output := true;
+  end;
+  
+  --%afterall
+  procedure after_all is
+  begin
+    -- restore ascii_output setting
+    pljson_printer.ascii_output := ascii_output_saved_setting;
+    
+    t_stop := SYSTIMESTAMP;
+    t_sec := time_diff(t_stop, t_start);
+    dbms_output.put_line('total sec = ' || to_char(t_sec));
   end;
   
   /* json with
@@ -202,9 +229,26 @@ create or replace package body ut_pljson_unicode_test is
     assertTrue(lengthb(json_var) = 32222, 'lengthb(json_var) = 32222');
   end;
   
-begin
+  --%test(Test creation of json from blob)
+  procedure test_blob is
+    json_char varchar2(4000) := '{"'||text_2_byte||'":"'||text_2_byte||'"}';
+    json_raw varchar2(4000) := utl_i18n.string_to_raw(json_char,'AL32UTF8');
+    b blob;
+  begin
+    dbms_lob.createtemporary(b, true);
+    dbms_lob.writeappend(b, utl_raw.length(json_raw), json_raw);
+    test_json := pljson(b);
+    dbms_lob.freetemporary(b);
+    
+    --dbms_output.put_line(test_json.to_char(false));
+    
+    pljson_printer.ascii_output := false;
+    assertTrue(json_char = test_json.to_char(false), 'json_char = test_json.to_char(false)');
+    -- default setting
+    pljson_printer.ascii_output := true;
+  end;
   
-  --t_start := SYSTIMESTAMP;
+begin
   
   /* json with
   1 clob string of ~ 256K 1-byte chars
@@ -256,10 +300,6 @@ begin
   var_1 1-byte buffer, bytes = 31992
   var_2 2-byte buffer, bytes = 9984
   */
-  
-  --t_stop := SYSTIMESTAMP;
-  --t_sec := time_diff(t_stop, t_start);
-  --dbms_output.put_line('total sec = ' || to_char(t_sec));
   
   /*
   expected output

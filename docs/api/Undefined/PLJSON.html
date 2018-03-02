@@ -436,7 +436,7 @@
        fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
        synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
 <!-- 
-		siblingCount=4 
+		siblingCount=6 
 		argumentCount=0 
 		predecessorCount=0 
 		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PLJSON">PLJSON</A></B>()</CODE>
@@ -463,7 +463,7 @@
        fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
        synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
 <!-- 
-		siblingCount=4 
+		siblingCount=6 
 		argumentCount=1 
 		predecessorCount=1 
 		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(VARCHAR2)">PLJSON</A></B>(STR IN VARCHAR2)</CODE>
@@ -488,7 +488,7 @@
        fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
        synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
 <!-- 
-		siblingCount=4 
+		siblingCount=6 
 		argumentCount=1 
 		predecessorCount=2 
 		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(CLOB)">PLJSON</A></B>(STR IN CLOB)</CODE>
@@ -506,9 +506,46 @@
        fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
        synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
 <!-- 
-		siblingCount=4 
-		argumentCount=1 
+		siblingCount=6 
+		argumentCount=2 
 		predecessorCount=3 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(BLOB,VARCHAR2)">PLJSON</A></B>(STR IN BLOB, CHARSET IN VARCHAR2 DEFAULT 'UTF8')</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Construct a <code>pljson</code> instance from a given BLOB of JSON.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=4 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(PLJSON_VARRAY)">PLJSON</A></B>(STR_ARRAY IN PLJSON_VARRAY)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Construct a <code>pljson</code> instance from
+ a given table of key,value pairs of type varchar2.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=5 
 		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(PLJSON_VALUE)">PLJSON</A></B>(ELEM IN PLJSON_VALUE)</CODE>
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -523,9 +560,9 @@
        fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
        synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
 <!-- 
-		siblingCount=4 
+		siblingCount=6 
 		argumentCount=1 
-		predecessorCount=4 
+		predecessorCount=6 
 		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(PLJSON_LIST)">PLJSON</A></B>(L IN OUT NOCOPY PLJSON_LIST)</CODE>
 <BR>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -1320,6 +1357,66 @@
         <DD>
 <CODE>STR</CODE> -
               The CLOB to parse into a <code>pljson</code> object.</DD>
+</DT>
+<DT>Returns:
+          <DD>A <code>pljson</code> instance.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON(BLOB,VARCHAR2)"></A>
+<H3>PLJSON</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(STR IN BLOB, <BR>                                                  CHARSET IN VARCHAR2 DEFAULT 'UTF8')</PRE>
+<DL>
+<DD> <p>Construct a <code>pljson</code> instance from a given BLOB of JSON.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>STR</CODE> -
+              The BLOB to parse into a <code>pljson</code> object.</DD>
+<DD>
+<CODE>CHARSET</CODE> -
+              The character set of the BLOB data (defaults to UTF-8).</DD>
+</DT>
+<DT>Returns:
+          <DD>A <code>pljson</code> instance.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON(PLJSON_VARRAY)"></A>
+<H3>PLJSON</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(STR_ARRAY IN PLJSON_VARRAY)</PRE>
+<DL>
+<DD> <p>Construct a <code>pljson</code> instance from
+ a given table of key,value pairs of type varchar2.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>STR_ARRAY</CODE> -
+              The pljson_varray (table of varchar2) to parse into a <code>pljson</code> object.</DD>
 </DT>
 <DT>Returns:
           <DD>A <code>pljson</code> instance.</DD>
