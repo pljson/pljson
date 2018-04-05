@@ -1,5 +1,5 @@
 create or replace type pljson_value force as object (
-  
+
   /*
   Copyright (c) 2010 Jonas Krogsboell
 
@@ -21,7 +21,7 @@ create or replace type pljson_value force as object (
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-  
+
   /**
    * <p>Underlying type for all of <em>PL/JSON</em>. Each <code>pljson</code>
    * or <code>pljson_list</code> object is composed of
@@ -33,7 +33,7 @@ create or replace type pljson_value force as object (
    *
    * @headcom
    */
-  
+
   /**
    * <p>Internal property that indicates the JSON type represented:<p>
    * <ol>
@@ -60,13 +60,13 @@ create or replace type pljson_value force as object (
   object_or_array pljson_element, /* object or array in here */
   /** Private variable for internal processing. */
   extended_str clob,
-  
+
   /* mapping */
   /** Private variable for internal processing. */
   mapname varchar2(4000),
   /** Private variable for internal processing. */
   mapindx number(32),
-  
+
   constructor function pljson_value(elem pljson_element) return self as result,
   constructor function pljson_value(str varchar2, esc boolean default true) return self as result,
   constructor function pljson_value(str clob, esc boolean default true) return self as result,
@@ -75,9 +75,9 @@ create or replace type pljson_value force as object (
   constructor function pljson_value(num_double binary_double) return self as result,
   constructor function pljson_value(b boolean) return self as result,
   constructor function pljson_value return self as result,
-  
+
   member function get_element return pljson_element,
-  
+
   /**
    * <p>Create an empty <code>pljson_value</code>.</p>
    *
@@ -93,7 +93,7 @@ create or replace type pljson_value force as object (
    * @return An instance of <code>pljson_value</code>.
    */
   static function makenull return pljson_value,
-  
+
   /**
    * <p>Retrieve the name of the type represented by the <code>pljson_value</code>.</p>
    * <p>Possible return values:</p>
@@ -109,7 +109,7 @@ create or replace type pljson_value force as object (
    * @return The name of the type represented.
    */
   member function get_type return varchar2,
-  
+
   /**
    * <p>Retrieve the value as a string (<code>varchar2</code>).</p>
    *
@@ -118,21 +118,21 @@ create or replace type pljson_value force as object (
    * @return An instance of <code>varchar2</code> or <code>null</code> value is not a string.
    */
   member function get_string(max_byte_size number default null, max_char_size number default null) return varchar2,
-  
+
   /**
    * <p>Retrieve the value as a string represented by a <code>CLOB</code>.</p>
    *
    * @param buf The <code>CLOB</code> in which to store the string.
    */
   member procedure get_string(self in pljson_value, buf in out nocopy clob),
-  
+
   /**
    * <p>Retrieve the value as a <code>number</code>.</p>
    *
    * @return An instance of <code>number</code> or <code>null</code> if the value isn't a number.
    */
   member function get_number return number,
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers */
   /**
    * <p>Retrieve the value as a <code>binary_double</code>.</p>
@@ -140,14 +140,14 @@ create or replace type pljson_value force as object (
    * @return An instance of <code>binary_double</code> or <code>null</code> if the value isn't a number.
    */
   member function get_double return binary_double,
-  
+
   /**
    * <p>Retrieve the value as a <code>boolean</code>.</p>
    *
    * @return An instance of <code>boolean</code> or <code>null</code> if the value isn't a boolean.
    */
   member function get_bool return boolean,
-  
+
   /**
    * <p>Retrieve the value as a string <code>'null'<code>.</p>
    *
@@ -155,49 +155,49 @@ create or replace type pljson_value force as object (
    * an actual <code>null</code> if the value isn't a JSON "null".
    */
   member function get_null return varchar2,
-  
+
   /**
    * <p>Determine if the value represents an "object" type.</p>
    *
    * @return <code>true</code> if the value is an object, <code>false</code> otherwise.
    */
   member function is_object return boolean,
-  
+
   /**
    * <p>Determine if the value represents an "array" type.</p>
    *
    * @return <code>true</code> if the value is an array, <code>false</code> otherwise.
    */
   member function is_array return boolean,
-  
+
   /**
    * <p>Determine if the value represents a "string" type.</p>
    *
    * @return <code>true</code> if the value is a string, <code>false</code> otherwise.
    */
   member function is_string return boolean,
-  
+
   /**
    * <p>Determine if the value represents a "number" type.</p>
    *
    * @return <code>true</code> if the value is a number, <code>false</code> otherwise.
    */
   member function is_number return boolean,
-  
+
   /**
    * <p>Determine if the value represents a "boolean" type.</p>
    *
    * @return <code>true</code> if the value is a boolean, <code>false</code> otherwise.
    */
   member function is_bool return boolean,
-  
+
   /**
    * <p>Determine if the value represents a "null" type.</p>
    *
    * @return <code>true</code> if the value is a null, <code>false</code> otherwise.
    */
   member function is_null return boolean,
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers, is_number is still true, extra info */
   /* return true if 'number' is representable by number */
   /** Private method for internal processing. */
@@ -205,7 +205,7 @@ create or replace type pljson_value force as object (
   /* return true if 'number' is representable by binary_double */
   /** Private method for internal processing. */
   member function is_number_repr_double return boolean,
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers */
   -- set value for number from string representation; to replace to_number in pljson_parser
   -- can automatically decide and use binary_double if needed
@@ -227,8 +227,11 @@ create or replace type pljson_value force as object (
    *
    * @param str A <code>varchar2</code> to parse into a number.
    */
+  -- this procedure is meant to be used internally only
+  -- procedure does not work correctly if called standalone in locales that
+  -- use a character other than "." for decimal point
   member procedure parse_number(str varchar2),
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   /**
    * <p>Return a <code>varchar2</code> representation of a <code>number</code>
@@ -236,8 +239,9 @@ create or replace type pljson_value force as object (
    *
    * @return A <code>varchar2</code> up to 4000 characters.
    */
+  -- this procedure is meant to be used internally only
   member function number_toString return varchar2,
-  
+
   /* Output methods */
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
   member procedure to_clob(self in pljson_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),
