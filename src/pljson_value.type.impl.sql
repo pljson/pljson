@@ -1,5 +1,5 @@
 create or replace type body pljson_value as
-  
+
   constructor function pljson_value(elem pljson_element) return self as result as
   begin
     case
@@ -9,10 +9,10 @@ create or replace type body pljson_value as
     end case;
     self.object_or_array := elem;
     if(self.object_or_array is null) then self.typeval := 6; end if;
-    
+
     return;
   end pljson_value;
-  
+
   constructor function pljson_value(str varchar2, esc boolean default true) return self as result as
   begin
     self.typeval := 3;
@@ -20,7 +20,7 @@ create or replace type body pljson_value as
     self.str := str;
     return;
   end pljson_value;
-  
+
   constructor function pljson_value(str clob, esc boolean default true) return self as result as
     /* E.I.Sarmas (github.com/dsnz)   2016-01-21   limit to 5000 chars */
     amount number := 5000; /* for Unicode text, varchar2 'self.str' not exceed 5000 chars, does not limit size of data */
@@ -36,7 +36,7 @@ create or replace type body pljson_value as
     end if;
     return;
   end pljson_value;
-  
+
   constructor function pljson_value(num number) return self as result as
   begin
     self.typeval := 4;
@@ -53,7 +53,7 @@ create or replace type body pljson_value as
     if(self.num is null) then self.typeval := 6; end if;
     return;
   end pljson_value;
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers; typeval not changed, it is still json number */
   constructor function pljson_value(num_double binary_double) return self as result as
   begin
@@ -69,7 +69,7 @@ create or replace type body pljson_value as
     if(self.num_double is null) then self.typeval := 6; end if;
     return;
   end pljson_value;
-  
+
   constructor function pljson_value(b boolean) return self as result as
   begin
     self.typeval := 5;
@@ -78,13 +78,13 @@ create or replace type body pljson_value as
     if(b is null) then self.typeval := 6; end if;
     return;
   end pljson_value;
-  
+
   constructor function pljson_value return self as result as
   begin
     self.typeval := 6; /* for JSON null */
     return;
   end pljson_value;
-  
+
   member function get_element return pljson_element as
   begin
     if (self.typeval in (1,2)) then
@@ -92,12 +92,12 @@ create or replace type body pljson_value as
     end if;
     return null;
   end get_element;
-  
+
   static function makenull return pljson_value as
   begin
     return pljson_value;
   end makenull;
-  
+
   member function get_type return varchar2 as
   begin
     case self.typeval
@@ -111,7 +111,7 @@ create or replace type body pljson_value as
 
     return 'unknown type';
   end get_type;
-  
+
   member function get_string(max_byte_size number default null, max_char_size number default null) return varchar2 as
   begin
     if(self.typeval = 3) then
@@ -125,7 +125,7 @@ create or replace type body pljson_value as
     end if;
     return null;
   end get_string;
-  
+
   member procedure get_string(self in pljson_value, buf in out nocopy clob) as
   begin
     if(self.typeval = 3) then
@@ -136,7 +136,7 @@ create or replace type body pljson_value as
       end if;
     end if;
   end get_string;
-  
+
   member function get_number return number as
   begin
     if(self.typeval = 4) then
@@ -144,7 +144,7 @@ create or replace type body pljson_value as
     end if;
     return null;
   end get_number;
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers */
   member function get_double return binary_double as
   begin
@@ -153,7 +153,7 @@ create or replace type body pljson_value as
     end if;
     return null;
   end get_double;
-  
+
   member function get_bool return boolean as
   begin
     if(self.typeval = 5) then
@@ -161,7 +161,7 @@ create or replace type body pljson_value as
     end if;
     return null;
   end get_bool;
-  
+
   member function get_null return varchar2 as
   begin
     if(self.typeval = 6) then
@@ -169,14 +169,14 @@ create or replace type body pljson_value as
     end if;
     return null;
   end get_null;
-  
+
   member function is_object return boolean as begin return self.typeval = 1; end;
   member function is_array return boolean as begin return self.typeval = 2; end;
   member function is_string return boolean as begin return self.typeval = 3; end;
   member function is_number return boolean as begin return self.typeval = 4; end;
   member function is_bool return boolean as begin return self.typeval = 5; end;
   member function is_null return boolean as begin return self.typeval = 6; end;
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers, is_number is still true, extra check */
   /* return true if 'number' is representable by number */
   member function is_number_repr_number return boolean is
@@ -186,7 +186,7 @@ create or replace type body pljson_value as
     end if;
     return (num_repr_number_p = 't');
   end;
-  
+
   /* return true if 'number' is representable by binary_double */
   member function is_number_repr_double return boolean is
   begin
@@ -195,13 +195,23 @@ create or replace type body pljson_value as
     end if;
     return (num_repr_double_p = 't');
   end;
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers */
   -- set value for number from string representation; to replace to_number in pljson_parser
   -- can automatically decide and use binary_double if needed (set repr variables)
   -- underflows and overflows count as representable if happen on both type representations
   -- less confusing than new constructor with dummy argument for overloading
   -- centralized parse_number to use everywhere else and replace code in pljson_parser
+  --
+  -- WARNING:
+  --
+  -- procedure does not work correctly if called standalone in locales that
+  -- use a character other than "." for decimal point
+  --
+  -- parse_number() is intended to be used inside pljson_parser which
+  -- uses session NLS_PARAMETERS to get decimal point and
+  -- changes "." to this decimal point before calling parse_number()
+  --
   member procedure parse_number(str varchar2) is
   begin
     if self.typeval != 4 then
@@ -218,7 +228,7 @@ create or replace type body pljson_value as
       self.num_repr_double_p := 'f';
     end if;
   end parse_number;
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   -- centralized toString to use everywhere else and replace code in pljson_printer
   member function number_toString return varchar2 is
@@ -259,7 +269,7 @@ create or replace type body pljson_value as
       return buf;
     end if;
   end number_toString;
-  
+
   /* Output methods */
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2 as
   begin
@@ -269,7 +279,7 @@ create or replace type body pljson_value as
       return pljson_printer.pretty_print_any(self, spaces, line_length => chars_per_line);
     end if;
   end;
-  
+
   member procedure to_clob(self in pljson_value, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) as
   begin
     if(spaces is null) then
@@ -278,7 +288,7 @@ create or replace type body pljson_value as
       pljson_printer.pretty_print_any(self, spaces, buf, line_length => chars_per_line, erase_clob => erase_clob);
     end if;
   end;
-  
+
   member procedure print(self in pljson_value, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null) as --32512 is the real maximum in sqldeveloper
     my_clob clob;
   begin
@@ -288,7 +298,7 @@ create or replace type body pljson_value as
     pljson_printer.dbms_output_clob(my_clob, pljson_printer.newline_char, jsonp);
     dbms_lob.freetemporary(my_clob);
   end;
-  
+
   member procedure htp(self in pljson_value, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null) as
     my_clob clob;
   begin
@@ -298,7 +308,7 @@ create or replace type body pljson_value as
     pljson_printer.htp_output_clob(my_clob, jsonp);
     dbms_lob.freetemporary(my_clob);
   end;
-  
+
   member function value_of(self in pljson_value, max_byte_size number default null, max_char_size number default null) return varchar2 as
   begin
     case self.typeval
@@ -310,7 +320,7 @@ create or replace type body pljson_value as
     else return null;
     end case;
   end;
-  
+
 end;
 /
 sho err
