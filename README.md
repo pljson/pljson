@@ -181,7 +181,7 @@ returns
 1.  Download the latest release -- https://github.com/pljson/pljson/releases
 2.  Extract the zip file
 3.  Use `sql*plus`, or something capable of running `sql*plus` scripts, to
-    run the `install.sql` script
+    run the `install.sql` script. (Warning: the default installation needs permission to create public synonyms; if you don't want public access see the note at the end of the install.sql script)
 4.  To test the implementation, run the `/testsuite/testall.sql` script
 
 **NOTICE:**
