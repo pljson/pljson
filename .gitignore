@@ -8,6 +8,7 @@ doc/html/*.jpg
 pldoc-*.jar
 
 *.zip
+*.zip.asc
 *.zip.sig
 
 # Used to publish to gh-pages branch.
