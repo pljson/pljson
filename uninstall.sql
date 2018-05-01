@@ -63,6 +63,46 @@ declare begin
   begin execute immediate 'drop type pljson_table_impl force'; exception when others then null; end;
   begin execute immediate 'drop package pljson_ut'; exception when others then null; end;
   begin execute immediate 'drop table pljson_testsuite'; exception when others then null; end;
+  
+  begin execute immediate 'drop public synonym pljson_element'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_narray'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_vtab'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_varray'; exception when others then null; end;
+  
+  begin execute immediate 'drop public synonym pljson_parser'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_printer'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_ext'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_dyn'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_ml'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_xml'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_util_pkg'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_helper'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_ac'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_list'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_value_array'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_value'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_table_impl'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_table'; exception when others then null; end;
+  
+  begin execute immediate 'drop public synonym pljson_ut'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_testsuite'; exception when others then null; end;
+  
+  begin execute immediate 'drop public synonym json_parser'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_printer'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_ext'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_dyn'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_ml'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_xml'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_util_pkg'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_helper'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_ac'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_list'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_value_array'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_value'; exception when others then null; end;
+  begin execute immediate 'drop public synonym json_table'; exception when others then null; end;
+  
   begin execute immediate 'drop synonym pljson_table'; exception when others then null; end;
   begin execute immediate 'drop synonym json_parser'; exception when others then null; end;
   begin execute immediate 'drop synonym json_printer'; exception when others then null; end;
