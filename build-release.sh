@@ -1,16 +1,17 @@
 #!/bin/bash
 
-type node 2>&1 1>/dev/null
+type jq 2>&1 1>/dev/null
 if [ 1 -eq $? ]; then
-  echo 'Please install node.js -- https://nodejs.org'
+  echo 'Please install jq -- https://stedolan.github.io/jq/'
   exit 1
 fi
 
-version=$(node -pe 'JSON.parse(require("fs").readFileSync(process.argv[1])).version' package.json)
+version=$(cat package.json | jq -r '.version')
 
 rm -rf target *.zip 2>&1 1>/dev/null
 mkdir target
-cp -R src/* testsuite examples *install.sql CHANGELOG.md README.md target
+cp -R src testsuite examples *install.sql CHANGELOG.md README.md target
+sed -i '' -e 's/{{PLJSON_VERSION}}/'${version}'/' target/pljson_parser.impl.sql
 cp -R docs target
 
 cd target

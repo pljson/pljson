@@ -22,7 +22,7 @@ create or replace package body pljson_parser as
   */
 
   decimalpoint varchar2(1 char) := '.';
-  
+
   procedure update_decimalpoint as
   begin
     select substr(value, 1, 1)
@@ -30,7 +30,7 @@ create or replace package body pljson_parser as
     from nls_session_parameters
     where parameter = 'NLS_NUMERIC_CHARACTERS';
   end update_decimalpoint;
-  
+
   /* type json_src is record (len number, offset number, src varchar2(32767), s_clob clob); */
   /* assertions
     offset: contains 0-base offset of buffer,
@@ -817,7 +817,7 @@ create or replace package body pljson_parser as
 
   function get_version return varchar2 as
   begin
-    return 'PL/JSON 2.1.1';
+    return 'PL/JSON {{PLJSON_VERSION}}';
   end get_version;
 
 end pljson_parser;

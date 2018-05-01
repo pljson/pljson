@@ -8,6 +8,8 @@ doc/html/*.jpg
 pldoc-*.jar
 
 *.zip
+*.zip.asc
+*.zip.sig
 
 # Used to publish to gh-pages branch.
 # Read the docs for grunt-github-pages for details on how to use it.
