@@ -1,6 +1,8 @@
 set termout off
 create or replace type pljson_varray as table of varchar2(32767);
 /
+create or replace type pljson_narray as table of number;
+/
 
 set termout on
 create or replace type pljson_list force under pljson_element (
