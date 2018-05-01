@@ -58,6 +58,15 @@ create or replace type body pljson_list as
     return;
   end;
 
+  constructor function pljson_list(num_array pljson_narray) return self as result as
+  begin
+    self.list_data := pljson_value_array();
+    for i in num_array.FIRST .. num_array.LAST loop
+      append(num_array(i));
+    end loop;
+    return;
+  end;
+  
   constructor function pljson_list(elem pljson_value) return self as result as
   begin
     self := treat(elem.object_or_array as pljson_list);

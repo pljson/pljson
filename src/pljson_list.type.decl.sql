@@ -81,7 +81,7 @@ create or replace type pljson_list force under pljson_element (
    * @return An instance of <code>pljson_list</code>.
    */
   constructor function pljson_list(str varchar2) return self as result,
-  
+
   /**
    * <p>Create an instance from a given JSON array representation stored in
    * a <code>CLOB</code>.</p>
@@ -109,6 +109,14 @@ create or replace type pljson_list force under pljson_element (
    */
   constructor function pljson_list(str_array pljson_varray) return self as result,
 
+  /**
+   * <p>Create an instance instance from a given table of string values of type varchar2.</p>
+   *
+   * @param str_array The pljson_varray (table of varchar2) of string values.
+   * @return An instance of <code>pljson_list</code>.
+   */
+  constructor function pljson_list(num_array pljson_narray) return self as result,
+  
   /**
    * <p>Create an instance from a given instance of <code>pljson_value</code>
    * that represents an array.</p>

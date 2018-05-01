@@ -25,6 +25,7 @@ create or replace package pljson_dyn authid current_user as
   include_dates          boolean not null := true;  --date
   include_clobs          boolean not null := true;
   include_blobs          boolean not null := false;
+  include_arrays         boolean not null := true;  -- pljson_varray or pljson_narray
 
   /* list with objects */
   function executeList(stmt varchar2, bindvar pljson default null, cur_num number default null) return pljson_list;
@@ -96,7 +97,7 @@ create or replace package body pljson_dyn as
   /* list with objects */
   function executeList(stmt varchar2, bindvar pljson, cur_num number) return pljson_list as
     l_cur number;
-    l_dtbl dbms_sql.desc_tab2;
+    l_dtbl dbms_sql.desc_tab3;
     l_cnt number;
     l_status number;
     l_val varchar2(4000);
@@ -107,6 +108,8 @@ create or replace package body pljson_dyn as
     read_clob clob;
     read_blob blob;
     col_type number;
+    read_varray pljson_varray;
+    read_narray pljson_narray;
   begin
     if(cur_num is not null) then
       l_cur := cur_num;
@@ -115,7 +118,8 @@ create or replace package body pljson_dyn as
       dbms_sql.parse(l_cur, stmt, dbms_sql.native);
       if(bindvar is not null) then bind_json(l_cur, bindvar); end if;
     end if;
-    dbms_sql.describe_columns2(l_cur, l_cnt, l_dtbl);
+    /* E.I.Sarmas (github.com/dsnz)   2018-05-01   handling of varray,narray in select */
+    dbms_sql.describe_columns3(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
       col_type := l_dtbl(i).col_type;
       --dbms_output.put_line(col_type);
@@ -127,6 +131,15 @@ create or replace package body pljson_dyn as
         dbms_sql.define_column(l_cur,i,read_blob);
       elsif(col_type in (1,2,96)) then
         dbms_sql.define_column(l_cur,i,l_val,4000);
+      /* E.I.Sarmas (github.com/dsnz)   2018-05-01   handling of pljson_varray in select */
+      elsif(col_type = 109 and l_dtbl(i).col_type_name = 'PLJSON_VARRAY') then
+        dbms_sql.define_column(l_cur,i,read_varray);
+      /* E.I.Sarmas (github.com/dsnz)   2018-05-01   handling of pljson_narray in select */
+      elsif(col_type = 109 and l_dtbl(i).col_type_name = 'PLJSON_NARRAY') then
+        dbms_sql.define_column(l_cur,i,read_narray);
+      /* E.I.Sarmas (github.com/dsnz)   2018-05-01   record unhandled col_type */
+      else
+        dbms_output.put_line('unhandled col_type =' || col_type);
       end if;
     end loop;
 
@@ -177,7 +190,19 @@ create or replace package body pljson_dyn as
               inner_obj.put(l_dtbl(i).col_name, pljson_value.makenull);
             end if;
           end if;
-
+        /* E.I.Sarmas (github.com/dsnz)   2018-05-01   handling of pljson_varray in select */
+        when l_dtbl(i).col_type = 109 and l_dtbl(i).col_type_name = 'PLJSON_VARRAY' then
+          if (include_arrays) then
+            dbms_sql.column_value(l_cur,i,read_varray);
+            inner_obj.put(l_dtbl(i).col_name, pljson_list(read_varray));
+          end if;
+        /* E.I.Sarmas (github.com/dsnz)   2018-05-01   handling of pljson_narray in select */
+        when l_dtbl(i).col_type = 109 and l_dtbl(i).col_type_name = 'PLJSON_NARRAY' then
+          if (include_arrays) then
+            dbms_sql.column_value(l_cur,i,read_narray);
+            inner_obj.put(l_dtbl(i).col_name, pljson_list(read_narray));
+          end if;
+          
         else null; --discard other types
         end case;
       end loop;
