@@ -1,5 +1,5 @@
 
-create or replace package ut_pljson_parser_test is
+create or replace package utplsql_pljson_parser_test is
   
   --%suite(pljson_parser test)
   --%suitepath(core)
@@ -49,10 +49,10 @@ create or replace package ut_pljson_parser_test is
   --%test(Test issue #37)
   procedure test_issue_37;
   
-end ut_pljson_parser_test;
+end utplsql_pljson_parser_test;
 /
 
-create or replace package body ut_pljson_parser_test is
+create or replace package body utplsql_pljson_parser_test is
   
   scanner_exception exception;
   pragma exception_init(scanner_exception, -20100);
@@ -294,5 +294,5 @@ create or replace package body ut_pljson_parser_test is
       fail(test_name);
   end;
   
-end ut_pljson_parser_test;
+end utplsql_pljson_parser_test;
 /
