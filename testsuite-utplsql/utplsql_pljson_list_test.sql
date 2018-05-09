@@ -1,5 +1,5 @@
 
-create or replace package ut_pljson_list_test is
+create or replace package utplsql_pljson_list_test is
   
   --%suite(pljson_list test)
   --%suitepath(core)
@@ -61,10 +61,10 @@ create or replace package ut_pljson_list_test is
   --%test(Test replace)
   procedure test_replace;
   
-end ut_pljson_list_test;
+end utplsql_pljson_list_test;
 /
 
-create or replace package body ut_pljson_list_test is
+create or replace package body utplsql_pljson_list_test is
   
   EOL varchar2(10) := chr(13);
   
@@ -408,5 +408,5 @@ create or replace package body ut_pljson_list_test is
     obj.replace(4, 2.718281828459e210d);
     assertTrue(obj.to_char(false) = '[1,2,3,2.7182818284589999E+210]', 'obj.to_char(false) = ''[1,2,3,2.7182818284589999E+210]'''); -- double is approximate
   end;
-end ut_pljson_list_test;
+end utplsql_pljson_list_test;
 /

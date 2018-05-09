@@ -1,5 +1,5 @@
 
-create or replace package ut_pljson_path_test is
+create or replace package utplsql_pljson_path_test is
   
   --%suite(pljson_path test)
   --%suitepath(core)
@@ -49,10 +49,10 @@ create or replace package ut_pljson_path_test is
   --%test(Test put with index)
   procedure test_put_index;
   
-end ut_pljson_path_test;
+end utplsql_pljson_path_test;
 /
 
-create or replace package body ut_pljson_path_test is
+create or replace package body utplsql_pljson_path_test is
   
   EOL varchar2(10) := chr(13);
   
@@ -348,5 +348,5 @@ create or replace package body ut_pljson_path_test is
     assertTrue(nvl(pljson_ext.get_double(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]''),0) = 2.718281828459e210d');
   end;
   
-end ut_pljson_path_test;
+end utplsql_pljson_path_test;
 /

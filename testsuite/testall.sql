@@ -22,7 +22,8 @@
 
 PROMPT run with NLS_LANG='AMERICAN_AMERICA.AL32UTF8'
 
-set linesize 200
+REM default linesize
+set linesize 120
 
 exec pljson_ut.startup;
 
@@ -36,5 +37,8 @@ exec pljson_ut.startup;
 @@pljson_helper.test.sql
 @@pljson_unicode.test.sql
 @@pljson_base64.test.sql
+
+REM set again for report at end, some test may change linesize
+set linesize 120
 
 exec pljson_ut.shutdown;

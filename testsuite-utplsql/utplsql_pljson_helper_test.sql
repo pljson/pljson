@@ -1,5 +1,5 @@
 
-create or replace package ut_pljson_helper_test is
+create or replace package utplsql_pljson_helper_test is
   
   --%suite(pljson_helper test)
   --%suitepath(core)
@@ -133,10 +133,10 @@ create or replace package ut_pljson_helper_test is
   --%test(Test contains(pljson_list, clob))
   procedure test_contains_list_clob;
   
-end ut_pljson_helper_test;
+end utplsql_pljson_helper_test;
 /
 
-create or replace package body ut_pljson_helper_test is
+create or replace package body utplsql_pljson_helper_test is
   
   EOL varchar2(10) := chr(13);
   
@@ -516,5 +516,5 @@ create or replace package body ut_pljson_helper_test is
     assertFalse(pljson_helper.contains(pljson_list('[1,2,3,"not a long string",[4,5],{"a":6}]'),lob), 'pljson_helper.contains(pljson_list(''[1,2,3,"not a long string",[4,5],{"a":6}]''),lob)');
   end;
   
-end ut_pljson_helper_test;
+end utplsql_pljson_helper_test;
 /

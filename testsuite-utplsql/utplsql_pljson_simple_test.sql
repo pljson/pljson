@@ -1,5 +1,5 @@
 
-create or replace package ut_pljson_simple_test is
+create or replace package utplsql_pljson_simple_test is
   
   --%suite(pljson simple test)
   --%suitepath(core)
@@ -16,10 +16,10 @@ create or replace package ut_pljson_simple_test is
   --%test(Test parser/printer number/binary_double handling, issue #70) 
   procedure test_binary_double;
 
-end ut_pljson_simple_test;
+end utplsql_pljson_simple_test;
 /
 
-create or replace package body ut_pljson_simple_test is
+create or replace package body utplsql_pljson_simple_test is
   
   EOL varchar2(10) := chr(13);
   
@@ -226,5 +226,5 @@ create or replace package body ut_pljson_simple_test is
     assertTrue(pljson_printer.pretty_print_list(obj) = '[-1e309]', 'pljson_printer.pretty_print_list(obj) = ''[-1e309]''');
   end;
   
-end ut_pljson_simple_test;
+end utplsql_pljson_simple_test;
 /

@@ -32,26 +32,26 @@ set serveroutput on size unlimited format truncated
 clear screen
 
 PROMPT Installing tests
-@@ut_pljson_parser_test.sql
-@@ut_pljson_test.sql
-@@ut_pljson_list_test.sql
-@@ut_pljson_simple_test.sql
-@@ut_pljson_ext_test.sql
-@@ut_pljson_path_test.sql
-@@ut_pljson_helper_test.sql
-@@ut_pljson_unicode_test.sql
-@@ut_pljson_base64_test.sql
+@@utplsql_pljson_parser_test.sql
+@@utplsql_pljson_test.sql
+@@utplsql_pljson_list_test.sql
+@@utplsql_pljson_simple_test.sql
+@@utplsql_pljson_ext_test.sql
+@@utplsql_pljson_path_test.sql
+@@utplsql_pljson_helper_test.sql
+@@utplsql_pljson_unicode_test.sql
+@@utplsql_pljson_base64_test.sql
 
 PROMPT Executing tests
 REM exec ut.run(ut_coverage_html_reporter());
 exec ut.run(USER);
 
-drop package ut_pljson_parser_test;
-drop package ut_pljson_test;
-drop package ut_pljson_list_test;
-drop package ut_pljson_simple_test;
-drop package ut_pljson_ext_test;
-drop package ut_pljson_path_test;
-drop package ut_pljson_helper_test;
-drop package ut_pljson_unicode_test;
-drop package ut_pljson_base64_test;
+drop package utplsql_pljson_parser_test;
+drop package utplsql_pljson_test;
+drop package utplsql_pljson_list_test;
+drop package utplsql_pljson_simple_test;
+drop package utplsql_pljson_ext_test;
+drop package utplsql_pljson_path_test;
+drop package utplsql_pljson_helper_test;
+drop package utplsql_pljson_unicode_test;
+drop package utplsql_pljson_base64_test;

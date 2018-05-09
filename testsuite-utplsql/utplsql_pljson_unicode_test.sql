@@ -10,7 +10,7 @@
 
 PROMPT did you run with NLS_LANG='AMERICAN_AMERICA.AL32UTF8' ?
 
-create or replace package ut_pljson_unicode_test is
+create or replace package utplsql_pljson_unicode_test is
   
   --%suite(pljson_unicode test)
   --%suitepath(core)
@@ -33,10 +33,10 @@ create or replace package ut_pljson_unicode_test is
   --%test(Test creation of json from blob)
   procedure test_blob;
   
-end ut_pljson_unicode_test;
+end utplsql_pljson_unicode_test;
 /
 
-create or replace package body ut_pljson_unicode_test is
+create or replace package body utplsql_pljson_unicode_test is
   
   test_json pljson;
   test_json_list pljson_list;
@@ -316,5 +316,5 @@ begin
   total sec = [4.8 - 5.2 sec on old Pentium 2.80 GHz development machine]
   */
   
-end ut_pljson_unicode_test;
+end utplsql_pljson_unicode_test;
 /

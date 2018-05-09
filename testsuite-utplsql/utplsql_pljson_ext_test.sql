@@ -1,5 +1,5 @@
 
-create or replace package ut_pljson_ext_test is
+create or replace package utplsql_pljson_ext_test is
   
   --%suite(pljson_ext test)
   --%suitepath(core)
@@ -19,10 +19,10 @@ create or replace package ut_pljson_ext_test is
   --%test(Test null date insert into pljson)
   procedure test_null_date;
   
-end ut_pljson_ext_test;
+end utplsql_pljson_ext_test;
 /
 
-create or replace package body ut_pljson_ext_test is
+create or replace package body utplsql_pljson_ext_test is
   
   EOL varchar2(10) := chr(13);
   
@@ -173,5 +173,5 @@ create or replace package body ut_pljson_ext_test is
     assertTrue(pljson_ext.is_date(obj.get('X')), 'pljson_ext.is_date(obj.get(''X''))');
   end;
   
-end ut_pljson_ext_test;
+end utplsql_pljson_ext_test;
 /

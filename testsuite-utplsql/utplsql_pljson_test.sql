@@ -1,5 +1,5 @@
 
-create or replace package ut_pljson_test is
+create or replace package utplsql_pljson_test is
   
   --%suite(pljson test)
   --%suitepath(core)
@@ -49,10 +49,10 @@ create or replace package ut_pljson_test is
   --%test(Test insert null pair name)
   procedure test_insert_null_pair_name;
   
-end ut_pljson_test;
+end utplsql_pljson_test;
 /
 
-create or replace package body ut_pljson_test is
+create or replace package body utplsql_pljson_test is
   
   EOL varchar2(10) := chr(13);
   
@@ -351,5 +351,5 @@ create or replace package body ut_pljson_test is
       fail(test_name);
   end;
   
-end ut_pljson_test;
+end utplsql_pljson_test;
 /
