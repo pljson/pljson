@@ -1,5 +1,5 @@
 create or replace type body pljson_table_impl as
-  
+
   /*
   Copyright (c) 2016 E.I.Sarmas (github.com/dsnz)
   
@@ -24,15 +24,26 @@ create or replace type body pljson_table_impl as
   
   /*
     E.I.Sarmas (github.com/dsnz)   2016-02-09   first version
-    
+
     E.I.Sarmas (github.com/dsnz)   2017-07-21   minor update, better parameter names
-    E.I.Sarmas (github.com/dsnz)   2017-09-23   major update, table_mode = cartessian/nested
+    E.I.Sarmas (github.com/dsnz)   2017-09-23   major update, table_mode = cartesian/nested
   */
+  
+  /*
+    *** NOTICE ***
+    
+    json_table() cannot work with all bind variables
+    at least one of the 'column_paths' or 'column_names' parameters must be literal
+    and for this reason it cannot work with cursor_sharing=force
+    this is not a limitation of PLJSON but rather a result of how Oracle Data Cartridge works currently
+  */
+  
+  
   
   static function ODCITableDescribe(
     rtype out anytype,
     json_str clob, column_paths pljson_varray, column_names pljson_varray := null,
-    table_mode varchar2 := 'cartessian'
+    table_mode varchar2 := 'cartesian'
   ) return number is
     atyp anytype;
   begin
@@ -65,7 +76,7 @@ create or replace type body pljson_table_impl as
     sctx out pljson_table_impl,
     ti in sys.ODCITabFuncInfo,
     json_str clob, column_paths pljson_varray, column_names pljson_varray := null,
-    table_mode varchar2 := 'cartessian'
+    table_mode varchar2 := 'cartesian'
   ) return number is
     elem_typ sys.anytype;
     prec  pls_integer;
@@ -92,11 +103,11 @@ create or replace type body pljson_table_impl as
     return odciconst.success;
   end;
   
-  -- E.I.Sarmas (github.com/dsnz)   2017-09-23   NEW support for nested/cartessian table generation
+  -- E.I.Sarmas (github.com/dsnz)   2017-09-23   NEW support for nested/cartesian table generation
   static function ODCITableStart(
     sctx in out pljson_table_impl,
     json_str clob, column_paths pljson_varray, column_names pljson_varray := null,
-    table_mode varchar2 := 'cartessian'
+    table_mode varchar2 := 'cartesian'
   ) return number is
     json_obj pljson;
     json_val pljson_value;
@@ -146,12 +157,23 @@ create or replace type body pljson_table_impl as
     end if;
     --dbms_output.put_line('... array size = ' || root_array_size);
     
-    sctx.json_obj := json_obj;
+    /*
+      E.I.Sarmas (github.com/dsnz)   2018-05-27   minor enhancement
+      
+      to be able to work with bind variables for some of the parameters
+      but at least one of column_paths or column_names must be literal
+      it's impossible (currently) to have all parameters in bind variables
+    */
+    sctx.str := json_str;
+    sctx.column_paths := column_paths;
+    sctx.column_names := column_names;
     sctx.table_mode := table_mode;
+    
+    sctx.json_obj := json_obj;
     sctx.root_array_size := root_array_size;
     sctx.data_tab.delete;
     
-    if table_mode = 'cartessian' then
+    if table_mode = 'cartesian' then
       for i in column_paths.FIRST .. column_paths.LAST loop
         --dbms_output.put_line('path='||column_paths(i));
         json_val := pljson_ext.get_json_value(json_obj, column_paths(i));
@@ -359,7 +381,7 @@ create or replace type body pljson_table_impl as
   begin
     --dbms_output.put_line('>>Fetch, nrows = ' || nrows);
     
-    if table_mode = 'cartessian' then
+    if table_mode = 'cartesian' then
       outset := null;
       
       if row_ind(1) = 0 then
@@ -507,6 +529,5 @@ create or replace type body pljson_table_impl as
     --dbms_output.put_line('>>Close');
     return odciconst.success;
   end;
-
 end;
 /

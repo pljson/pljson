@@ -39,11 +39,20 @@ create or replace type pljson_table_impl as object (
     E.I.Sarmas (github.com/dsnz)   2016-02-09   first version
     
     E.I.Sarmas (github.com/dsnz)   2017-07-21   minor update, better parameter names
-    E.I.Sarmas (github.com/dsnz)   2017-09-23   major update, table_mode = cartessian/nested
+    E.I.Sarmas (github.com/dsnz)   2017-09-23   major update, table_mode = cartesian/nested
   */
-
-
-
+  
+  /*
+    *** NOTICE ***
+    
+    json_table() cannot work with all bind variables
+    at least one of the 'column_paths' or 'column_names' parameters must be literal
+    and for this reason it cannot work with cursor_sharing=force
+    this is not a limitation of PLJSON but rather a result of how Oracle Data Cartridge works currently
+  */
+  
+  
+  
   /*
   drop type pljson_table_impl;
   drop type pljson_narray;
@@ -66,7 +75,7 @@ create or replace type pljson_table_impl as object (
   table_mode varchar2(20),
   
   /*
-    'cartessian' mode uses only
+    'cartesian' mode uses only
     data_tab, row_ind
   */
   data_tab pljson_vtab,
@@ -120,20 +129,20 @@ create or replace type pljson_table_impl as object (
   static function ODCITableDescribe(
     rtype out anytype,
     json_str clob, column_paths pljson_varray, column_names pljson_varray := null,
-    table_mode varchar2 := 'cartessian'
+    table_mode varchar2 := 'cartesian'
   ) return number,
   
   static function ODCITablePrepare(
     sctx out pljson_table_impl,
     ti in sys.ODCITabFuncInfo,
     json_str clob, column_paths pljson_varray, column_names pljson_varray := null,
-    table_mode varchar2 := 'cartessian'
+    table_mode varchar2 := 'cartesian'
   ) return number,
   
   static function ODCITableStart(
     sctx in out pljson_table_impl,
     json_str clob, column_paths pljson_varray, column_names pljson_varray := null,
-    table_mode varchar2 := 'cartessian'
+    table_mode varchar2 := 'cartesian'
   ) return number,
   
   member function ODCITableFetch(
@@ -144,7 +153,7 @@ create or replace type pljson_table_impl as object (
   
   static function json_table(
     json_str clob, column_paths pljson_varray, column_names pljson_varray := null,
-    table_mode varchar2 := 'cartessian'
+    table_mode varchar2 := 'cartesian'
   ) return anydataset
   pipelined using pljson_table_impl
 );
