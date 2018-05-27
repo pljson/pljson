@@ -77,25 +77,27 @@ insert into pljson_table_test values(3,
 
 commit;
 
+set linesize 100
+
 /*
   the call format is
   
-  <type>.json_table(<json document>, pljson_varray(...), pljson_varray())
+  <type>.json_table(<json document>, pljson_varray(...), pljson_varray(...), table_mode='cartesian' (default) or 'nested')
   
   where <type> is pljson_table or json_table or pljson_table_impl
   
   pljson_varray is a type used to pass multiple string arguments
   
-  1st pljson_varray contains 'paths' in the document to select and project as columns
-  2nd pljson_varray contains 'names' for respective paths that will serve as 'column names'
+  1st pljson_varray ('column_paths') contains paths in the document to select and project as columns
+  2nd pljson_varray ('column_names') contains names for respective paths that will serve as column names
   
   the names array is optional, if not present the columns are named JSON_1, JSON_2, ...
   
   the value for a column may be a single one (string/number/boolean/number)
   or an array of single values
   
-  the final table contains the 'cartesian product' of all column values
-  (this is equivalent to the 'NESTED PATH' of json_table() in Oracle12c)
+  'cartesian' mode returns the 'cartesian product' of all column values
+  'nested' mode is explained in examples later
   
   all returned columns are of type varchar2
   
@@ -106,7 +108,20 @@ commit;
   in the way that better serves his/her application needs
 */
 
+/*
+  *** NOTICE ***
+  
+  json_table() cannot work with all bind variables
+  at least one of the 'column_paths' or 'column_names' parameters must be literal
+  and for this reason it cannot work with cursor_sharing=force
+  this is not a limitation of PLJSON but rather a result of how Oracle Data Cartridge works currently
+*/
 
+column name format a10
+column extra format a10
+column map format a10
+column count format a10
+column whatelse format a10
 
 /*
   select from a single 'literal' json document
@@ -168,9 +183,16 @@ pljson_varray('name', 'extra', 'map', 'count', 'whatelse'))
 order by num
 /
 
+column id format a10
+column displayname format a20
+column qty format a10
+column xid format a10
+column xtra format a10
+
 /*
   NEW 'nested' mode, same as NESTED PATH in Oracle 12c json_table but easier and less verbose
-  (previous mode is called 'cartessian' and is default)
+  (previous mode is called 'cartesian' and is default)
+  
   each path is nested at same level or deeper than previous path
   in order to express this, the path syntax supports '[*]' to indicate a json array
   in this example
@@ -196,9 +218,15 @@ select * from table(pljson_table.json_table(
   table_mode => 'nested'
 ));
 
+column requestor format a20
+column state format a10
+column phone_type format a10
+column phone_num format a20
+
 /*
   NEW 'nested' mode, same as NESTED PATH in Oracle 12c json_table but easier and less verbose
-  (previous mode is called 'cartessian' and is default)
+  (previous mode is called 'cartesian' and is default)
+  
   each path is nested at same level or deeper than previous path
   in order to express this, the path syntax supports '[*]' to indicate a json array
   an example from Oracle Database JSON Developer's Guide 12c Release 2 (12.2)
@@ -236,9 +264,14 @@ select * from table(pljson_table.json_table('{
   table_mode => 'nested'
 ));
 
+column item_number format a10
+column description format a20
+column quantity format a10
+
 /*
   NEW 'nested' mode, same as NESTED PATH in Oracle 12c json_table but easier and less verbose
-  (previous mode is called 'cartessian' and is default)
+  (previous mode is called 'cartesian' and is default)
+  
   each path is nested at same level or deeper than previous path
   in order to express this, the path syntax supports '[*]' to indicate a json array
   an example from Oracle Database JSON Developer's Guide 12c Release 2 (12.2)
