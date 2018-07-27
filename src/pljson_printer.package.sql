@@ -626,9 +626,9 @@ create or replace package body pljson_printer as
     pos number := 1;
     len number;
     */
-    l_amt    number default 30;
+    l_amt    number default 4096;
     l_off   number default 1;
-    l_str   varchar2(4096);
+    l_str   varchar2(32000);
   begin
     if(jsonp is not null) then htp.prn(jsonp||'('); end if;
     
@@ -641,7 +641,6 @@ create or replace package body pljson_printer as
         -- document
         htp.prn( l_str  );
         l_off := l_off+l_amt;
-        l_amt := 4096;
       end loop;
     exception
       when no_data_found then NULL;
