@@ -61,6 +61,8 @@ PROMPT ------------------------------------------;
 @@src/addons/pljson_table_impl.type.decl.sql -- dynamic table from json document
 @@src/addons/pljson_table_impl.type.impl.sql -- dynamic table from json document
 @@testsuite/pljson_ut.package.sql -- pljson unit test mini framework
+@@src/addons/pljson_factory.type.decl.sql -- json document creator
+@@src/addons/pljson_factory.type.impl.sql -- json document creator
 
 -- uncomment this and comment the block following if you want access by public
 --@@src/grantsandsynonyms.sql --grants and synonyms for public
