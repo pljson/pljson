@@ -3,6 +3,21 @@
 **PL/JSON** provides packages and APIs for dealing with JSON formatted data within PL/SQL code.
 General information about JSON is available at http://www.json.org.
 
+## This is version 2.0
+It is the currently stable PLJSON version
+
+There is a new version 3.0 (which you can find in branch develop_v3)
+which is mainly a cleaner version but may break up existing code
+
+PLJSON evolved from version 1.0 using sys.anydata and worked with early Oracle releases
+to version 2.0 where sys.anydata was removed and an object oriented design was used but
+the object design wasn't the most appropriate one and mirrored the objects of version 1.0 so that
+there was almost 100% compatibility with version 1.0 code
+
+both PLJSON version 3.0 and version 2.0 are to be maintained together for quite a long time
+
+
+
 ## A demo of things you can do with PL/JSON
 ```
 declare

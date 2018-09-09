@@ -128,7 +128,7 @@ create or replace type body pljson as
   end;
 
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson_value, position pls_integer default null) as
-    insert_value pljson_value := nvl(pair_value, pljson_value.makenull);
+    insert_value pljson_value;
     indx pls_integer; x number;
     temp pljson_value;
     function get_member(pair_name varchar2) return pljson_value as
@@ -149,6 +149,10 @@ create or replace type body pljson as
     --if(pair_name is null) then
     --  raise_application_error(-20102, 'JSON put-method type error: name cannot be null');
     --end if;
+    insert_value := pair_value;
+    if insert_value is null then
+      insert_value := pljson_value;
+    end if;
     insert_value.mapname := pair_name;
     --self.remove(pair_name);
     if(self.check_for_duplicate = 1) then temp := get_member(pair_name); else temp := null; end if;
