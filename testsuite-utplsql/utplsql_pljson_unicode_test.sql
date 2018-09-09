@@ -144,8 +144,8 @@ create or replace package body utplsql_pljson_unicode_test is
     test_json := pljson();
     test_json.put('publish', true);
     test_json.put('issueDate', to_char(sysdate, 'YYYY-MM-DD"T"HH24:MI:SS'));
-    test_json.put('clob_1', pljson_value(clob_buf_1));
-    test_json.put('clob_2', pljson_value(clob_buf_2));
+    test_json.put('clob_1', pljson_string(clob_buf_1));
+    test_json.put('clob_2', pljson_string(clob_buf_2));
     test_json.put('var_1', var_buf_1);
     test_json.put('var_2', var_buf_2);
     
@@ -202,7 +202,7 @@ create or replace package body utplsql_pljson_unicode_test is
     --before commit 97d72ca with extra CR NL at end
     --for i in 1..496 loop
     for i in 1..480 loop
-      test_json_list.append(pljson_value(text_1_byte));
+      test_json_list.append(pljson_string(text_1_byte));
     end loop;
     test_json.put('array', test_json_list);
     json_var := test_json.to_char();
@@ -220,7 +220,7 @@ create or replace package body utplsql_pljson_unicode_test is
     test_json := pljson();
     test_json_list := pljson_list();
     for i in 1..83 loop
-      test_json_list.append(pljson_value(text_2_byte));
+      test_json_list.append(pljson_string(text_2_byte));
     end loop;
     test_json.put('array', test_json_list);
     json_var := test_json.to_char();

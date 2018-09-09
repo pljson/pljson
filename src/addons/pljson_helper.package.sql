@@ -29,21 +29,21 @@ create or replace package pljson_helper as
   function remove( p_json pljson, p_keys pljson_list) return pljson;
   
   --equals
-  function equals(p_v1 pljson_value, p_v2 pljson_value, exact boolean default true) return boolean;
-  function equals(p_v1 pljson_value, p_v2 pljson, exact boolean default true) return boolean;
-  function equals(p_v1 pljson_value, p_v2 pljson_list, exact boolean default true) return boolean;
-  function equals(p_v1 pljson_value, p_v2 number) return boolean;
+  function equals(p_v1 pljson_element, p_v2 pljson_element, exact boolean default true) return boolean;
+  function equals(p_v1 pljson_element, p_v2 pljson, exact boolean default true) return boolean;
+  function equals(p_v1 pljson_element, p_v2 pljson_list, exact boolean default true) return boolean;
+  function equals(p_v1 pljson_element, p_v2 number) return boolean;
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
-  function equals(p_v1 pljson_value, p_v2 binary_double) return boolean;  
-  function equals(p_v1 pljson_value, p_v2 varchar2) return boolean;
-  function equals(p_v1 pljson_value, p_v2 boolean) return boolean;
-  function equals(p_v1 pljson_value, p_v2 clob) return boolean;
+  function equals(p_v1 pljson_element, p_v2 binary_double) return boolean;  
+  function equals(p_v1 pljson_element, p_v2 varchar2) return boolean;
+  function equals(p_v1 pljson_element, p_v2 boolean) return boolean;
+  function equals(p_v1 pljson_element, p_v2 clob) return boolean;
   function equals(p_v1 pljson, p_v2 pljson, exact boolean default true) return boolean;
   function equals(p_v1 pljson_list, p_v2 pljson_list, exact boolean default true) return boolean;
   
   --contains json, json_value
   --contains json_list, json_value
-  function contains(p_v1 pljson, p_v2 pljson_value, exact boolean default false) return boolean;
+  function contains(p_v1 pljson, p_v2 pljson_element, exact boolean default false) return boolean;
   function contains(p_v1 pljson, p_v2 pljson, exact boolean default false) return boolean;
   function contains(p_v1 pljson, p_v2 pljson_list, exact boolean default false) return boolean;
   function contains(p_v1 pljson, p_v2 number, exact boolean default false) return boolean;
@@ -53,7 +53,7 @@ create or replace package pljson_helper as
   function contains(p_v1 pljson, p_v2 boolean, exact boolean default false) return boolean;
   function contains(p_v1 pljson, p_v2 clob, exact boolean default false) return boolean;
   
-  function contains(p_v1 pljson_list, p_v2 pljson_value, exact boolean default false) return boolean;
+  function contains(p_v1 pljson_list, p_v2 pljson_element, exact boolean default false) return boolean;
   function contains(p_v1 pljson_list, p_v2 pljson, exact boolean default false) return boolean;
   function contains(p_v1 pljson_list, p_v2 pljson_list, exact boolean default false) return boolean;
   function contains(p_v1 pljson_list, p_v2 number, exact boolean default false) return boolean;
@@ -65,15 +65,16 @@ create or replace package pljson_helper as
 
 end pljson_helper;
 /
+show err
 
 create or replace package body pljson_helper as
   
   --recursive merge
   function merge( p_a_json pljson, p_b_json pljson) return pljson as
     l_json    pljson;
-    l_jv      pljson_value;
+    l_jv      pljson_element;
     l_indx    number;
-    l_recursive pljson_value;
+    l_recursive pljson_element;
   begin
     --
     -- Initialize our return object
@@ -85,10 +86,10 @@ create or replace package body pljson_helper as
     loop
       exit when l_indx is null;
       l_jv   := p_b_json.json_data(l_indx);
-      if(l_jv.is_object) then
+      if (l_jv.is_object) then
         --recursive
         l_recursive := l_json.get(l_jv.mapname);
-        if(l_recursive is not null and l_recursive.is_object) then
+        if (l_recursive is not null and l_recursive.is_object) then
           l_json.put(l_jv.mapname, merge(pljson(l_recursive), pljson(l_jv)));
         else
           l_json.put(l_jv.mapname, l_jv);
@@ -123,8 +124,8 @@ create or replace package body pljson_helper as
     mapname varchar2(4000);
   begin
     for i in 1 .. p_keys.count loop
-      mapname := p_keys.get(i).get_string;
-      if(p_json.exist(mapname)) then
+      mapname := p_keys.get_string(i);
+      if (p_json.exist(mapname)) then
         l_json.put(mapname, p_json.get(mapname));
       end if;
     end loop;
@@ -137,7 +138,7 @@ create or replace package body pljson_helper as
     l_json pljson := p_json;
   begin
     for i in 1 .. p_keys.count loop
-      l_json.remove(p_keys.get(i).get_string);
+      l_json.remove(p_keys.get_string(i));
     end loop;
     
     return l_json;
@@ -145,102 +146,107 @@ create or replace package body pljson_helper as
   
   --equals functions
   
-  function equals(p_v1 pljson_value, p_v2 number) return boolean as
+  function equals(p_v1 pljson_element, p_v2 number) return boolean as
   begin
-    if(p_v2 is null) then
+    if (p_v2 is null) then
       return p_v1.is_null;
     end if;
     
-    if(not p_v1.is_number) then
+    if (not p_v1.is_number) then
       return false;
     end if;
     
-    return p_v2 = p_v1.get_number;
+    return p_v2 = treat(p_v1 as pljson_number).get_number();
   end;
   
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
-  function equals(p_v1 pljson_value, p_v2 binary_double) return boolean as
+  function equals(p_v1 pljson_element, p_v2 binary_double) return boolean as
   begin
-    if(p_v2 is null) then
+    if (p_v2 is null) then
       return p_v1.is_null;
     end if;
 
-    if(not p_v1.is_number) then
+    if (not p_v1.is_number) then
       return false;
     end if;
 
-    return p_v2 = p_v1.get_double;
+    return p_v2 = treat(p_v1 as pljson_number).get_double();
   end;
   
-  function equals(p_v1 pljson_value, p_v2 boolean) return boolean as
+  function equals(p_v1 pljson_element, p_v2 boolean) return boolean as
   begin
-    if(p_v2 is null) then
+    if (p_v2 is null) then
       return p_v1.is_null;
     end if;
     
-    if(not p_v1.is_bool) then
+    if (not p_v1.is_bool) then
       return false;
     end if;
     
-    return p_v2 = p_v1.get_bool;
+    return p_v2 = treat(p_v1 as pljson_bool).get_bool();
   end;
   
-  function equals(p_v1 pljson_value, p_v2 varchar2) return boolean as
+  function equals(p_v1 pljson_element, p_v2 varchar2) return boolean as
   begin
-    if(p_v2 is null) then
-      return (p_v1.is_null or p_v1.get_string is null);
+    if (p_v2 is null) then
+      return (p_v1.is_null or treat(p_v1 as pljson_string).get_string() is null);
     end if;
     
-    if(not p_v1.is_string) then
+    if (not p_v1.is_string) then
       return false;
     end if;
     
-    return p_v2 = p_v1.get_string;
+    return p_v2 = treat(p_v1 as pljson_string).get_string();
   end;
   
-  function equals(p_v1 pljson_value, p_v2 clob) return boolean as
+  function equals(p_v1 pljson_element, p_v2 clob) return boolean as
     my_clob clob;
     res boolean;
   begin
-    if(p_v2 is null) then
+    if (p_v2 is null) then
       return p_v1.is_null;
     end if;
     
-    if(not p_v1.is_string) then
+    if (not p_v1.is_string) then
       return false;
     end if;
     
+    /*
     my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
-    p_v1.get_string(my_clob);
-    
+    treat(p_v1 as pljson_string).get_string(my_clob);
+    */
+    my_clob := treat(p_v1 as pljson_string).get_clob();
     res := dbms_lob.compare(p_v2, my_clob) = 0;
-    dbms_lob.freetemporary(my_clob);
+    /*dbms_lob.freetemporary(my_clob);*/
     return res;
   end;
   
-  function equals(p_v1 pljson_value, p_v2 pljson_value, exact boolean) return boolean as
+  function equals(p_v1 pljson_element, p_v2 pljson_element, exact boolean) return boolean as
   begin
-    if(p_v2 is null or p_v2.is_null) then
+    if (p_v2 is null or p_v2.is_null) then
       return (p_v1 is null or p_v1.is_null);
     end if;
     
-    if(p_v2.is_number) then return equals(p_v1, p_v2.get_number); end if;
-    if(p_v2.is_bool) then return equals(p_v1, p_v2.get_bool); end if;
-    if(p_v2.is_object) then return equals(p_v1, pljson(p_v2), exact); end if;
-    if(p_v2.is_array) then return equals(p_v1, pljson_list(p_v2), exact); end if;
-    if(p_v2.is_string) then
-      if(p_v2.extended_str is null) then
-        return equals(p_v1, p_v2.get_string);
+    if (p_v2.is_number) then return equals(p_v1, treat(p_v2 as pljson_number).get_number()); end if;
+    if (p_v2.is_bool) then return equals(p_v1, treat(p_v2 as pljson_bool).get_bool()); end if;
+    if (p_v2.is_object) then return equals(p_v1, pljson(p_v2), exact); end if;
+    if (p_v2.is_array) then return equals(p_v1, pljson_list(p_v2), exact); end if;
+    if (p_v2.is_string) then
+      if (treat(p_v2 as pljson_string).extended_str is null) then
+        return equals(p_v1, treat(p_v2 as pljson_string).get_string());
       else
         declare
           my_clob clob; res boolean;
         begin
+          /*
           my_clob := empty_clob();
           dbms_lob.createtemporary(my_clob, true);
-          p_v2.get_string(my_clob);
+          treat(p_v2 as pljson_string).get_string(my_clob);
+          */
+          my_clob := treat(p_v2 as pljson_string).get_clob();
           res := equals(p_v1, my_clob);
-          dbms_lob.freetemporary(my_clob);
+          /*dbms_lob.freetemporary(my_clob);*/
           return res;
         end;
       end if;
@@ -249,7 +255,7 @@ create or replace package body pljson_helper as
     return false; --should never happen
   end;
   
-  function equals(p_v1 pljson_value, p_v2 pljson_list, exact boolean) return boolean as
+  function equals(p_v1 pljson_element, p_v2 pljson_list, exact boolean) return boolean as
     cmp pljson_list;
     res boolean := true;
   begin
@@ -257,29 +263,29 @@ create or replace package body pljson_helper as
 --  p_v2.print(false);
 --  dbms_output.put_line('labc1'||case when exact then 'X' else 'U' end);
     
-    if(p_v2 is null) then
+    if (p_v2 is null) then
       return p_v1.is_null;
     end if;
     
-    if(not p_v1.is_array) then
+    if (not p_v1.is_array) then
       return false;
     end if;
     
 --  dbms_output.put_line('labc2'||case when exact then 'X' else 'U' end);
     
     cmp := pljson_list(p_v1);
-    if(cmp.count != p_v2.count and exact) then return false; end if;
+    if (cmp.count != p_v2.count and exact) then return false; end if;
     
 --  dbms_output.put_line('labc3'||case when exact then 'X' else 'U' end);
     
-    if(exact) then
+    if (exact) then
       for i in 1 .. cmp.count loop
         res := equals(cmp.get(i), p_v2.get(i), exact);
-        if(not res) then return res; end if;
+        if (not res) then return res; end if;
       end loop;
     else
 --  dbms_output.put_line('labc4'||case when exact then 'X' else 'U' end);
-      if(p_v2.count > cmp.count) then return false; end if;
+      if (p_v2.count > cmp.count) then return false; end if;
 --  dbms_output.put_line('labc5'||case when exact then 'X' else 'U' end);
       
       --match sublist here!
@@ -288,7 +294,7 @@ create or replace package body pljson_helper as
         
         for i in 1 .. p_v2.count loop
           res := equals(cmp.get(x+i), p_v2.get(i), exact);
-          if(not res) then
+          if (not res) then
             goto next_index;
           end if;
         end loop;
@@ -307,7 +313,7 @@ create or replace package body pljson_helper as
     return res;
   end;
   
-  function equals(p_v1 pljson_value, p_v2 pljson, exact boolean) return boolean as
+  function equals(p_v1 pljson_element, p_v2 pljson, exact boolean) return boolean as
     cmp pljson;
     res boolean := true;
   begin
@@ -315,11 +321,11 @@ create or replace package body pljson_helper as
 --  p_v2.print(false);
 --  dbms_output.put_line('abc1');
     
-    if(p_v2 is null) then
+    if (p_v2 is null) then
       return p_v1.is_null;
     end if;
     
-    if(not p_v1.is_object) then
+    if (not p_v1.is_object) then
       return false;
     end if;
     
@@ -327,34 +333,34 @@ create or replace package body pljson_helper as
     
 --  dbms_output.put_line('abc2');
     
-    if(cmp.count != p_v2.count and exact) then return false; end if;
+    if (cmp.count != p_v2.count and exact) then return false; end if;
     
 --  dbms_output.put_line('abc3');
     declare
-      k1 pljson_list := p_v2.get_keys;
+      k1 pljson_list := p_v2.get_keys();
       key_index number;
     begin
       for i in 1 .. k1.count loop
-        key_index := cmp.index_of(k1.get(i).get_string);
-        if(key_index = -1) then return false; end if;
-        if(exact) then
-          if(not equals(p_v2.get(i), cmp.get(key_index), true)) then return false; end if;
+        key_index := cmp.index_of(k1.get_string(i));
+        if (key_index = -1) then return false; end if;
+        if (exact) then
+          if (not equals(p_v2.get(i), cmp.get(key_index), true)) then return false; end if;
         else
           --non exact
           declare
-            v1 pljson_value := cmp.get(key_index);
-            v2 pljson_value := p_v2.get(i);
+            v1 pljson_element := cmp.get(key_index);
+            v2 pljson_element := p_v2.get(i);
           begin
 --  dbms_output.put_line('abc3 1/2');
 --            v1.print(false);
 --            v2.print(false);
             
-            if(v1.is_object and v2.is_object) then
-              if(not equals(v1, v2, false)) then return false; end if;
-            elsif(v1.is_array and v2.is_array) then
-              if(not equals(v1, v2, false)) then return false; end if;
+            if (v1.is_object and v2.is_object) then
+              if (not equals(v1, v2, false)) then return false; end if;
+            elsif (v1.is_array and v2.is_array) then
+              if (not equals(v1, v2, false)) then return false; end if;
             else
-              if(not equals(v1, v2, true)) then return false; end if;
+              if (not equals(v1, v2, true)) then return false; end if;
             end if;
           end;
         
@@ -369,34 +375,34 @@ create or replace package body pljson_helper as
   
   function equals(p_v1 pljson, p_v2 pljson, exact boolean) return boolean as
   begin
-    return equals(p_v1.to_json_value, p_v2, exact);
+    return equals(p_v1, p_v2, exact);
   end;
   
   function equals(p_v1 pljson_list, p_v2 pljson_list, exact boolean) return boolean as
   begin
-    return equals(p_v1.to_json_value, p_v2, exact);
+    return equals(p_v1, p_v2, exact);
   end;
   
   --contain
-  function contains(p_v1 pljson, p_v2 pljson_value, exact boolean) return boolean as
+  function contains(p_v1 pljson, p_v2 pljson_element, exact boolean) return boolean as
     v_values pljson_list;
   begin
-    if(equals(p_v1.to_json_value, p_v2, exact)) then return true; end if;
+    if (equals(p_v1, p_v2, exact)) then return true; end if;
     
-    v_values := p_v1.get_values;
+    v_values := p_v1.get_values();
     
     for i in 1 .. v_values.count loop
       declare
-        v_val pljson_value := v_values.get(i);
+        v_val pljson_element := v_values.get(i);
       begin
-        if(v_val.is_object) then
-          if(contains(pljson(v_val), p_v2, exact)) then return true; end if;
+        if (v_val.is_object) then
+          if (contains(pljson(v_val), p_v2, exact)) then return true; end if;
         end if;
-        if(v_val.is_array) then
-          if(contains(pljson_list(v_val), p_v2, exact)) then return true; end if;
+        if (v_val.is_array) then
+          if (contains(pljson_list(v_val), p_v2, exact)) then return true; end if;
         end if;
         
-        if(equals(v_val, p_v2, exact)) then return true; end if;
+        if (equals(v_val, p_v2, exact)) then return true; end if;
       end;
     
     end loop;
@@ -404,22 +410,22 @@ create or replace package body pljson_helper as
     return false;
   end;
   
-  function contains(p_v1 pljson_list, p_v2 pljson_value, exact boolean) return boolean as
+  function contains(p_v1 pljson_list, p_v2 pljson_element, exact boolean) return boolean as
   begin
-    if(equals(p_v1.to_json_value, p_v2, exact)) then return true; end if;
+    if (equals(p_v1, p_v2, exact)) then return true; end if;
     
     for i in 1 .. p_v1.count loop
       declare
-        v_val pljson_value := p_v1.get(i);
+        v_val pljson_element := p_v1.get(i);
       begin
-        if(v_val.is_object) then
-          if(contains(pljson(v_val), p_v2, exact)) then return true; end if;
+        if (v_val.is_object) then
+          if (contains(pljson(v_val), p_v2, exact)) then return true; end if;
         end if;
-        if(v_val.is_array) then
-          if(contains(pljson_list(v_val), p_v2, exact)) then return true; end if;
+        if (v_val.is_array) then
+          if (contains(pljson_list(v_val), p_v2, exact)) then return true; end if;
         end if;
         
-        if(equals(v_val, p_v2, exact)) then return true; end if;
+        if (equals(v_val, p_v2, exact)) then return true; end if;
       end;
     
     end loop;
@@ -428,40 +434,41 @@ create or replace package body pljson_helper as
   end;
   
   function contains(p_v1 pljson, p_v2 pljson, exact boolean ) return boolean as
-  begin return contains(p_v1, p_v2.to_json_value, exact); end;
+  begin return contains(p_v1, p_v2, exact); end;
   function contains(p_v1 pljson, p_v2 pljson_list, exact boolean ) return boolean as
-  begin return contains(p_v1, p_v2.to_json_value, exact); end;
+  begin return contains(p_v1, p_v2, exact); end;
   function contains(p_v1 pljson, p_v2 number, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_number(p_v2), exact); end;
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   function contains(p_v1 pljson, p_v2 binary_double, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_number(p_v2), exact); end;
   function contains(p_v1 pljson, p_v2 varchar2, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_string(p_v2), exact); end;
   function contains(p_v1 pljson, p_v2 boolean, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_bool(p_v2), exact); end;
   function contains(p_v1 pljson, p_v2 clob, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_string(p_v2), exact); end;
   
   function contains(p_v1 pljson_list, p_v2 pljson, exact boolean ) return boolean as begin
-  return contains(p_v1, p_v2.to_json_value, exact); end;
+  return contains(p_v1, p_v2, exact); end;
   function contains(p_v1 pljson_list, p_v2 pljson_list, exact boolean ) return boolean as begin
-  return contains(p_v1, p_v2.to_json_value, exact); end;
+  return contains(p_v1, p_v2, exact); end;
   function contains(p_v1 pljson_list, p_v2 number, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_number(p_v2), exact); end;
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   function contains(p_v1 pljson_list, p_v2 binary_double, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_number(p_v2), exact); end;
   function contains(p_v1 pljson_list, p_v2 varchar2, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_string(p_v2), exact); end;
   function contains(p_v1 pljson_list, p_v2 boolean, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_bool(p_v2), exact); end;
   function contains(p_v1 pljson_list, p_v2 clob, exact boolean ) return boolean as begin
-  return contains(p_v1, pljson_value(p_v2), exact); end;
+  return contains(p_v1, pljson_string(p_v2), exact); end;
 
 
 end pljson_helper;
 /
+show err
 
 
 /**
@@ -474,7 +481,7 @@ declare
 
 
 begin
-  if(json_helper.contains(v1, v2)) then
+  if (json_helper.contains(v1, v2)) then
     dbms_output.put_line('************123');
   end if;
   
