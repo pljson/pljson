@@ -3,40 +3,20 @@
 **PL/JSON** provides packages and APIs for dealing with JSON formatted data within PL/SQL code.
 General information about JSON is available at http://www.json.org.
 
-## This is version 3.0 RC
-It passes the tests (except the test for helper package and I work on this)
-but needs some more polishing and testing and
-hopefuly by the end of November 2018 it will be announced as ready
+## This is version 2.0
+It is the currently stable PLJSON version
 
-The main difference with version 2.0 is in that now there is an object type for each json element
-they are
-
-| | |
-|:---|:---|
-|pljson | for json object|
-|pljson_list | for json array|
-|pljson_string | for json string|
-|pljson_number | for json number|
-|pljson_bool | for json true/false|
-|pljson_null | for json null|
-
-and all these object descend from pljson_element
-
-while in version 2.0 the object type pljson_value holds json string, number, boolean true/false, null and pljson or pljson_list objects
-
-this is mainly a cleaner version and I hope to cleanup old code as well
+There is a new version 3.0 (which you can find in branch develop_v3)
+which is mainly a cleaner version but may break up existing code
 
 PLJSON evolved from version 1.0 using sys.anydata and worked with early Oracle releases
 to version 2.0 where sys.anydata was removed and an object oriented design was used but
 the object design wasn't the most appropriate one and mirrored the objects of version 1.0 so that
 there was almost 100% compatibility with version 1.0 code
 
-the code changes for version 3.0 are very few, mainly
-1. use new cosntructors instead of pljson_value()
-2. remove the need to call the 'to_json_value()' method
-3. optionally use new helpful methods
-
 both PLJSON version 3.0 and version 2.0 are to be maintained together for quite a long time
+
+
 
 ## A demo of things you can do with PL/JSON
 ```
@@ -83,8 +63,9 @@ begin
   end if;
 
   -- you can build lists (arrays) too
+  -- however notice that we have to use the 'to_json_value' function on json objects
   list := pljson_list(); --fresh list;
-  list.append(pljson('{"lazy construction": true}'));
+  list.append(pljson('{"lazy construction": true}').to_json_value);
   list.append(pljson_list('[1,2,3,4,5]'));
   list.print;
     -- empty list and nested lists are supported
@@ -99,7 +80,7 @@ begin
   obj.print;
 
   -- support for dates
-  obj.put('a date', pljson_ext.to_json_string(to_date('2017-10-21', 'YYYY-MM-DD')));
+  obj.put('a date', pljson_ext.to_json_value(to_date('2017-10-21', 'YYYY-MM-DD')));
   -- and convert it back
   dbms_output.put_line(pljson_ext.to_date(obj.get('a date')));
 
@@ -220,8 +201,11 @@ returns
  
 Warning:
 
-this installation currently works in the installation schema only, but
-soon there will be an installation option to work for other schemas too
+the default installation does not grant access to public
+
+in order to grant access to public you need permission to create public synonyms and
+
+uncomment a line in install.sql script (see note at end of install.sql)
 
 
 **NOTICE:**
@@ -229,17 +213,22 @@ soon there will be an installation option to work for other schemas too
 All pljson types and packages start with 'PLJSON'.
 In earlier releases they started with 'JSON', but this conflicted with new
 native json support in Oracle 12c so they were renamed to start with PLJSON,
+However, during installation we create synonyms that start with JSON
+(e.g. JSON_LIST is synonym for PLJSON_LIST).
+
+These synonyms can be dropped without affecting the software.
+They are there only for backward compatibility with earlier versions of PLJSON.
 
 Most of the examples use the old naming starting with 'JSON'.
-When you try the examples, and in your code, to use `PLJSON_...` instead of `JSON_...`.
-also the examples work with version 2.0 and have not been updated yet to version 3.0
-but the differences are minor (see the initial description)
+These work with the synonyms but you are advised when you try the examples,
+and in your code, to use `PLJSON_...` instead of `JSON_...`.
 
 ## Documentation
 
-see the version 2 documentation and study the main type specifications first,
-later you can study the package specifications
-and I will update this README for more information
+Documentation is available in the [docs](/docs) directory, or online at
+[https://pljson.github.io/pljson/](https://pljson.github.io/pljson/).
+PLDOC generated API documentation can be viewed at
+[http://pljson.github.io/pljson/api](http://pljson.github.io/pljson/api).
 
 ## Project folders and files
 
@@ -249,6 +238,10 @@ and I will update this README for more information
 + **examples/** useful examples to learn how to use pljson
 + **testsuite/** a set of testsuites to verify installation, just run **testall.sql**
 + **testsuite-utplsql/** the same set of testsuites but utilizing the utplsql framework (which you must install separately), just run ut_testall.sql
++ **docs/** the documentation
++ **site_src/**  source for the documentation
+
+build-apidocs.sh, build-apidocs.bat, metalsmith.json, package.json are necessary for creating the documentation
 
 ## Contributing
 

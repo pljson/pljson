@@ -110,15 +110,15 @@ create or replace type body pljson_table_impl as
     table_mode varchar2 := 'cartesian'
   ) return number is
     json_obj pljson;
-    json_val pljson_element;
+    json_val pljson_value;
     buf varchar2(32767);
     --data_tab pljson_vtab := pljson_vtab();
     json_arr pljson_list;
-    json_elem pljson_element;
+    json_elem pljson_value;
     value_array pljson_varray := pljson_varray();
     
     -- E.I.Sarmas (github.com/dsnz)   2017-09-23   NEW support for array as root json data
-    root_val pljson_element;
+    root_val pljson_value;
     root_list pljson_list;
     root_array_size number := 0;
     /* for nested mode */
@@ -176,7 +176,7 @@ create or replace type body pljson_table_impl as
     if table_mode = 'cartesian' then
       for i in column_paths.FIRST .. column_paths.LAST loop
         --dbms_output.put_line('path='||column_paths(i));
-        json_val := pljson_ext.get_json_element(json_obj, column_paths(i));
+        json_val := pljson_ext.get_json_value(json_obj, column_paths(i));
         --dbms_output.put_line('type='||json_val.get_type());
         case json_val.typeval
           --when 1 then 'object';
@@ -189,15 +189,15 @@ create or replace type body pljson_table_impl as
                 --when 1 then 'object';
                 --when 2 then -- 'array';
                 when 3 then -- 'string';
-                  buf := treat(json_elem as pljson_string).get_string();
+                  buf := json_elem.get_string();
                   --dbms_output.put_line('res[](string)='||buf);
                   value_array.extend(); value_array(value_array.LAST) := buf;
                 when 4 then -- 'number';
-                  buf := to_char(treat(json_elem as pljson_number).get_number());
+                  buf := to_char(json_elem.get_number());
                   --dbms_output.put_line('res[](number)='||buf);
                   value_array.extend(); value_array(value_array.LAST) := buf;
                 when 5 then -- 'bool';
-                  buf := case treat(json_elem as pljson_bool).get_bool() when true then 'true' when false then 'false' end;
+                  buf := case json_elem.get_bool() when true then 'true' when false then 'false' end;
                   --dbms_output.put_line('res[](bool)='||buf);
                   value_array.extend(); value_array(value_array.LAST) := buf;
                 when 6 then -- 'null';
@@ -213,15 +213,15 @@ create or replace type body pljson_table_impl as
             end loop;
             sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := value_array;
           when 3 then -- 'string';
-            buf := treat(json_val as pljson_string).get_string();
+            buf := json_val.get_string();
             --dbms_output.put_line('res(string)='||buf);
             sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
           when 4 then -- 'number';
-            buf := to_char(treat(json_val as pljson_number).get_number());
+            buf := to_char(json_val.get_number());
             --dbms_output.put_line('res(number)='||buf);
             sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
           when 5 then -- 'bool';
-            buf := case treat(json_val as pljson_bool).get_bool() when true then 'true' when false then 'false' end;
+            buf := case json_val.get_bool() when true then 'true' when false then 'false' end;
             --dbms_output.put_line('res(bool)='||buf);
             sctx.data_tab.extend(); sctx.data_tab(sctx.data_tab.LAST) := pljson_varray(buf);
           when 6 then -- 'null';
@@ -326,11 +326,11 @@ create or replace type body pljson_table_impl as
     num_rows number := 0;
     
     --json_obj pljson;
-    json_val pljson_element;
+    json_val pljson_value;
     buf varchar2(32767);
     --data_tab pljson_vtab := pljson_vtab();
     json_arr pljson_list;
-    json_elem pljson_element;
+    json_elem pljson_value;
     value_array pljson_varray := pljson_varray();
     
     /* nested mode */
@@ -355,7 +355,7 @@ create or replace type body pljson_table_impl as
         temp_path := nested_path_literal(k - 1) || substr(nested_path_ext(k), 1, length(nested_path_ext(k)) - 3);
       end if;
       --dbms_output.put_line(k || ', set_count temp_path = ' || temp_path);
-      json_val := pljson_ext.get_json_element(json_obj, temp_path);
+      json_val := pljson_ext.get_json_value(json_obj, temp_path);
       if json_val.typeval != 2 then
         raise_application_error(-20120, 'column introduces array with [*] but is not array in json, column# ' || k);
       end if;
@@ -479,21 +479,21 @@ create or replace type body pljson_table_impl as
           end if;
           temp_path := nested_path_literal(k) || column_path_part(i);
           --dbms_output.put_line(i || ', path = ' || temp_path);
-          json_val := pljson_ext.get_json_element(json_obj, temp_path);
+          json_val := pljson_ext.get_json_value(json_obj, temp_path);
           --dbms_output.put_line('type='||json_val.get_type());
           case json_val.typeval
             --when 1 then 'object';
             --when 2 then -- 'array';
             when 3 then -- 'string';
-              buf := treat(json_val as pljson_string).get_string();
+              buf := json_val.get_string();
               --dbms_output.put_line('res(string)='||buf);
               column_val(i) := buf;
             when 4 then -- 'number';
-              buf := to_char(treat(json_val as pljson_number).get_number());
+              buf := to_char(json_val.get_number());
               --dbms_output.put_line('res(number)='||buf);
               column_val(i) := buf;
             when 5 then -- 'bool';
-              buf := case treat(json_val as pljson_bool).get_bool() when true then 'true' when false then 'false' end;
+              buf := case json_val.get_bool() when true then 'true' when false then 'false' end;
               --dbms_output.put_line('res(bool)='||buf);
               column_val(i) := buf;
             when 6 then -- 'null';
@@ -531,4 +531,3 @@ create or replace type body pljson_table_impl as
   end;
 end;
 /
-show err

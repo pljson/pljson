@@ -21,12 +21,23 @@ create or replace package pljson_ext as
   THE SOFTWARE.
   */
 
+  /**
+   * <p>This package contains the path implementation and adds support for dates
+   * and binary lob's. Dates are not a part of the JSON standard, so it's up to
+   * you to specify how you would like to handle dates. The
+   * current implementation specifies a date to be a string which follows the
+   * format: <code>yyyy-mm-dd hh24:mi:ss</code>. If your needs differ from this,
+   * then you must rewrite the functions in the implementation.</p>
+   *
+   * @headercom
+   */
+
   /* This package contains extra methods to lookup types and
      an easy way of adding date values in json - without changing the structure */
   function parsePath(json_path varchar2, base number default 1) return pljson_list;
 
   --JSON Path getters
-  function get_json_element(obj pljson, v_path varchar2, base number default 1) return pljson_element;
+  function get_json_value(obj pljson, v_path varchar2, base number default 1) return pljson_value;
   function get_string(obj pljson, path varchar2,       base number default 1) return varchar2;
   function get_number(obj pljson, path varchar2,       base number default 1) return number;
   function get_double(obj pljson, path varchar2,       base number default 1) return binary_double;
@@ -41,7 +52,7 @@ create or replace package pljson_ext as
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson,       base number default 1);
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson_list,  base number default 1);
   procedure put(obj in out nocopy pljson, path varchar2, elem boolean,    base number default 1);
-  procedure put(obj in out nocopy pljson, path varchar2, elem pljson_element, base number default 1);
+  procedure put(obj in out nocopy pljson, path varchar2, elem pljson_value, base number default 1);
 
   procedure remove(obj in out nocopy pljson, path varchar2, base number default 1);
 
@@ -51,17 +62,17 @@ create or replace package pljson_ext as
   procedure pp_htp(obj pljson, v_path varchar2); --using htp.print
 
   --extra function checks if number has no fraction
-  function is_integer(v pljson_element) return boolean;
+  function is_integer(v pljson_value) return boolean;
 
   format_string varchar2(30 char) := 'yyyy-mm-dd hh24:mi:ss';
   --extension enables json to store dates without compromising the implementation
-  function to_json_string(d date) return pljson_string;
+  function to_json_value(d date) return pljson_value;
   --notice that a date type in json is also a varchar2
-  function is_date(v pljson_element) return boolean;
+  function is_date(v pljson_value) return boolean;
   --conversion is needed to extract dates
-  function to_date(v pljson_element) return date;
+  function to_date(v pljson_value) return date;
   -- alias so that old code doesn't break
-  function to_date2(v pljson_element) return date;
+  function to_date2(v pljson_value) return date;
   --JSON Path with date
   function get_date(obj pljson, path varchar2, base number default 1) return date;
   procedure put(obj in out nocopy pljson, path varchar2, elem date, base number default 1);
@@ -80,13 +91,13 @@ create or replace package pljson_ext as
   function base64(binarydata blob) return pljson_list;
   function base64(l pljson_list) return blob;
 
-  function encode(binarydata blob) return pljson_string;
-  function decode(v pljson_string) return blob;
+  function encode(binarydata blob) return pljson_value;
+  function decode(v pljson_value) return blob;
 
   /*
     implemented as a procedure to force you to declare the CLOB so you can free it later
   */
   procedure blob2clob(b blob, c out clob, charset varchar2 default 'UTF8');
+
 end pljson_ext;
 /
-show err

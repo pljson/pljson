@@ -1,0 +1,1597 @@
+<HTML xmlns:lxslt="http://xml.apache.org/xslt" xmlns:exslt="http://exslt.org/common">
+<HEAD>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<TITLE>PL/JSON</TITLE>
+<LINK TITLE="Style" HREF="../stylesheet.css" TYPE="text/css" REL="stylesheet">
+<!--
+        sameCase=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+        namesLowerCase=FALSE
+        namesUpperCase=FALSE
+        namesDefaultCase=TRUE
+        defaultNamesCase=UPPER
+        namesFromCase=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+        namesToCase=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-->
+</HEAD>
+<BODY BGCOLOR="white">
+<TABLE CELLSPACING="0" CELLPADDING="1" WIDTH="100%" BORDER="0">
+<TR>
+<TD CLASS="NavBarRow1" COLSPAN="2">
+<TABLE CELLSPACING="3" CELLPADDING="0" BORDER="0">
+<TR VALIGN="top" ALIGN="center">
+<TD CLASS="NavBarRow1"><A HREF="../summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../index-list.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../generator.html"><FONT CLASS="NavBarFont1"><B>Generator</B></FONT></A> &nbsp;</TD>
+</TR>
+</TABLE>
+</TD><TD rowspan="3" VALIGN="top" ALIGN="right"><EM><b>PL/JSON</b></EM></TD>
+</TR>
+<TR>
+<TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+      SUMMARY:  <A HREF="#field_summary">FIELD</A> | <A HREF="#type_summary">TYPE</A> | <A HREF="#method_summary">METHOD</A></FONT></TD><TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+    DETAIL:  <A HREF="#field_detail">FIELD</A> | <A HREF="#type_detail">TYPE</A> | <A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<HR>
+<H2>
+<FONT SIZE="-1"></FONT>
+<BR>Object Type&nbsp;PLJSON_VALUE</H2> <p>Underlying type for all of <em>PL/JSON</em>. Each <code>pljson</code>
+ or <code>pljson_list</code> object is composed of
+ <code>pljson_value</code> objects.</p>
+ <p>Generally, you should not need to directly use the constructors provided
+ by this portion of the API. The methods on <code>pljson</code> and
+ <code>pljson_list</code> should be used instead.</p>
+<P></P>
+<DL></DL>
+<HR>
+<P></P>
+<A NAME="field_summary"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="2"><FONT SIZE="+2"><B>Field Summary</B></FONT></TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CLOB
+       localTypeName=
+       schema=
+       fieldType=CLOB
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CLOB</CODE></FONT></TD><TD><CODE><B><A HREF="#EXTENDED_STR">EXTENDED_STR</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=NUMBER(32)
+       localTypeName=
+       schema=
+       fieldType=NUMBER(32)
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->NUMBER(32)</CODE></FONT></TD><TD><CODE><B><A HREF="#MAPINDX">MAPINDX</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=VARCHAR2(4000)
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2(4000)
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2(4000)</CODE></FONT></TD><TD><CODE><B><A HREF="#MAPNAME">MAPNAME</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=NUMBER
+       localTypeName=
+       schema=
+       fieldType=NUMBER
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->NUMBER</CODE></FONT></TD><TD><CODE><B><A HREF="#NUM">NUM</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=BINARY_DOUBLE
+       localTypeName=
+       schema=
+       fieldType=BINARY_DOUBLE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->BINARY_DOUBLE</CODE></FONT></TD><TD><CODE><B><A HREF="#NUM_DOUBLE">NUM_DOUBLE</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=VARCHAR2(1)
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2(1)
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2(1)</CODE></FONT></TD><TD><CODE><B><A HREF="#NUM_REPR_DOUBLE_P">NUM_REPR_DOUBLE_P</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=VARCHAR2(1)
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2(1)
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2(1)</CODE></FONT></TD><TD><CODE><B><A HREF="#NUM_REPR_NUMBER_P">NUM_REPR_NUMBER_P</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_ELEMENT
+       localTypeName=
+       schema=
+       fieldType=PLJSON_ELEMENT
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_ELEMENT.html">PLJSON_ELEMENT</A></CODE></FONT></TD><TD><CODE><B><A HREF="#OBJECT_OR_ARRAY">OBJECT_OR_ARRAY</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=VARCHAR2(32767)
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2(32767)
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2(32767)</CODE></FONT></TD><TD><CODE><B><A HREF="#STR">STR</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=NUMBER(1)
+       localTypeName=
+       schema=
+       fieldType=NUMBER(1)
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->NUMBER(1)</CODE></FONT></TD><TD><CODE><B><A HREF="#TYPEVAL">TYPEVAL</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Internal property that indicates the JSON type represented:<p>
+ <ol>
+   <li><code>object</code></li>
+   <li><code>array</code></li>
+   <li><code>string</code></li>
+   <li><code>number</code></li>
+   <li><code>bool</code></li>
+   <li><code>null</code></li>
+ </ol>
+</TD>
+</TR>
+</TABLE>
+<P></P>
+<A NAME="type_summary"></A><A NAME="method_summary"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="2"><FONT SIZE="+2"><B>Method Summary</B></FONT></TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_BOOL">GET_BOOL</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve the value as a <code>boolean</code>.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BINARY_DOUBLE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BINARY_DOUBLE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BINARY_DOUBLE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_DOUBLE">GET_DOUBLE</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve the value as a <code>binary_double</code>.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_ELEMENT
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_ELEMENT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_ELEMENT</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_ELEMENT">GET_ELEMENT</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_NULL">GET_NULL</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve the value as a string <code>'null'<code>.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION NUMBER
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION NUMBER
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION NUMBER</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_NUMBER">GET_NUMBER</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve the value as a <code>number</code>.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=2 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="GET_STRING"></A><TD><CODE><B><A HREF="#GET_STRING(NUMBER,NUMBER)">GET_STRING</A></B>(MAX_BYTE_SIZE IN NUMBER DEFAULT NULL, MAX_CHAR_SIZE IN NUMBER DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve the value as a string (<code>varchar2</code>).</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=2 
+		predecessorCount=1 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_STRING(PLJSON_VALUE,CLOB)">GET_STRING</A></B>(SELF IN PLJSON_VALUE, BUF IN OUT NOCOPY CLOB)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve the value as a string represented by a <code>CLOB</code>.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_TYPE">GET_TYPE</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve the name of the type represented by the <code>pljson_value</code>.</p>
+ <p>Possible return values:</p>
+ <ul>
+   <li><code>object</code></li>
+   <li><code>array</code></li>
+   <li><code>string</code></li>
+   <li><code>number</code></li>
+   <li><code>bool</code></li>
+   <li><code>null</code></li>
+ </ul>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=4 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="HTP"></A><TD><CODE><B><A HREF="#HTP(PLJSON_VALUE,BOOLEAN,NUMBER,VARCHAR2)">HTP</A></B>(SELF IN PLJSON_VALUE, SPACES IN BOOLEAN DEFAULT FALSE, CHARS_PER_LINE IN NUMBER DEFAULT 0, JSONP IN VARCHAR2 DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#IS_ARRAY">IS_ARRAY</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Determine if the value represents an "array" type.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#IS_BOOL">IS_BOOL</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Determine if the value represents a "boolean" type.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#IS_NULL">IS_NULL</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Determine if the value represents a "null" type.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#IS_NUMBER">IS_NUMBER</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Determine if the value represents a "number" type.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#IS_NUMBER_REPR_DOUBLE">IS_NUMBER_REPR_DOUBLE</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private method for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#IS_NUMBER_REPR_NUMBER">IS_NUMBER_REPR_NUMBER</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private method for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#IS_OBJECT">IS_OBJECT</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Determine if the value represents an "object" type.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#IS_STRING">IS_STRING</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Determine if the value represents a "string" type.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=STATIC FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=STATIC FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->STATIC FUNCTION PLJSON_VALUE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#MAKENULL">MAKENULL</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Create an empty <code>pljson_value</code>.</p>
+ <pre>
+ declare
+   myval pljson_value := pljson_value.makenull();
+ begin
+   myval.parse_number('42');
+   myval.print(); // => dbms_output.put_line('42');
+ end;
+ </pre>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#NUMBER_TOSTRING">NUMBER_TOSTRING</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Return a <code>varchar2</code> representation of a <code>number</code>
+ type.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PARSE_NUMBER"></A><TD><CODE><B><A HREF="#PARSE_NUMBER(VARCHAR2)">PARSE_NUMBER</A></B>(STR IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Parses a string into a number.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_VALUE(PLJSON_ELEMENT)">PLJSON_VALUE</A></B>(ELEM IN PLJSON_ELEMENT)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=2 
+		predecessorCount=1 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_VALUE(VARCHAR2,BOOLEAN)">PLJSON_VALUE</A></B>(STR IN VARCHAR2, ESC IN BOOLEAN DEFAULT TRUE)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=2 
+		predecessorCount=2 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_VALUE(CLOB,BOOLEAN)">PLJSON_VALUE</A></B>(STR IN CLOB, ESC IN BOOLEAN DEFAULT TRUE)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=3 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_VALUE(NUMBER)">PLJSON_VALUE</A></B>(NUM IN NUMBER)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=4 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_VALUE(BINARY_DOUBLE)">PLJSON_VALUE</A></B>(NUM_DOUBLE IN BINARY_DOUBLE)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=5 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON_VALUE(BOOLEAN)">PLJSON_VALUE</A></B>(B IN BOOLEAN)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=0 
+		predecessorCount=6 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PLJSON_VALUE">PLJSON_VALUE</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=4 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PRINT"></A><TD><CODE><B><A HREF="#PRINT(PLJSON_VALUE,BOOLEAN,NUMBER,VARCHAR2)">PRINT</A></B>(SELF IN PLJSON_VALUE, SPACES IN BOOLEAN DEFAULT TRUE, CHARS_PER_LINE IN NUMBER DEFAULT 8192, JSONP IN VARCHAR2 DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=2 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="TO_CHAR"></A><TD><CODE><B><A HREF="#TO_CHAR(BOOLEAN,NUMBER)">TO_CHAR</A></B>(SPACES IN BOOLEAN DEFAULT TRUE, CHARS_PER_LINE IN NUMBER DEFAULT 0)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=5 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="TO_CLOB"></A><TD><CODE><B><A HREF="#TO_CLOB(PLJSON_VALUE,CLOB,BOOLEAN,NUMBER,BOOLEAN)">TO_CLOB</A></B>(SELF IN PLJSON_VALUE, BUF IN OUT NOCOPY CLOB, SPACES IN BOOLEAN DEFAULT FALSE, CHARS_PER_LINE IN NUMBER DEFAULT 0, ERASE_CLOB IN BOOLEAN DEFAULT TRUE)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=3 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="VALUE_OF"></A><TD><CODE><B><A HREF="#VALUE_OF(PLJSON_VALUE,NUMBER,NUMBER)">VALUE_OF</A></B>(SELF IN PLJSON_VALUE, MAX_BYTE_SIZE IN NUMBER DEFAULT NULL, MAX_CHAR_SIZE IN NUMBER DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+</TABLE>
+<P></P>
+<A NAME="trigger_summary"></A><A NAME="field_detail"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="1"><FONT SIZE="+2"><B>Field Detail</B></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="EXTENDED_STR"></A>
+<H3>EXTENDED_STR</H3>
+<PRE>
+        public CLOB <B>EXTENDED_STR</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="MAPINDX"></A>
+<H3>MAPINDX</H3>
+<PRE>
+        public NUMBER(32) <B>MAPINDX</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="MAPNAME"></A>
+<H3>MAPNAME</H3>
+<PRE>
+        public VARCHAR2(4000) <B>MAPNAME</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="NUM"></A>
+<H3>NUM</H3>
+<PRE>
+        public NUMBER <B>NUM</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="NUM_DOUBLE"></A>
+<H3>NUM_DOUBLE</H3>
+<PRE>
+        public BINARY_DOUBLE <B>NUM_DOUBLE</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="NUM_REPR_DOUBLE_P"></A>
+<H3>NUM_REPR_DOUBLE_P</H3>
+<PRE>
+        public VARCHAR2(1) <B>NUM_REPR_DOUBLE_P</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="NUM_REPR_NUMBER_P"></A>
+<H3>NUM_REPR_NUMBER_P</H3>
+<PRE>
+        public VARCHAR2(1) <B>NUM_REPR_NUMBER_P</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="OBJECT_OR_ARRAY"></A>
+<H3>OBJECT_OR_ARRAY</H3>
+<PRE>
+        public PLJSON_ELEMENT <B>OBJECT_OR_ARRAY</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="STR"></A>
+<H3>STR</H3>
+<PRE>
+        public VARCHAR2(32767) <B>STR</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="TYPEVAL"></A>
+<H3>TYPEVAL</H3>
+<PRE>
+        public NUMBER(1) <B>TYPEVAL</B>
+</PRE>
+<DL>
+<DD> <p>Internal property that indicates the JSON type represented:<p>
+ <ol>
+   <li><code>object</code></li>
+   <li><code>array</code></li>
+   <li><code>string</code></li>
+   <li><code>number</code></li>
+   <li><code>bool</code></li>
+   <li><code>null</code></li>
+ </ol>
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="type_detail"></A><A NAME="method_detail"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="1"><FONT SIZE="+2"><B>Method Detail</B></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="GET_BOOL"></A>
+<H3>GET_BOOL</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>GET_BOOL</B>()</PRE>
+<DL>
+<DD> <p>Retrieve the value as a <code>boolean</code>.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>An instance of <code>boolean</code> or <code>null</code> if the value isn't a boolean.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_DOUBLE"></A>
+<H3>GET_DOUBLE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BINARY_DOUBLE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BINARY_DOUBLE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BINARY_DOUBLE <B>GET_DOUBLE</B>()</PRE>
+<DL>
+<DD> <p>Retrieve the value as a <code>binary_double</code>.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>An instance of <code>binary_double</code> or <code>null</code> if the value isn't a number.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_ELEMENT"></A>
+<H3>GET_ELEMENT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_ELEMENT
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_ELEMENT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_ELEMENT <B>GET_ELEMENT</B>()</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_NULL"></A>
+<H3>GET_NULL</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2 <B>GET_NULL</B>()</PRE>
+<DL>
+<DD> <p>Retrieve the value as a string <code>'null'<code>.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>A <code>varchar2</code> with the value <code>'null'</code> or
+ an actual <code>null</code> if the value isn't a JSON "null".</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_NUMBER"></A>
+<H3>GET_NUMBER</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION NUMBER
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION NUMBER
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION NUMBER <B>GET_NUMBER</B>()</PRE>
+<DL>
+<DD> <p>Retrieve the value as a <code>number</code>.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>An instance of <code>number</code> or <code>null</code> if the value isn't a number.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_STRING(NUMBER,NUMBER)"></A>
+<H3>GET_STRING</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2 <B>GET_STRING</B>(MAX_BYTE_SIZE IN NUMBER DEFAULT NULL, <BR>                                           MAX_CHAR_SIZE IN NUMBER DEFAULT NULL)</PRE>
+<DL>
+<DD> <p>Retrieve the value as a string (<code>varchar2</code>).</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>MAX_BYTE_SIZE</CODE> -
+              Retreive the value up to a specific number of bytes. Default: <code>null</code>.</DD>
+<DD>
+<CODE>MAX_CHAR_SIZE</CODE> -
+              Retrieve the value up to a specific number of characters. Default: <code>null</code>.</DD>
+</DT>
+<DT>Returns:
+          <DD>An instance of <code>varchar2</code> or <code>null</code> value is not a string.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_STRING(PLJSON_VALUE,CLOB)"></A>
+<H3>GET_STRING</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>GET_STRING</B>(SELF IN PLJSON_VALUE, <BR>                                   BUF IN OUT NOCOPY CLOB)</PRE>
+<DL>
+<DD> <p>Retrieve the value as a string represented by a <code>CLOB</code>.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>BUF</CODE> -
+              The <code>CLOB</code> in which to store the string.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_TYPE"></A>
+<H3>GET_TYPE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2 <B>GET_TYPE</B>()</PRE>
+<DL>
+<DD> <p>Retrieve the name of the type represented by the <code>pljson_value</code>.</p>
+ <p>Possible return values:</p>
+ <ul>
+   <li><code>object</code></li>
+   <li><code>array</code></li>
+   <li><code>string</code></li>
+   <li><code>number</code></li>
+   <li><code>bool</code></li>
+   <li><code>null</code></li>
+ </ul>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>The name of the type represented.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="HTP(PLJSON_VALUE,BOOLEAN,NUMBER,VARCHAR2)"></A>
+<H3>HTP</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>HTP</B>(SELF IN PLJSON_VALUE, <BR>                            SPACES IN BOOLEAN DEFAULT FALSE, <BR>                            CHARS_PER_LINE IN NUMBER DEFAULT 0, <BR>                            JSONP IN VARCHAR2 DEFAULT NULL)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="IS_ARRAY"></A>
+<H3>IS_ARRAY</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>IS_ARRAY</B>()</PRE>
+<DL>
+<DD> <p>Determine if the value represents an "array" type.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD><code>true</code> if the value is an array, <code>false</code> otherwise.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="IS_BOOL"></A>
+<H3>IS_BOOL</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>IS_BOOL</B>()</PRE>
+<DL>
+<DD> <p>Determine if the value represents a "boolean" type.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD><code>true</code> if the value is a boolean, <code>false</code> otherwise.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="IS_NULL"></A>
+<H3>IS_NULL</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>IS_NULL</B>()</PRE>
+<DL>
+<DD> <p>Determine if the value represents a "null" type.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD><code>true</code> if the value is a null, <code>false</code> otherwise.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="IS_NUMBER"></A>
+<H3>IS_NUMBER</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>IS_NUMBER</B>()</PRE>
+<DL>
+<DD> <p>Determine if the value represents a "number" type.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD><code>true</code> if the value is a number, <code>false</code> otherwise.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="IS_NUMBER_REPR_DOUBLE"></A>
+<H3>IS_NUMBER_REPR_DOUBLE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>IS_NUMBER_REPR_DOUBLE</B>()</PRE>
+<DL>
+<DD> Private method for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="IS_NUMBER_REPR_NUMBER"></A>
+<H3>IS_NUMBER_REPR_NUMBER</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>IS_NUMBER_REPR_NUMBER</B>()</PRE>
+<DL>
+<DD> Private method for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="IS_OBJECT"></A>
+<H3>IS_OBJECT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>IS_OBJECT</B>()</PRE>
+<DL>
+<DD> <p>Determine if the value represents an "object" type.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD><code>true</code> if the value is an object, <code>false</code> otherwise.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="IS_STRING"></A>
+<H3>IS_STRING</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>IS_STRING</B>()</PRE>
+<DL>
+<DD> <p>Determine if the value represents a "string" type.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD><code>true</code> if the value is a string, <code>false</code> otherwise.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="MAKENULL"></A>
+<H3>MAKENULL</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=STATIC FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=STATIC FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->STATIC FUNCTION PLJSON_VALUE <B>MAKENULL</B>()</PRE>
+<DL>
+<DD> <p>Create an empty <code>pljson_value</code>.</p>
+ <pre>
+ declare
+   myval pljson_value := pljson_value.makenull();
+ begin
+   myval.parse_number('42');
+   myval.print(); // => dbms_output.put_line('42');
+ end;
+ </pre>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>An instance of <code>pljson_value</code>.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="NUMBER_TOSTRING"></A>
+<H3>NUMBER_TOSTRING</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2 <B>NUMBER_TOSTRING</B>()</PRE>
+<DL>
+<DD> <p>Return a <code>varchar2</code> representation of a <code>number</code>
+ type. This is primarily intended to be used within PL/JSON internally.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>A <code>varchar2</code> up to 4000 characters.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PARSE_NUMBER(VARCHAR2)"></A>
+<H3>PARSE_NUMBER</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PARSE_NUMBER</B>(STR IN VARCHAR2)</PRE>
+<DL>
+<DD> <p>Parses a string into a number. This method will automatically cast to
+ a <code>binary_double</code> if it is necessary.</p>
+ <pre>
+ declare
+   mynum pljson_value := pljson_value('42');
+ begin
+   dbms_output.put_line('mynum is a string: ' || mynum.is_string()); // 'true'
+   mynum.parse_number('42');
+   dbms_output.put_line('mynum is a number: ' || mynum.is_number()); // 'true'
+ end;
+ </pre>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>STR</CODE> -
+              A <code>varchar2</code> to parse into a number.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON_VALUE(PLJSON_ELEMENT)"></A>
+<H3>PLJSON_VALUE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_VALUE</B>(ELEM IN PLJSON_ELEMENT)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON_VALUE(VARCHAR2,BOOLEAN)"></A>
+<H3>PLJSON_VALUE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_VALUE</B>(STR IN VARCHAR2, <BR>                                                        ESC IN BOOLEAN DEFAULT TRUE)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON_VALUE(CLOB,BOOLEAN)"></A>
+<H3>PLJSON_VALUE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_VALUE</B>(STR IN CLOB, <BR>                                                        ESC IN BOOLEAN DEFAULT TRUE)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON_VALUE(NUMBER)"></A>
+<H3>PLJSON_VALUE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_VALUE</B>(NUM IN NUMBER)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON_VALUE(BINARY_DOUBLE)"></A>
+<H3>PLJSON_VALUE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_VALUE</B>(NUM_DOUBLE IN BINARY_DOUBLE)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON_VALUE(BOOLEAN)"></A>
+<H3>PLJSON_VALUE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_VALUE</B>(B IN BOOLEAN)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON_VALUE"></A>
+<H3>PLJSON_VALUE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON_VALUE</B>()</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PRINT(PLJSON_VALUE,BOOLEAN,NUMBER,VARCHAR2)"></A>
+<H3>PRINT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PRINT</B>(SELF IN PLJSON_VALUE, <BR>                              SPACES IN BOOLEAN DEFAULT TRUE, <BR>                              CHARS_PER_LINE IN NUMBER DEFAULT 8192, <BR>                              JSONP IN VARCHAR2 DEFAULT NULL)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="TO_CHAR(BOOLEAN,NUMBER)"></A>
+<H3>TO_CHAR</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2 <B>TO_CHAR</B>(SPACES IN BOOLEAN DEFAULT TRUE, <BR>                                        CHARS_PER_LINE IN NUMBER DEFAULT 0)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="TO_CLOB(PLJSON_VALUE,CLOB,BOOLEAN,NUMBER,BOOLEAN)"></A>
+<H3>TO_CLOB</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>TO_CLOB</B>(SELF IN PLJSON_VALUE, <BR>                                BUF IN OUT NOCOPY CLOB, <BR>                                SPACES IN BOOLEAN DEFAULT FALSE, <BR>                                CHARS_PER_LINE IN NUMBER DEFAULT 0, <BR>                                ERASE_CLOB IN BOOLEAN DEFAULT TRUE)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="VALUE_OF(PLJSON_VALUE,NUMBER,NUMBER)"></A>
+<H3>VALUE_OF</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2 <B>VALUE_OF</B>(SELF IN PLJSON_VALUE, <BR>                                         MAX_BYTE_SIZE IN NUMBER DEFAULT NULL, <BR>                                         MAX_CHAR_SIZE IN NUMBER DEFAULT NULL)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="trigger_detail"></A>
+<TABLE CELLSPACING="0" CELLPADDING="1" WIDTH="100%" BORDER="0">
+<TR>
+<TD CLASS="NavBarRow1" COLSPAN="2">
+<TABLE CELLSPACING="3" CELLPADDING="0" BORDER="0">
+<TR VALIGN="top" ALIGN="center">
+<TD CLASS="NavBarRow1"><A HREF="../summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../index-list.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../generator.html"><FONT CLASS="NavBarFont1"><B>Generator</B></FONT></A> &nbsp;</TD>
+</TR>
+</TABLE>
+</TD><TD rowspan="3" VALIGN="top" ALIGN="right"><EM><b>PL/JSON</b></EM></TD>
+</TR>
+<TR>
+<TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+      SUMMARY:  <A HREF="#field_summary">FIELD</A> | <A HREF="#type_summary">TYPE</A> | <A HREF="#method_summary">METHOD</A></FONT></TD><TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+    DETAIL:  <A HREF="#field_detail">FIELD</A> | <A HREF="#type_detail">TYPE</A> | <A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<HR>
+</BODY>
+</HTML>

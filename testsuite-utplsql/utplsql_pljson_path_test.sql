@@ -99,7 +99,7 @@ create or replace package body utplsql_pljson_path_test is
     obj pljson;
   begin
     obj := pljson('{"a": true, "b": {"c": 123}, "d": {"e": 2.718281828459e210}}');
-    assertTrue(pljson_ext.get_json_element(obj, 'a').get_bool, 'pljson_ext.get_json_element(obj, ''a'').get_bool');
+    assertTrue(pljson_ext.get_json_value(obj, 'a').get_bool, 'pljson_ext.get_json_value(obj, ''a'').get_bool');
     assertTrue(pljson_ext.get_json(obj, 'a') is null, 'pljson_ext.get_json(obj, ''a'') is null');
     assertTrue(pljson_ext.get_json(obj, 'b') is not null, 'pljson_ext.get_json(obj, ''b'') is not null');
     assertTrue(nvl(pljson_ext.get_number(obj, 'b.c'),0) = 123, 'nvl(pljson_ext.get_number(obj, ''b.c''),0) = 123');
@@ -113,11 +113,11 @@ create or replace package body utplsql_pljson_path_test is
     obj pljson;
   begin
     obj := pljson('{"a": [1,[true,15, 2.718281828459e210]]}');
-    assertTrue(pljson_ext.get_json_element(obj, 'a').is_array, 'pljson_ext.get_json_element(obj, ''a'').is_array');
+    assertTrue(pljson_ext.get_json_value(obj, 'a').is_array, 'pljson_ext.get_json_value(obj, ''a'').is_array');
     assertTrue(pljson_ext.get_json_list(obj, 'a') is not null, 'pljson_ext.get_json_list(obj, ''a'') is not null');
     assertTrue(nvl(pljson_ext.get_number(obj, 'a[1]'),0) = 1, 'nvl(pljson_ext.get_number(obj, ''a[1]''),0) = 1');
     assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][2]'),0) = 15, 'nvl(pljson_ext.get_number(obj, ''a[2][2]''),0) = 15');
-    assertTrue(pljson_ext.get_json_element(obj, 'a[2][1]').get_bool, 'pljson_ext.get_json_element(obj, ''a[2][1]'').get_bool');
+    assertTrue(pljson_ext.get_json_value(obj, 'a[2][1]').get_bool, 'pljson_ext.get_json_value(obj, ''a[2][1]'').get_bool');
     --assertFalse(nvl(pljson_ext.get_number(obj, 'a[0][13]'),0)=15, 'nvl(pljson_ext.get_number(obj, ''a[0][13]''),0)=15'); --will throw exception on invalid json path
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
     assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][3]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''a[2][3]''),0) = 2.718281828459e210d');
@@ -129,7 +129,7 @@ create or replace package body utplsql_pljson_path_test is
   begin
     obj := pljson('{"a": [1,[{"a":{"i":[{"A":2}, 2.718281828459e210]}},15] ] }');
     --obj.print;
-    assertTrue(pljson_ext.get_json_element(obj, 'a').is_array, 'pljson_ext.get_json_element(obj, ''a'').is_array');
+    assertTrue(pljson_ext.get_json_value(obj, 'a').is_array, 'pljson_ext.get_json_value(obj, ''a'').is_array');
     assertTrue(pljson_ext.get_json_list(obj, 'a') is not null, 'pljson_ext.get_json_list(obj, ''a'') is not null');
     assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][2]'),0) = 15, 'nvl(pljson_ext.get_number(obj, ''a[2][2]''),0) = 15');
     assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][1].a.i[1].A'),0) = 2, 'nvl(pljson_ext.get_number(obj, ''a[2][1].a.i[1].A''),0) = 2');
@@ -142,7 +142,7 @@ create or replace package body utplsql_pljson_path_test is
     obj pljson;
   begin
     obj := pljson('{" a ": true, "b     ":{" s  ":[{" 3 ":7913}]}}');
-    assertTrue(pljson_ext.get_json_element(obj, ' a ').get_bool, 'pljson_ext.get_json_element(obj, '' a '').get_bool');
+    assertTrue(pljson_ext.get_json_value(obj, ' a ').get_bool, 'pljson_ext.get_json_value(obj, '' a '').get_bool');
     assertTrue(nvl(pljson_ext.get_number(obj, 'b     . s  [  1   ]. 3 '),0)=7913, 'nvl(pljson_ext.get_number(obj, ''b     . s  [  1   ]. 3 ''),0)=7913');
   end;
   
@@ -154,8 +154,8 @@ create or replace package body utplsql_pljson_path_test is
     --obj.print;
     assertTrue(pljson_ext.get_string(obj, 'a[1]') is not null, 'pljson_ext.get_string(obj, ''a[1]'') is not null');
     assertTrue(pljson_ext.get_number(obj, 'a[2]') is not null, 'pljson_ext.get_number(obj, ''a[2]'') is not null');
-    assertTrue(pljson_ext.get_json_element(obj, 'a[3]').is_bool, 'pljson_ext.get_json_element(obj, ''a[3]'').is_bool');
-    assertTrue(pljson_ext.get_json_element(obj, 'a[4]').is_null, 'pljson_ext.get_json_element(obj, ''a[4]'').is_null');
+    assertTrue(pljson_ext.get_json_value(obj, 'a[3]').is_bool, 'pljson_ext.get_json_value(obj, ''a[3]'').is_bool');
+    assertTrue(pljson_ext.get_json_value(obj, 'a[4]').is_null, 'pljson_ext.get_json_value(obj, ''a[4]'').is_null');
     assertTrue(pljson_ext.get_json(obj, 'a[5]') is not null, 'pljson_ext.get_json(obj, ''a[5]'') is not null');
     assertTrue(pljson_ext.get_json_list(obj, 'a[6]') is not null, 'pljson_ext.get_json_list(obj, ''a[6]'') is not null');
     assertTrue(pljson_ext.get_date(obj, 'a[7]') is not null, 'pljson_ext.get_date(obj, ''a[7]'') is not null');
@@ -181,7 +181,7 @@ create or replace package body utplsql_pljson_path_test is
     assertTrue(nvl(pljson_ext.get_string(obj, 'a[1]'),'a') = 'y', 'nvl(pljson_ext.get_string(obj, ''a[1]''),''a'') = ''y''');
     pljson_ext.put(obj, 'a[3]', 'z');
     assertTrue(nvl(pljson_ext.get_string(obj, 'a[1]'),'a') = 'y', 'nvl(pljson_ext.get_string(obj, ''a[1]''),''a'') = ''y''');
-    assertTrue(pljson_ext.get_json_element(obj, 'a[2]') is not null, 'pljson_ext.get_json_element(obj, ''a[2]'') is not null');
+    assertTrue(pljson_ext.get_json_value(obj, 'a[2]') is not null, 'pljson_ext.get_json_value(obj, ''a[2]'') is not null');
     assertTrue(nvl(pljson_ext.get_string(obj, 'a[3]'),'a') = 'z', 'nvl(pljson_ext.get_string(obj, ''a[3]''),''a'') = ''z''');
     pljson_ext.put(obj, 'a[2]', pljson_ext.get_string(obj, 'a[1]'));
     pljson_ext.put(obj, 'a[1]', 'x');
@@ -200,7 +200,7 @@ create or replace package body utplsql_pljson_path_test is
     --dbms_output.put_line('Put false');
     --obj.print;
     assertTrue(pljson_ext.get_json_list(obj, 'a.b') is not null, 'pljson_ext.get_json_list(obj, ''a.b'') is not null');
-    assertFalse(pljson_ext.get_json_element(obj, 'a.b[1].c').get_bool, 'pljson_ext.get_json_element(obj, ''a.b[1].c'').get_bool');
+    assertFalse(pljson_ext.get_json_value(obj, 'a.b[1].c').get_bool, 'pljson_ext.get_json_value(obj, ''a.b[1].c'').get_bool');
   end;
   
   -- put all types
@@ -208,9 +208,9 @@ create or replace package body utplsql_pljson_path_test is
     obj pljson := pljson();
   begin
     pljson_ext.put(obj, 'a', true);
-    assertTrue(pljson_ext.get_json_element(obj, 'a').get_bool, 'pljson_ext.get_json_element(obj, ''a'').get_bool');
-    pljson_ext.put(obj, 'a', pljson_null());
-    assertTrue(pljson_ext.get_json_element(obj, 'a').is_null, 'pljson_ext.get_json_element(obj, ''a'').is_null');
+    assertTrue(pljson_ext.get_json_value(obj, 'a').get_bool, 'pljson_ext.get_json_value(obj, ''a'').get_bool');
+    pljson_ext.put(obj, 'a', pljson_value.makenull);
+    assertTrue(pljson_ext.get_json_value(obj, 'a').is_null, 'pljson_ext.get_json_value(obj, ''a'').is_null');
     pljson_ext.put(obj, 'a', 'string');
     assertTrue(nvl(pljson_ext.get_string(obj, 'a'),'a') = 'string', 'nvl(pljson_ext.get_string(obj, ''a''),''a'') = ''string''');
     pljson_ext.put(obj, 'a', 123.456);
@@ -226,9 +226,9 @@ create or replace package body utplsql_pljson_path_test is
   begin
     pljson_ext.put(obj, 'a[1][2][3].c.d', date '2009-08-31');
     assertTrue(nvl(pljson_ext.get_date(obj, 'a[1][2][3].c.d'),date '2000-01-01') = date '2009-08-31', 'nvl(pljson_ext.get_date(obj, ''a[1][2][3].c.d''),date ''2000-01-01'') = date ''2009-08-31''');
-    assertTrue(pljson_ext.get_json_element(obj, 'a[1][2][2]').is_null, 'pljson_ext.get_json_element(obj, ''a[1][2][2]'').is_null');
-    assertTrue(pljson_ext.get_json_element(obj, 'a[1][2][1]').is_null, 'pljson_ext.get_json_element(obj, ''a[1][2][1]'').is_null');
-    assertTrue(pljson_ext.get_json_element(obj, 'a[1][1]').is_null, 'pljson_ext.get_json_element(obj, ''a[1][1]'').is_null');
+    assertTrue(pljson_ext.get_json_value(obj, 'a[1][2][2]').is_null, 'pljson_ext.get_json_value(obj, ''a[1][2][2]'').is_null');
+    assertTrue(pljson_ext.get_json_value(obj, 'a[1][2][1]').is_null, 'pljson_ext.get_json_value(obj, ''a[1][2][1]'').is_null');
+    assertTrue(pljson_ext.get_json_value(obj, 'a[1][1]').is_null, 'pljson_ext.get_json_value(obj, ''a[1][1]'').is_null');
     pljson_ext.put(obj, 'f[1]', pljson_list('[1,null,[[12, 2.718281828459e210],2],null]'));
     assertTrue(nvl(pljson_ext.get_number(obj, 'f[1][3][1][1]'),0) = 12, 'nvl(pljson_ext.get_number(obj, ''f[1][3][1][1]''),0) = 12');
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */

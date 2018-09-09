@@ -30,7 +30,6 @@ create or replace package pljson_util_pkg authid current_user as
 
 end pljson_util_pkg;
 /
-show err
 
 create or replace package body pljson_util_pkg as
   scanner_exception exception;
@@ -54,7 +53,8 @@ create or replace package body pljson_util_pkg as
   g_json_null_object             constant varchar2(20) := '{ }';
 
 
-function get_xml_to_json_stylesheet return varchar2 as
+function get_xml_to_json_stylesheet return varchar2
+as
 begin
 
   /*
@@ -354,4 +354,3 @@ end sql_to_json;
 
 end pljson_util_pkg;
 /
-show err

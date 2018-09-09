@@ -106,15 +106,15 @@ begin
   -- add different types
   pljson_ut.testcase('Test add different types');
   declare
-    l pljson_list; elem pljson_element;
+    l pljson_list; elem pljson_value;
   begin
     l := pljson_list();
     l.append('varchar2');
     l.append(13);
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
     l.append(2.718281828459e210d);
-    l.append(pljson_bool(false));
-    l.append(pljson_null());
+    l.append(pljson_value(false));
+    l.append(pljson_value.makenull);
     l.append(pljson_list('[1,2,3]'));
     pljson_ut.assertTrue(l.count = 6, 'l.count = 6');
     l.append(l.head);
@@ -227,7 +227,7 @@ begin
   -- get first and last
   pljson_ut.testcase('Test get first and last');
   declare
-    l pljson_list; n pljson_element;
+    l pljson_list; n pljson_value;
   begin
     l := pljson_list();
     pljson_ut.assertTrue(l.head is null, 'l.head is null');
@@ -250,7 +250,7 @@ begin
   declare
     obj pljson_list := pljson_list();
     x number := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.append(x);
     n := obj.head;
@@ -263,7 +263,7 @@ begin
     obj pljson_list := pljson_list();
     x1 varchar2(20) := null;
     x2 varchar2(20) := '';
-    n pljson_element;
+    n pljson_value;
     test_name varchar2(100);
   begin
     test_name := '.get_string()';
@@ -284,7 +284,7 @@ begin
   declare
     obj pljson_list := pljson_list();
     x boolean := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.append(x);
     n := obj.head;
@@ -295,8 +295,8 @@ begin
   pljson_ut.testcase('Test insert null');
   declare
     obj pljson_list := pljson_list();
-    x pljson_element := null;
-    n pljson_element;
+    x pljson_value := null;
+    n pljson_value;
   begin
     obj.append(x);
     n := obj.head;
@@ -308,7 +308,7 @@ begin
   declare
     obj pljson_list := pljson_list();
     x pljson_list := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.append(x);
     n := obj.head;

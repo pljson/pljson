@@ -1,0 +1,765 @@
+<HTML xmlns:lxslt="http://xml.apache.org/xslt" xmlns:exslt="http://exslt.org/common">
+<HEAD>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<TITLE>PL/JSON</TITLE>
+<LINK TITLE="Style" HREF="../stylesheet.css" TYPE="text/css" REL="stylesheet">
+<!--
+        sameCase=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+        namesLowerCase=FALSE
+        namesUpperCase=FALSE
+        namesDefaultCase=TRUE
+        defaultNamesCase=UPPER
+        namesFromCase=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+        namesToCase=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-->
+</HEAD>
+<BODY BGCOLOR="white">
+<TABLE CELLSPACING="0" CELLPADDING="1" WIDTH="100%" BORDER="0">
+<TR>
+<TD CLASS="NavBarRow1" COLSPAN="2">
+<TABLE CELLSPACING="3" CELLPADDING="0" BORDER="0">
+<TR VALIGN="top" ALIGN="center">
+<TD CLASS="NavBarRow1"><A HREF="../summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../index-list.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../generator.html"><FONT CLASS="NavBarFont1"><B>Generator</B></FONT></A> &nbsp;</TD>
+</TR>
+</TABLE>
+</TD><TD rowspan="3" VALIGN="top" ALIGN="right"><EM><b>PL/JSON</b></EM></TD>
+</TR>
+<TR>
+<TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+      SUMMARY:  <A HREF="#field_summary">FIELD</A> | <A HREF="#type_summary">TYPE</A> | <A HREF="#method_summary">METHOD</A></FONT></TD><TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+    DETAIL:  <A HREF="#field_detail">FIELD</A> | <A HREF="#type_detail">TYPE</A> | <A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<HR>
+<H2>
+<FONT SIZE="-1"></FONT>
+<BR>Package&nbsp;PLJSON_PARSER</H2>
+<P></P>
+<DL></DL>
+<HR>
+<P></P>
+<A NAME="field_summary"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="2"><FONT SIZE="+2"><B>Field Summary</B></FONT></TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->BOOLEAN</CODE></FONT></TD><TD><CODE><B><A HREF="#JSON_STRICT">JSON_STRICT</A></B> := FALSE</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+</TABLE>
+<P></P>
+<A NAME="type_summary"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="2"><FONT SIZE="+2"><B>Type Summary</B></FONT></TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=RECORD
+       localTypeName=
+       schema=
+       fieldType=RECORD
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->RECORD</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="JSON_SRC"></A><TD><CODE><B><A HREF="#JSON_SRC(NUMBER,NUMBER,VARCHAR2(32767),CLOB)">JSON_SRC</A></B>(LEN NUMBER, OFFSET NUMBER, SRC VARCHAR2(32767), S_CLOB CLOB)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=table OF rToken INDEX BY pls_integer
+       localTypeName=
+       schema=
+       fieldType=table OF rToken INDEX BY pls_integer
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->table OF rToken INDEX BY pls_integer</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#LTOKENS">LTOKENS</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=RECORD
+       localTypeName=
+       schema=
+       fieldType=RECORD
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->RECORD</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="RTOKEN"></A><TD><CODE><B><A HREF="#RTOKEN(VARCHAR2(7),PLS_INTEGER,PLS_INTEGER,VARCHAR2(32767),CLOB)">RTOKEN</A></B>(TYPE_NAME VARCHAR2(7), LINE PLS_INTEGER, COL PLS_INTEGER, DATA VARCHAR2(32767), DATA_OVERFLOW CLOB)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Internal type for processing.</TD>
+</TR>
+</TABLE>
+<P></P>
+<A NAME="method_summary"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="2"><FONT SIZE="+2"><B>Method Summary</B></FONT></TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_VERSION">GET_VERSION</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=LTOKENS
+       localTypeName=LTOKENS
+       schema=
+       fieldType=LTOKENS
+       synonymsFile=,,--><!--localTypeNameParameter--><A href="#LTOKENS">LTOKENS</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="LEXER"></A><TD><CODE><B><A HREF="#LEXER(JSON_SRC)">LEXER</A></B>(JSRC IN OUT NOCOPY JSON_SRC)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=2 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="NEXT_CHAR"></A><TD><CODE><B><A HREF="#NEXT_CHAR(NUMBER,JSON_SRC)">NEXT_CHAR</A></B>(INDX IN NUMBER, S IN OUT NOCOPY JSON_SRC)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=3 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="NEXT_CHAR2"></A><TD><CODE><B><A HREF="#NEXT_CHAR2(NUMBER,JSON_SRC,NUMBER)">NEXT_CHAR2</A></B>(INDX IN NUMBER, S IN OUT NOCOPY JSON_SRC, AMOUNT IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=PLJSON_VALUE
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_VALUE.html">PLJSON_VALUE</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PARSE_ANY"></A><TD><CODE><B><A HREF="#PARSE_ANY(VARCHAR2)">PARSE_ANY</A></B>(STR IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=PLJSON_VALUE
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_VALUE.html">PLJSON_VALUE</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=1 
+		predecessorCount=1 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PARSE_ANY(CLOB)">PARSE_ANY</A></B>(STR IN CLOB)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_LIST
+       localTypeName=
+       schema=
+       fieldType=PLJSON_LIST
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_LIST.html">PLJSON_LIST</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PARSE_LIST"></A><TD><CODE><B><A HREF="#PARSE_LIST(VARCHAR2)">PARSE_LIST</A></B>(STR IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_LIST
+       localTypeName=
+       schema=
+       fieldType=PLJSON_LIST
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_LIST.html">PLJSON_LIST</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=1 
+		predecessorCount=1 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PARSE_LIST(CLOB)">PARSE_LIST</A></B>(STR IN CLOB)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON
+       localTypeName=
+       schema=
+       fieldType=PLJSON
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON.html">PLJSON</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=2 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PARSEOBJ"></A><TD><CODE><B><A HREF="#PARSEOBJ(LTOKENS,PLS_INTEGER)">PARSEOBJ</A></B>(TOKENS IN LTOKENS, INDX IN OUT NOCOPY PLS_INTEGER)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON
+       localTypeName=
+       schema=
+       fieldType=PLJSON
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON.html">PLJSON</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PARSER"></A><TD><CODE><B><A HREF="#PARSER(VARCHAR2)">PARSER</A></B>(STR IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Primary parsing method.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON
+       localTypeName=
+       schema=
+       fieldType=PLJSON
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON.html">PLJSON</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=1 
+		predecessorCount=1 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PARSER(CLOB)">PARSER</A></B>(STR IN CLOB)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_PARSER.JSON_SRC
+       localTypeName=
+       schema=
+       fieldType=PLJSON_PARSER.JSON_SRC
+       synonymsFile=,,--><!--Packaged PL/SQL Type in same schema --><A href="PLJSON_PARSER.html#JSON_SRC">PLJSON_PARSER.JSON_SRC</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PREPARECLOB"></A><TD><CODE><B><A HREF="#PREPARECLOB(CLOB)">PREPARECLOB</A></B>(BUF IN CLOB)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_PARSER.JSON_SRC
+       localTypeName=
+       schema=
+       fieldType=PLJSON_PARSER.JSON_SRC
+       synonymsFile=,,--><!--Packaged PL/SQL Type in same schema --><A href="PLJSON_PARSER.html#JSON_SRC">PLJSON_PARSER.JSON_SRC</A></CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PREPAREVARCHAR2"></A><TD><CODE><B><A HREF="#PREPAREVARCHAR2(VARCHAR2)">PREPAREVARCHAR2</A></B>(BUF IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=
+       localTypeName=
+       schema=
+       fieldType=
+       synonymsFile=,,--><!--GenerateTypeLink: default reached--></CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PRINT_TOKEN"></A><TD><CODE><B><A HREF="#PRINT_TOKEN(RTOKEN)">PRINT_TOKEN</A></B>(T IN RTOKEN)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=
+       localTypeName=
+       schema=
+       fieldType=
+       synonymsFile=,,--><!--GenerateTypeLink: default reached--></CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="REMOVE_DUPLICATES"></A><TD><CODE><B><A HREF="#REMOVE_DUPLICATES(PLJSON)">REMOVE_DUPLICATES</A></B>(OBJ IN OUT NOCOPY PLJSON)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+</TABLE>
+<P></P>
+<A NAME="trigger_summary"></A><A NAME="field_detail"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="1"><FONT SIZE="+2"><B>Field Detail</B></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="JSON_STRICT"></A>
+<H3>JSON_STRICT</H3>
+<PRE>
+        public BOOLEAN <B>JSON_STRICT</B> := FALSE</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="type_detail"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="1"><FONT SIZE="+2"><B>Type Detail</B></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="JSON_SRC(NUMBER,NUMBER,VARCHAR2(32767),CLOB)"></A>
+<H3>JSON_SRC</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=RECORD
+       localTypeName=
+       schema=
+       fieldType=RECORD
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->RECORD <B>JSON_SRC</B>(LEN NUMBER, <BR>                       OFFSET NUMBER, <BR>                       SRC VARCHAR2(32767), <BR>                       S_CLOB CLOB)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="LTOKENS"></A>
+<H3>LTOKENS</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=table OF rToken INDEX BY pls_integer
+       localTypeName=
+       schema=
+       fieldType=table OF rToken INDEX BY pls_integer
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->table OF rToken INDEX BY pls_integer <B>LTOKENS</B>()</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="RTOKEN(VARCHAR2(7),PLS_INTEGER,PLS_INTEGER,VARCHAR2(32767),CLOB)"></A>
+<H3>RTOKEN</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=RECORD
+       localTypeName=
+       schema=
+       fieldType=RECORD
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->RECORD <B>RTOKEN</B>(TYPE_NAME VARCHAR2(7), <BR>                     LINE PLS_INTEGER, <BR>                     COL PLS_INTEGER, <BR>                     DATA VARCHAR2(32767), <BR>                     DATA_OVERFLOW CLOB)</PRE>
+<DL>
+<DD> Internal type for processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="method_detail"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="1"><FONT SIZE="+2"><B>Method Detail</B></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="GET_VERSION"></A>
+<H3>GET_VERSION</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2 <B>GET_VERSION</B>()</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="LEXER(JSON_SRC)"></A>
+<H3>LEXER</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=LTOKENS
+       localTypeName=LTOKENS
+       schema=
+       fieldType=LTOKENS
+       synonymsFile=,,--><!--localTypeNameParameter--><A href="#LTOKENS">LTOKENS</A> <B>LEXER</B>(JSRC IN OUT NOCOPY JSON_SRC)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="NEXT_CHAR(NUMBER,JSON_SRC)"></A>
+<H3>NEXT_CHAR</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2 <B>NEXT_CHAR</B>(INDX IN NUMBER, <BR>                          S IN OUT NOCOPY JSON_SRC)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="NEXT_CHAR2(NUMBER,JSON_SRC,NUMBER)"></A>
+<H3>NEXT_CHAR2</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->VARCHAR2 <B>NEXT_CHAR2</B>(INDX IN NUMBER, <BR>                           S IN OUT NOCOPY JSON_SRC, <BR>                           AMOUNT IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PARSE_ANY(VARCHAR2)"></A>
+<H3>PARSE_ANY</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=PLJSON_VALUE
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_VALUE.html">PLJSON_VALUE</A> <B>PARSE_ANY</B>(STR IN VARCHAR2)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PARSE_ANY(CLOB)"></A>
+<H3>PARSE_ANY</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=PLJSON_VALUE
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_VALUE.html">PLJSON_VALUE</A> <B>PARSE_ANY</B>(STR IN CLOB)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PARSE_LIST(VARCHAR2)"></A>
+<H3>PARSE_LIST</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=PLJSON_LIST
+       localTypeName=
+       schema=
+       fieldType=PLJSON_LIST
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_LIST.html">PLJSON_LIST</A> <B>PARSE_LIST</B>(STR IN VARCHAR2)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PARSE_LIST(CLOB)"></A>
+<H3>PARSE_LIST</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=PLJSON_LIST
+       localTypeName=
+       schema=
+       fieldType=PLJSON_LIST
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_LIST.html">PLJSON_LIST</A> <B>PARSE_LIST</B>(STR IN CLOB)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PARSEOBJ(LTOKENS,PLS_INTEGER)"></A>
+<H3>PARSEOBJ</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=PLJSON
+       localTypeName=
+       schema=
+       fieldType=PLJSON
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON.html">PLJSON</A> <B>PARSEOBJ</B>(TOKENS IN LTOKENS, <BR>                       INDX IN OUT NOCOPY PLS_INTEGER)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PARSER(VARCHAR2)"></A>
+<H3>PARSER</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=PLJSON
+       localTypeName=
+       schema=
+       fieldType=PLJSON
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON.html">PLJSON</A> <B>PARSER</B>(STR IN VARCHAR2)</PRE>
+<DL>
+<DD> <p>Primary parsing method. It can parse a JSON object.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>An instance of <code>pljson</code>.</DD>
+</DT>
+<DT>Throws:
+        <DD>
+<CODE>PARSER_ERROR</CODE> -
+               -20101 when invalid input found.</DD>
+<DD>
+<CODE>SCANNER_ERROR</CODE> -
+               -20100 when lexing fails.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PARSER(CLOB)"></A>
+<H3>PARSER</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=PLJSON
+       localTypeName=
+       schema=
+       fieldType=PLJSON
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON.html">PLJSON</A> <B>PARSER</B>(STR IN CLOB)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PREPARECLOB(CLOB)"></A>
+<H3>PREPARECLOB</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=PLJSON_PARSER.JSON_SRC
+       localTypeName=
+       schema=
+       fieldType=PLJSON_PARSER.JSON_SRC
+       synonymsFile=,,--><!--Packaged PL/SQL Type in same schema --><A href="PLJSON_PARSER.html#JSON_SRC">PLJSON_PARSER.JSON_SRC</A> <B>PREPARECLOB</B>(BUF IN CLOB)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PREPAREVARCHAR2(VARCHAR2)"></A>
+<H3>PREPAREVARCHAR2</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=PLJSON_PARSER.JSON_SRC
+       localTypeName=
+       schema=
+       fieldType=PLJSON_PARSER.JSON_SRC
+       synonymsFile=,,--><!--Packaged PL/SQL Type in same schema --><A href="PLJSON_PARSER.html#JSON_SRC">PLJSON_PARSER.JSON_SRC</A> <B>PREPAREVARCHAR2</B>(BUF IN VARCHAR2)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PRINT_TOKEN(RTOKEN)"></A>
+<H3>PRINT_TOKEN</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=
+       localTypeName=
+       schema=
+       fieldType=
+       synonymsFile=,,--><!--GenerateTypeLink: default reached--> <B>PRINT_TOKEN</B>(T IN RTOKEN)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="REMOVE_DUPLICATES(PLJSON)"></A>
+<H3>REMOVE_DUPLICATES</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=
+       localTypeName=
+       schema=
+       fieldType=
+       synonymsFile=,,--><!--GenerateTypeLink: default reached--> <B>REMOVE_DUPLICATES</B>(OBJ IN OUT NOCOPY PLJSON)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="trigger_detail"></A>
+<TABLE CELLSPACING="0" CELLPADDING="1" WIDTH="100%" BORDER="0">
+<TR>
+<TD CLASS="NavBarRow1" COLSPAN="2">
+<TABLE CELLSPACING="3" CELLPADDING="0" BORDER="0">
+<TR VALIGN="top" ALIGN="center">
+<TD CLASS="NavBarRow1"><A HREF="../summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../index-list.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../generator.html"><FONT CLASS="NavBarFont1"><B>Generator</B></FONT></A> &nbsp;</TD>
+</TR>
+</TABLE>
+</TD><TD rowspan="3" VALIGN="top" ALIGN="right"><EM><b>PL/JSON</b></EM></TD>
+</TR>
+<TR>
+<TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+      SUMMARY:  <A HREF="#field_summary">FIELD</A> | <A HREF="#type_summary">TYPE</A> | <A HREF="#method_summary">METHOD</A></FONT></TD><TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+    DETAIL:  <A HREF="#field_detail">FIELD</A> | <A HREF="#type_detail">TYPE</A> | <A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<HR>
+</BODY>
+</HTML>

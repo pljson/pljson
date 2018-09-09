@@ -105,8 +105,8 @@ begin
     obj := pljson();
     obj.put('A', 'varchar2');
     obj.put('A', 2);
-    obj.put('A', pljson_bool(true));
-    obj.put('A', pljson_null());
+    obj.put('A', pljson_value(true));
+    obj.put('A', pljson_value());
     obj.put('A', pljson());
     obj.put('A', pljson_list('[34,34]'));
     pljson_ut.assertTrue(obj.count = 1, 'obj.count = 1');
@@ -183,7 +183,7 @@ begin
   declare
     obj pljson := pljson();
     x number := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.put('X', x);
     n := obj.get('X');
@@ -204,19 +204,18 @@ begin
       test_name := 'x1 := obj.get(''X1'').get_string;';
       x1 := obj.get('X1').get_string;
       pljson_ut.pass(test_name);
-    end;
-    /*exception
+    exception
       when others then
         pljson_ut.fail(test_name);
     end;
     begin
-      test_name := 'x2 := obj.get(''X2'').get_string;';
+      test_name := 'x1 := obj.get(''X2'').get_string;';
       x2 := obj.get('X2').get_string;
       pljson_ut.pass(test_name);
     exception
       when others then
         pljson_ut.fail(test_name);
-    end;*/
+    end;
   end;
   
   -- insert null boolean
@@ -224,19 +223,19 @@ begin
   declare
     obj pljson := pljson();
     x boolean := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.put('X', x);
     n := obj.get('X');
     pljson_ut.assertFalse(n is null, 'n is null'); --may seem odd -- but initialized vars are best!
   end;
   
-  -- insert null pljson_element
-  pljson_ut.testcase('Test insert null pljson_element');
+  -- insert null pljson_value
+  pljson_ut.testcase('Test insert null pljson_value');
   declare
     obj pljson := pljson();
-    x pljson_element := null;
-    n pljson_element;
+    x pljson_value := null;
+    n pljson_value;
   begin
     obj.put('X', x);
     n := obj.get('X');
@@ -248,7 +247,7 @@ begin
   declare
     obj pljson := pljson();
     x pljson := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.put('X', x);
     n := obj.get('X');
@@ -260,7 +259,7 @@ begin
   declare
     obj pljson := pljson();
     x pljson_list := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.put('X', x);
     n := obj.get('X');
