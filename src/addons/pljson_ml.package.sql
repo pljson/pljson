@@ -33,8 +33,6 @@ create or replace package pljson_ml as
 
 end pljson_ml;
 /
-show err
-
 create or replace package body pljson_ml as
   function get_jsonml_stylesheet return xmltype;
 
@@ -305,4 +303,3 @@ create or replace package body pljson_ml as
 
 end pljson_ml;
 /
-show err

@@ -1,0 +1,1860 @@
+<HTML xmlns:lxslt="http://xml.apache.org/xslt" xmlns:exslt="http://exslt.org/common">
+<HEAD>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<TITLE>PL/JSON</TITLE>
+<LINK TITLE="Style" HREF="../stylesheet.css" TYPE="text/css" REL="stylesheet">
+<!--
+        sameCase=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+        namesLowerCase=FALSE
+        namesUpperCase=FALSE
+        namesDefaultCase=TRUE
+        defaultNamesCase=UPPER
+        namesFromCase=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+        namesToCase=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-->
+</HEAD>
+<BODY BGCOLOR="white">
+<TABLE CELLSPACING="0" CELLPADDING="1" WIDTH="100%" BORDER="0">
+<TR>
+<TD CLASS="NavBarRow1" COLSPAN="2">
+<TABLE CELLSPACING="3" CELLPADDING="0" BORDER="0">
+<TR VALIGN="top" ALIGN="center">
+<TD CLASS="NavBarRow1"><A HREF="../summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../index-list.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../generator.html"><FONT CLASS="NavBarFont1"><B>Generator</B></FONT></A> &nbsp;</TD>
+</TR>
+</TABLE>
+</TD><TD rowspan="3" VALIGN="top" ALIGN="right"><EM><b>PL/JSON</b></EM></TD>
+</TR>
+<TR>
+<TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+      SUMMARY:  <A HREF="#field_summary">FIELD</A> | <A HREF="#type_summary">TYPE</A> | <A HREF="#method_summary">METHOD</A></FONT></TD><TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+    DETAIL:  <A HREF="#field_detail">FIELD</A> | <A HREF="#type_detail">TYPE</A> | <A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<HR>
+<H2>
+<FONT SIZE="-1"></FONT>
+<BR>Subtype&nbsp;PLJSON</H2> <p>This package defines <em>PL/JSON</em>'s representation of the JSON
+ object type, e.g.:</p>
+ <pre>
+ {
+   "foo": "bar",
+   "baz": 42
+ }
+ </pre>
+ <p>The primary method exported by this package is the <code>pljson</code>
+ method.</p>
+ <strong>Example:</strong>
+ <pre>
+ declare
+   myjson pljson := pljson('{ "foo": "foo", "bar": [0, 1, 2], "baz": { "foobar": "foobar" } }');
+ begin
+   myjson.get('foo').print(); // => dbms_output.put_line('foo')
+   myjson.get('bar[1]').print(); // => dbms_output.put_line('0')
+   myjson.get('baz.foobar').print(); // => dbms_output.put_line('foobar')
+ end;
+ </pre>
+<P></P>
+<DL></DL>
+<HR>
+<P></P>
+<A NAME="field_summary"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="2"><FONT SIZE="+2"><B>Field Summary</B></FONT></TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=NUMBER
+       localTypeName=
+       schema=
+       fieldType=NUMBER
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->NUMBER</CODE></FONT></TD><TD><CODE><B><A HREF="#CHECK_FOR_DUPLICATE">CHECK_FOR_DUPLICATE</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_VALUE_ARRAY
+       localTypeName=
+       schema=
+       fieldType=PLJSON_VALUE_ARRAY
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_VALUE_ARRAY.html">PLJSON_VALUE_ARRAY</A></CODE></FONT></TD><TD><CODE><B><A HREF="#JSON_DATA">JSON_DATA</A></B></CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       Private variable for internal processing.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=PLJSON_ELEMENT
+       localTypeName=
+       schema=
+       fieldType=PLJSON_ELEMENT
+       synonymsFile=,,--><!--Object Type in same schema--><A href="PLJSON_ELEMENT.html">PLJSON_ELEMENT</A></CODE></FONT></TD><TD><CODE>SUPERTYPE</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+</TABLE>
+<P></P>
+<A NAME="type_summary"></A><A NAME="method_summary"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="2"><FONT SIZE="+2"><B>Method Summary</B></FONT></TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=2 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="CHECK_DUPLICATE"></A><TD><CODE><B><A HREF="#CHECK_DUPLICATE(PLJSON,BOOLEAN)">CHECK_DUPLICATE</A></B>(SELF IN OUT NOCOPY PLJSON, V_SET IN BOOLEAN)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION NUMBER
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION NUMBER
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION NUMBER</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#COUNT">COUNT</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Return the number values in the object.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="EXIST"></A><TD><CODE><B><A HREF="#EXIST(VARCHAR2)">EXIST</A></B>(PAIR_NAME IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Determine if a given value exists within the object.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_VALUE</CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="GET"></A><TD><CODE><B><A HREF="#GET(VARCHAR2)">GET</A></B>(PAIR_NAME IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve the value of a given key.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_VALUE</CODE></FONT></TD>
+<!-- 
+		siblingCount=1 
+		argumentCount=1 
+		predecessorCount=1 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET(PLS_INTEGER)">GET</A></B>(POSITION IN PLS_INTEGER)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve a value based on its position in the internal storage array.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_LIST
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_LIST
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_LIST</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_KEYS">GET_KEYS</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve all of the keys within the object as a <code>pljson_list</code>.</p>
+ <pre>
+ myjson := pljson('{"foo": "bar"}');
+ myjson.get_keys(); // ['foo']
+ </pre>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_LIST
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_LIST
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_LIST</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#GET_VALUES">GET_VALUES</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve all of the values within the object as a <code>pljson_list</code>.</p>
+ <pre>
+ myjson := pljson('{"foo": "bar"}');
+ myjson.get_values(); // ['bar']
+ </pre>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=4 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="HTP"></A><TD><CODE><B><A HREF="#HTP(PLJSON,BOOLEAN,NUMBER,VARCHAR2)">HTP</A></B>(SELF IN PLJSON, SPACES IN BOOLEAN DEFAULT FALSE, CHARS_PER_LINE IN NUMBER DEFAULT 0, JSONP IN VARCHAR2 DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Print a JSON representation of the object via <code>HTP.PRN</code>.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION NUMBER
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION NUMBER
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION NUMBER</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="INDEX_OF"></A><TD><CODE><B><A HREF="#INDEX_OF(VARCHAR2)">INDEX_OF</A></B>(PAIR_NAME IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Determine the position of a given value within the internal storage
+ array.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_VALUE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=2 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PATH"></A><TD><CODE><B><A HREF="#PATH(VARCHAR2,NUMBER)">PATH</A></B>(JSON_PATH IN VARCHAR2, BASE IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Retrieve a value from the internal storage array based on a path string
+ and a starting index.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PATH_PUT"></A><TD><CODE><B><A HREF="#PATH_PUT(PLJSON,VARCHAR2,PLJSON_VALUE,NUMBER)">PATH_PUT</A></B>(SELF IN OUT NOCOPY PLJSON, JSON_PATH IN VARCHAR2, ELEM IN PLJSON_VALUE, BASE IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=1 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PATH_PUT(PLJSON,VARCHAR2,VARCHAR2,NUMBER)">PATH_PUT</A></B>(SELF IN OUT NOCOPY PLJSON, JSON_PATH IN VARCHAR2, ELEM IN VARCHAR2, BASE IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=2 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PATH_PUT(PLJSON,VARCHAR2,NUMBER,NUMBER)">PATH_PUT</A></B>(SELF IN OUT NOCOPY PLJSON, JSON_PATH IN VARCHAR2, ELEM IN NUMBER, BASE IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=3 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PATH_PUT(PLJSON,VARCHAR2,BINARY_DOUBLE,NUMBER)">PATH_PUT</A></B>(SELF IN OUT NOCOPY PLJSON, JSON_PATH IN VARCHAR2, ELEM IN BINARY_DOUBLE, BASE IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=4 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PATH_PUT(PLJSON,VARCHAR2,BOOLEAN,NUMBER)">PATH_PUT</A></B>(SELF IN OUT NOCOPY PLJSON, JSON_PATH IN VARCHAR2, ELEM IN BOOLEAN, BASE IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=5 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PATH_PUT(PLJSON,VARCHAR2,PLJSON_LIST,NUMBER)">PATH_PUT</A></B>(SELF IN OUT NOCOPY PLJSON, JSON_PATH IN VARCHAR2, ELEM IN PLJSON_LIST, BASE IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=6 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PATH_PUT(PLJSON,VARCHAR2,PLJSON,NUMBER)">PATH_PUT</A></B>(SELF IN OUT NOCOPY PLJSON, JSON_PATH IN VARCHAR2, ELEM IN PLJSON, BASE IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=3 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PATH_REMOVE"></A><TD><CODE><B><A HREF="#PATH_REMOVE(PLJSON,VARCHAR2,NUMBER)">PATH_REMOVE</A></B>(SELF IN OUT NOCOPY PLJSON, JSON_PATH IN VARCHAR2, BASE IN NUMBER DEFAULT 1)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PLJSON">PLJSON</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Primary constructor that creates an empty object.</p>
+ <p>Internally, a <code>pljson</code> "object" is an array of values.</p>
+ <pre>
+   decleare
+     myjson pljson := pljson();
+   begin
+     myjson.put('foo', 'bar');
+     dbms_output.put_line(myjson.get('foo')); // "bar"
+   end;
+ </pre>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=1 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(VARCHAR2)">PLJSON</A></B>(STR IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Construct a <code>pljson</code> instance from a given string of JSON.</p>
+ <pre>
+   decleare
+     myjson pljson := pljson('{"foo": "bar"}');
+   begin
+     dbms_output.put_line(myjson.get('foo')); // "bar"
+   end;
+ </pre>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=2 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(CLOB)">PLJSON</A></B>(STR IN CLOB)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Construct a <code>pljson</code> instance from a given CLOB of JSON.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=2 
+		predecessorCount=3 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(BLOB,VARCHAR2)">PLJSON</A></B>(STR IN BLOB, CHARSET IN VARCHAR2 DEFAULT 'UTF8')</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Construct a <code>pljson</code> instance from a given BLOB of JSON.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=4 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(PLJSON_VARRAY)">PLJSON</A></B>(STR_ARRAY IN PLJSON_VARRAY)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Construct a <code>pljson</code> instance from
+ a given table of key,value pairs of type varchar2.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=5 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(PLJSON_VALUE)">PLJSON</A></B>(ELEM IN PLJSON_VALUE)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Create a new <code>pljson</code> object from a current <code>pljson_value</code>.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=1 
+		predecessorCount=6 
+		siblingNoArgumentCount=1--><TD><CODE><B><A HREF="#PLJSON(PLJSON_LIST)">PLJSON</A></B>(L IN OUT NOCOPY PLJSON_LIST)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Create a new <code>pljson</code> object from a current <code>pljson_list</code>.</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=4 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PRINT"></A><TD><CODE><B><A HREF="#PRINT(PLJSON,BOOLEAN,NUMBER,VARCHAR2)">PRINT</A></B>(SELF IN PLJSON, SPACES IN BOOLEAN DEFAULT TRUE, CHARS_PER_LINE IN NUMBER DEFAULT 8192, JSONP IN VARCHAR2 DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Print a JSON representation of the object via <code>DBMS_OUTPUT</code>.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="PUT"></A><TD><CODE><B><A HREF="#PUT(PLJSON,VARCHAR2,PLJSON_VALUE,PLS_INTEGER)">PUT</A></B>(SELF IN OUT NOCOPY PLJSON, PAIR_NAME IN VARCHAR2, PAIR_VALUE IN PLJSON_VALUE, POSITION IN PLS_INTEGER DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Add a <code>pljson</code> instance into the current instance under a
+ given key name.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=1 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PUT(PLJSON,VARCHAR2,VARCHAR2,PLS_INTEGER)">PUT</A></B>(SELF IN OUT NOCOPY PLJSON, PAIR_NAME IN VARCHAR2, PAIR_VALUE IN VARCHAR2, POSITION IN PLS_INTEGER DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Add a <code>varchar2</code> instance into the current instance under a
+ given key name.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=2 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PUT(PLJSON,VARCHAR2,NUMBER,PLS_INTEGER)">PUT</A></B>(SELF IN OUT NOCOPY PLJSON, PAIR_NAME IN VARCHAR2, PAIR_VALUE IN NUMBER, POSITION IN PLS_INTEGER DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Add a <code>number</code> instance into the current instance under a
+ given key name.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=3 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PUT(PLJSON,VARCHAR2,BINARY_DOUBLE,PLS_INTEGER)">PUT</A></B>(SELF IN OUT NOCOPY PLJSON, PAIR_NAME IN VARCHAR2, PAIR_VALUE IN BINARY_DOUBLE, POSITION IN PLS_INTEGER DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Add a <code>binary_double</code> instance into the current instance under a
+ given key name.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=4 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PUT(PLJSON,VARCHAR2,BOOLEAN,PLS_INTEGER)">PUT</A></B>(SELF IN OUT NOCOPY PLJSON, PAIR_NAME IN VARCHAR2, PAIR_VALUE IN BOOLEAN, POSITION IN PLS_INTEGER DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Add a <code>boolean</code> instance into the current instance under a
+ given key name.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=5 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PUT(PLJSON,VARCHAR2,PLJSON,PLS_INTEGER)">PUT</A></B>(SELF IN OUT NOCOPY PLJSON, PAIR_NAME IN VARCHAR2, PAIR_VALUE IN PLJSON, POSITION IN PLS_INTEGER DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=6 
+		argumentCount=4 
+		predecessorCount=6 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#PUT(PLJSON,VARCHAR2,PLJSON_LIST,PLS_INTEGER)">PUT</A></B>(SELF IN OUT NOCOPY PLJSON, PAIR_NAME IN VARCHAR2, PAIR_VALUE IN PLJSON_LIST, POSITION IN PLS_INTEGER DEFAULT NULL)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="REMOVE"></A><TD><CODE><B><A HREF="#REMOVE(VARCHAR2)">REMOVE</A></B>(PAIR_NAME IN VARCHAR2)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Remove a key and value from an object.</p>
+ <pre>
+   declare
+     myjson pljson := pljson('{"foo": "foo", "bar": "bar"}')
+   begin
+     myjson.remove('bar'); // => '{"foo": "foo"}'
+   end;
+ </pre>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=1 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="REMOVE_DUPLICATES"></A><TD><CODE><B><A HREF="#REMOVE_DUPLICATES(PLJSON)">REMOVE_DUPLICATES</A></B>(SELF IN OUT NOCOPY PLJSON)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=2 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="TO_CHAR"></A><TD><CODE><B><A HREF="#TO_CHAR(BOOLEAN,NUMBER)">TO_CHAR</A></B>(SPACES IN BOOLEAN DEFAULT TRUE, CHARS_PER_LINE IN NUMBER DEFAULT 0)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Serialize the object to a JSON representation string.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=5 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><A NAME="TO_CLOB"></A><TD><CODE><B><A HREF="#TO_CLOB(PLJSON,CLOB,BOOLEAN,NUMBER,BOOLEAN)">TO_CLOB</A></B>(SELF IN PLJSON, BUF IN OUT NOCOPY CLOB, SPACES IN BOOLEAN DEFAULT FALSE, CHARS_PER_LINE IN NUMBER DEFAULT 0, ERASE_CLOB IN BOOLEAN DEFAULT TRUE)</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Serialize the object to a JSON representation and store it in a CLOB.</p>
+</TD>
+</TR>
+<TR CLASS="TableRowColor">
+<TD WIDTH="1%" VALIGN="top" ALIGN="right"><FONT SIZE="-1"><CODE>&nbsp;<!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_VALUE</CODE></FONT></TD>
+<!-- 
+		siblingCount=0 
+		argumentCount=0 
+		predecessorCount=0 
+		siblingNoArgumentCount=0--><TD><CODE><B><A HREF="#TO_JSON_VALUE">TO_JSON_VALUE</A></B>()</CODE>
+<BR>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <p>Convert the object to a <code>pljson_value</code> for use in other methods
+ of the PL/JSON API.</p>
+</TD>
+</TR>
+</TABLE>
+<P></P>
+<A NAME="trigger_summary"></A><A NAME="field_detail"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="1"><FONT SIZE="+2"><B>Field Detail</B></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="CHECK_FOR_DUPLICATE"></A>
+<H3>CHECK_FOR_DUPLICATE</H3>
+<PRE>
+        public NUMBER <B>CHECK_FOR_DUPLICATE</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="JSON_DATA"></A>
+<H3>JSON_DATA</H3>
+<PRE>
+        public PLJSON_VALUE_ARRAY <B>JSON_DATA</B>
+</PRE>
+<DL>
+<DD> Private variable for internal processing. 
+</DD>
+<DD>
+<DL></DL>
+</DD>
+</DL>
+<HR>
+<A NAME="type_detail"></A><A NAME="method_detail"></A>
+<TABLE WIDTH="100%" CELLSPACING="0" CELLPADDING="3" BORDER="1">
+<TR CLASS="TableHeadingColor">
+<TD COLSPAN="1"><FONT SIZE="+2"><B>Method Detail</B></FONT></TD>
+</TR>
+</TABLE>
+<A NAME="CHECK_DUPLICATE(PLJSON,BOOLEAN)"></A>
+<H3>CHECK_DUPLICATE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>CHECK_DUPLICATE</B>(SELF IN OUT NOCOPY PLJSON, <BR>                                        V_SET IN BOOLEAN)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="COUNT"></A>
+<H3>COUNT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION NUMBER
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION NUMBER
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION NUMBER <B>COUNT</B>()</PRE>
+<DL>
+<DD> <p>Return the number values in the object. Essentially, the number of keys
+ in the object.</p>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>The number of values in the object.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="EXIST(VARCHAR2)"></A>
+<H3>EXIST</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION BOOLEAN
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION BOOLEAN
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION BOOLEAN <B>EXIST</B>(PAIR_NAME IN VARCHAR2)</PRE>
+<DL>
+<DD> <p>Determine if a given value exists within the object.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>PAIR_NAME</CODE> -
+              The name of the value to check for.</DD>
+</DT>
+<DT>Returns:
+          <DD><code>true</code> if the value exists, <code>false</code> otherwise.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET(VARCHAR2)"></A>
+<H3>GET</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_VALUE <B>GET</B>(PAIR_NAME IN VARCHAR2)</PRE>
+<DL>
+<DD> <p>Retrieve the value of a given key.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>PAIR_NAME</CODE> -
+              The name of the value to retrieve.</DD>
+</DT>
+<DT>Returns:
+          <DD>An instance of <code>pljson_value</code>, or <code>null</code>
+ if it could not be found.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET(PLS_INTEGER)"></A>
+<H3>GET</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_VALUE <B>GET</B>(POSITION IN PLS_INTEGER)</PRE>
+<DL>
+<DD> <p>Retrieve a value based on its position in the internal storage array.
+ It is recommended you use name based retrieval.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>POSITION</CODE> -
+              Index of the value in the internal storage array.</DD>
+</DT>
+<DT>Returns:
+          <DD>An instance of <code>pljson_value</code>, or <code>null</code>
+ if it could not be found.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_KEYS"></A>
+<H3>GET_KEYS</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_LIST
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_LIST
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_LIST <B>GET_KEYS</B>()</PRE>
+<DL>
+<DD> <p>Retrieve all of the keys within the object as a <code>pljson_list</code>.</p>
+ <pre>
+ myjson := pljson('{"foo": "bar"}');
+ myjson.get_keys(); // ['foo']
+ </pre>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>An instance of <code>pljson_list</code>.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="GET_VALUES"></A>
+<H3>GET_VALUES</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_LIST
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_LIST
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_LIST <B>GET_VALUES</B>()</PRE>
+<DL>
+<DD> <p>Retrieve all of the values within the object as a <code>pljson_list</code>.</p>
+ <pre>
+ myjson := pljson('{"foo": "bar"}');
+ myjson.get_values(); // ['bar']
+ </pre>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>An instance of <code>pljson_list</code>.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="HTP(PLJSON,BOOLEAN,NUMBER,VARCHAR2)"></A>
+<H3>HTP</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>HTP</B>(SELF IN PLJSON, <BR>                            SPACES IN BOOLEAN DEFAULT FALSE, <BR>                            CHARS_PER_LINE IN NUMBER DEFAULT 0, <BR>                            JSONP IN VARCHAR2 DEFAULT NULL)</PRE>
+<DL>
+<DD> <p>Print a JSON representation of the object via <code>HTP.PRN</code>.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>SPACES</CODE> -
+              Enable pretty printing by formatting with spaces. Default: <code>true</code>.</DD>
+<DD>
+<CODE>CHARS_PER_LINE</CODE> -
+              Wrap output to a specific number of characters per line. Default: <code>0<code> (infinite).</DD>
+<DD>
+<CODE>JSONP</CODE> -
+              Name of a function for wrapping the output as JSONP. Default: <code>null</code>.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="INDEX_OF(VARCHAR2)"></A>
+<H3>INDEX_OF</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION NUMBER
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION NUMBER
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION NUMBER <B>INDEX_OF</B>(PAIR_NAME IN VARCHAR2)</PRE>
+<DL>
+<DD> <p>Determine the position of a given value within the internal storage
+ array.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>PAIR_NAME</CODE> -
+              The name of the value to retrieve the index for.</DD>
+</DT>
+<DT>Returns:
+          <DD>An index number, or <code>-1</code> if it could not be found.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PATH(VARCHAR2,NUMBER)"></A>
+<H3>PATH</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_VALUE <B>PATH</B>(JSON_PATH IN VARCHAR2, <BR>                                         BASE IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD> <p>Retrieve a value from the internal storage array based on a path string
+ and a starting index.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>JSON_PATH</CODE> -
+              A string path, e.g. <code>'foo.bar[1]'</code>.</DD>
+<DD>
+<CODE>BASE</CODE> -
+              The index in the internal storage array to start from.
+ This should only be necessary under special circumstances. Default: <code>1</code>.</DD>
+</DT>
+<DT>Returns:
+          <DD>An instance of <code>pljson_value</code>.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PATH_PUT(PLJSON,VARCHAR2,PLJSON_VALUE,NUMBER)"></A>
+<H3>PATH_PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PATH_PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                                 JSON_PATH IN VARCHAR2, <BR>                                 ELEM IN PLJSON_VALUE, <BR>                                 BASE IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PATH_PUT(PLJSON,VARCHAR2,VARCHAR2,NUMBER)"></A>
+<H3>PATH_PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PATH_PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                                 JSON_PATH IN VARCHAR2, <BR>                                 ELEM IN VARCHAR2, <BR>                                 BASE IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PATH_PUT(PLJSON,VARCHAR2,NUMBER,NUMBER)"></A>
+<H3>PATH_PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PATH_PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                                 JSON_PATH IN VARCHAR2, <BR>                                 ELEM IN NUMBER, <BR>                                 BASE IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PATH_PUT(PLJSON,VARCHAR2,BINARY_DOUBLE,NUMBER)"></A>
+<H3>PATH_PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PATH_PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                                 JSON_PATH IN VARCHAR2, <BR>                                 ELEM IN BINARY_DOUBLE, <BR>                                 BASE IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PATH_PUT(PLJSON,VARCHAR2,BOOLEAN,NUMBER)"></A>
+<H3>PATH_PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PATH_PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                                 JSON_PATH IN VARCHAR2, <BR>                                 ELEM IN BOOLEAN, <BR>                                 BASE IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PATH_PUT(PLJSON,VARCHAR2,PLJSON_LIST,NUMBER)"></A>
+<H3>PATH_PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PATH_PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                                 JSON_PATH IN VARCHAR2, <BR>                                 ELEM IN PLJSON_LIST, <BR>                                 BASE IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PATH_PUT(PLJSON,VARCHAR2,PLJSON,NUMBER)"></A>
+<H3>PATH_PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PATH_PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                                 JSON_PATH IN VARCHAR2, <BR>                                 ELEM IN PLJSON, <BR>                                 BASE IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PATH_REMOVE(PLJSON,VARCHAR2,NUMBER)"></A>
+<H3>PATH_REMOVE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PATH_REMOVE</B>(SELF IN OUT NOCOPY PLJSON, <BR>                                    JSON_PATH IN VARCHAR2, <BR>                                    BASE IN NUMBER DEFAULT 1)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON"></A>
+<H3>PLJSON</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>()</PRE>
+<DL>
+<DD> <p>Primary constructor that creates an empty object.</p>
+ <p>Internally, a <code>pljson</code> "object" is an array of values.</p>
+ <pre>
+   decleare
+     myjson pljson := pljson();
+   begin
+     myjson.put('foo', 'bar');
+     dbms_output.put_line(myjson.get('foo')); // "bar"
+   end;
+ </pre>
+</DD>
+<DD>
+<DL>
+<DT>Returns:
+          <DD>A <code>pljson</code> instance.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON(VARCHAR2)"></A>
+<H3>PLJSON</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(STR IN VARCHAR2)</PRE>
+<DL>
+<DD> <p>Construct a <code>pljson</code> instance from a given string of JSON.</p>
+ <pre>
+   decleare
+     myjson pljson := pljson('{"foo": "bar"}');
+   begin
+     dbms_output.put_line(myjson.get('foo')); // "bar"
+   end;
+ </pre>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>STR</CODE> -
+              The JSON to parse into a <code>pljson</code> object.</DD>
+</DT>
+<DT>Returns:
+          <DD>A <code>pljson</code> instance.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON(CLOB)"></A>
+<H3>PLJSON</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(STR IN CLOB)</PRE>
+<DL>
+<DD> <p>Construct a <code>pljson</code> instance from a given CLOB of JSON.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>STR</CODE> -
+              The CLOB to parse into a <code>pljson</code> object.</DD>
+</DT>
+<DT>Returns:
+          <DD>A <code>pljson</code> instance.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON(BLOB,VARCHAR2)"></A>
+<H3>PLJSON</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(STR IN BLOB, <BR>                                                  CHARSET IN VARCHAR2 DEFAULT 'UTF8')</PRE>
+<DL>
+<DD> <p>Construct a <code>pljson</code> instance from a given BLOB of JSON.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>STR</CODE> -
+              The BLOB to parse into a <code>pljson</code> object.</DD>
+<DD>
+<CODE>CHARSET</CODE> -
+              The character set of the BLOB data (defaults to UTF-8).</DD>
+</DT>
+<DT>Returns:
+          <DD>A <code>pljson</code> instance.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON(PLJSON_VARRAY)"></A>
+<H3>PLJSON</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(STR_ARRAY IN PLJSON_VARRAY)</PRE>
+<DL>
+<DD> <p>Construct a <code>pljson</code> instance from
+ a given table of key,value pairs of type varchar2.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>STR_ARRAY</CODE> -
+              The pljson_varray (table of varchar2) to parse into a <code>pljson</code> object.</DD>
+</DT>
+<DT>Returns:
+          <DD>A <code>pljson</code> instance.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON(PLJSON_VALUE)"></A>
+<H3>PLJSON</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(ELEM IN PLJSON_VALUE)</PRE>
+<DL>
+<DD> <p>Create a new <code>pljson</code> object from a current <code>pljson_value</code>.
+ <pre>
+   declare
+    myjson pljson := pljson('{"foo": {"bar": "baz"}}');
+    newjson pljson;
+   begin
+    newjson := pljson(myjson.get('foo').to_json_value())
+   end;
+ </pre>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>ELEM</CODE> -
+              The <code>pljson_value</code> to cast to a <code>pljson</code> object.</DD>
+</DT>
+<DT>Returns:
+          <DD>An instance of <code>pljson</code>.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PLJSON(PLJSON_LIST)"></A>
+<H3>PLJSON</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=CONSTRUCTOR FUNCTION SELF AS RESULT
+       localTypeName=
+       schema=
+       fieldType=CONSTRUCTOR FUNCTION SELF AS RESULT
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->CONSTRUCTOR FUNCTION SELF AS RESULT <B>PLJSON</B>(L IN OUT NOCOPY PLJSON_LIST)</PRE>
+<DL>
+<DD> <p>Create a new <code>pljson</code> object from a current <code>pljson_list</code>.
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>L</CODE> -
+              The array to create a new object from.</DD>
+</DT>
+<DT>Returns:
+          <DD>An instance of <code>pljson</code>.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PRINT(PLJSON,BOOLEAN,NUMBER,VARCHAR2)"></A>
+<H3>PRINT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PRINT</B>(SELF IN PLJSON, <BR>                              SPACES IN BOOLEAN DEFAULT TRUE, <BR>                              CHARS_PER_LINE IN NUMBER DEFAULT 8192, <BR>                              JSONP IN VARCHAR2 DEFAULT NULL)</PRE>
+<DL>
+<DD> <p>Print a JSON representation of the object via <code>DBMS_OUTPUT</code>.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>SPACES</CODE> -
+              Enable pretty printing by formatting with spaces. Default: <code>true</code>.</DD>
+<DD>
+<CODE>CHARS_PER_LINE</CODE> -
+              Wrap output to a specific number of characters per line. Default: <code>8192<code> (<code>32512</code> is maximum).</DD>
+<DD>
+<CODE>JSONP</CODE> -
+              Name of a function for wrapping the output as JSONP. Default: <code>null</code>.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PUT(PLJSON,VARCHAR2,PLJSON_VALUE,PLS_INTEGER)"></A>
+<H3>PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                            PAIR_NAME IN VARCHAR2, <BR>                            PAIR_VALUE IN PLJSON_VALUE, <BR>                            POSITION IN PLS_INTEGER DEFAULT NULL)</PRE>
+<DL>
+<DD> <p>Add a <code>pljson</code> instance into the current instance under a
+ given key name.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>PAIR_NAME</CODE> -
+              Name of the key to add/update.</DD>
+<DD>
+<CODE>PAIR_VALUE</CODE> -
+              The value to associate with the key.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PUT(PLJSON,VARCHAR2,VARCHAR2,PLS_INTEGER)"></A>
+<H3>PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                            PAIR_NAME IN VARCHAR2, <BR>                            PAIR_VALUE IN VARCHAR2, <BR>                            POSITION IN PLS_INTEGER DEFAULT NULL)</PRE>
+<DL>
+<DD> <p>Add a <code>varchar2</code> instance into the current instance under a
+ given key name.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>PAIR_NAME</CODE> -
+              Name of the key to add/update.</DD>
+<DD>
+<CODE>PAIR_VALUE</CODE> -
+              The value to associate with the key.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PUT(PLJSON,VARCHAR2,NUMBER,PLS_INTEGER)"></A>
+<H3>PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                            PAIR_NAME IN VARCHAR2, <BR>                            PAIR_VALUE IN NUMBER, <BR>                            POSITION IN PLS_INTEGER DEFAULT NULL)</PRE>
+<DL>
+<DD> <p>Add a <code>number</code> instance into the current instance under a
+ given key name.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>PAIR_NAME</CODE> -
+              Name of the key to add/update.</DD>
+<DD>
+<CODE>PAIR_VALUE</CODE> -
+              The value to associate with the key.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PUT(PLJSON,VARCHAR2,BINARY_DOUBLE,PLS_INTEGER)"></A>
+<H3>PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                            PAIR_NAME IN VARCHAR2, <BR>                            PAIR_VALUE IN BINARY_DOUBLE, <BR>                            POSITION IN PLS_INTEGER DEFAULT NULL)</PRE>
+<DL>
+<DD> <p>Add a <code>binary_double</code> instance into the current instance under a
+ given key name.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>PAIR_NAME</CODE> -
+              Name of the key to add/update.</DD>
+<DD>
+<CODE>PAIR_VALUE</CODE> -
+              The value to associate with the key.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PUT(PLJSON,VARCHAR2,BOOLEAN,PLS_INTEGER)"></A>
+<H3>PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                            PAIR_NAME IN VARCHAR2, <BR>                            PAIR_VALUE IN BOOLEAN, <BR>                            POSITION IN PLS_INTEGER DEFAULT NULL)</PRE>
+<DL>
+<DD> <p>Add a <code>boolean</code> instance into the current instance under a
+ given key name.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>PAIR_NAME</CODE> -
+              Name of the key to add/update.</DD>
+<DD>
+<CODE>PAIR_VALUE</CODE> -
+              The value to associate with the key.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PUT(PLJSON,VARCHAR2,PLJSON,PLS_INTEGER)"></A>
+<H3>PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                            PAIR_NAME IN VARCHAR2, <BR>                            PAIR_VALUE IN PLJSON, <BR>                            POSITION IN PLS_INTEGER DEFAULT NULL)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="PUT(PLJSON,VARCHAR2,PLJSON_LIST,PLS_INTEGER)"></A>
+<H3>PUT</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>PUT</B>(SELF IN OUT NOCOPY PLJSON, <BR>                            PAIR_NAME IN VARCHAR2, <BR>                            PAIR_VALUE IN PLJSON_LIST, <BR>                            POSITION IN PLS_INTEGER DEFAULT NULL)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="REMOVE(VARCHAR2)"></A>
+<H3>REMOVE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>REMOVE</B>(PAIR_NAME IN VARCHAR2)</PRE>
+<DL>
+<DD> <p>Remove a key and value from an object.</p>
+ <pre>
+   declare
+     myjson pljson := pljson('{"foo": "foo", "bar": "bar"}')
+   begin
+     myjson.remove('bar'); // => '{"foo": "foo"}'
+   end;
+ </pre>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>PAIR_NAME</CODE> -
+              The key name to remove.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="REMOVE_DUPLICATES(PLJSON)"></A>
+<H3>REMOVE_DUPLICATES</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>REMOVE_DUPLICATES</B>(SELF IN OUT NOCOPY PLJSON)</PRE>
+<DL>
+<DD></DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="TO_CHAR(BOOLEAN,NUMBER)"></A>
+<H3>TO_CHAR</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION VARCHAR2
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION VARCHAR2
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION VARCHAR2 <B>TO_CHAR</B>(SPACES IN BOOLEAN DEFAULT TRUE, <BR>                                        CHARS_PER_LINE IN NUMBER DEFAULT 0)</PRE>
+<DL>
+<DD> <p>Serialize the object to a JSON representation string.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>SPACES</CODE> -
+              Enable pretty printing by formatting with spaces. Default: <code>true</code>.</DD>
+<DD>
+<CODE>CHARS_PER_LINE</CODE> -
+              Wrap output to a specific number of characters per line. Default: <code>0<code> (infinite).</DD>
+</DT>
+<DT>Returns:
+          <DD>A <code>varchar2</code> string.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="TO_CLOB(PLJSON,CLOB,BOOLEAN,NUMBER,BOOLEAN)"></A>
+<H3>TO_CLOB</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER PROCEDURE
+       localTypeName=
+       schema=
+       fieldType=MEMBER PROCEDURE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER PROCEDURE <B>TO_CLOB</B>(SELF IN PLJSON, <BR>                                BUF IN OUT NOCOPY CLOB, <BR>                                SPACES IN BOOLEAN DEFAULT FALSE, <BR>                                CHARS_PER_LINE IN NUMBER DEFAULT 0, <BR>                                ERASE_CLOB IN BOOLEAN DEFAULT TRUE)</PRE>
+<DL>
+<DD> <p>Serialize the object to a JSON representation and store it in a CLOB.</p>
+</DD>
+<DD>
+<DL>
+<DT>Parameters:
+        <DD>
+<CODE>BUF</CODE> -
+              The CLOB in which to store the results.</DD>
+<DD>
+<CODE>SPACES</CODE> -
+              Enable pretty printing by formatting with spaces. Default: <code>false</code>.</DD>
+<DD>
+<CODE>CHARS_PER_LINE</CODE> -
+              Wrap output to a specific number of characters per line. Default: <code>0<code> (infinite).</DD>
+<DD>
+<CODE>ERASE_CLOB</CODE> -
+              Whether or not to wipe the storage CLOB prior to serialization. Default: <code>true</code>.</DD>
+</DT>
+</DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="TO_JSON_VALUE"></A>
+<H3>TO_JSON_VALUE</H3>
+<PRE>public <!--
+       schemaName=
+       typeName=MEMBER FUNCTION PLJSON_VALUE
+       localTypeName=
+       schema=
+       fieldType=MEMBER FUNCTION PLJSON_VALUE
+       synonymsFile=,,--><!--GenerateTypeLink: default reached-->MEMBER FUNCTION PLJSON_VALUE <B>TO_JSON_VALUE</B>()</PRE>
+<DL>
+<DD> <p>Convert the object to a <code>pljson_value</code> for use in other methods
+ of the PL/JSON API.</p>
+</DD>
+<DD>
+<DL></DL>
+</DD>
+<P></P>
+<DL></DL>
+</DL>
+<HR>
+<A NAME="trigger_detail"></A>
+<TABLE CELLSPACING="0" CELLPADDING="1" WIDTH="100%" BORDER="0">
+<TR>
+<TD CLASS="NavBarRow1" COLSPAN="2">
+<TABLE CELLSPACING="3" CELLPADDING="0" BORDER="0">
+<TR VALIGN="top" ALIGN="center">
+<TD CLASS="NavBarRow1"><A HREF="../summary.html"><FONT CLASS="NavBarFont1"><B>Overview</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../deprecated-list.html"><FONT CLASS="NavBarFont1"><B>Deprecated</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../index-list.html"><FONT CLASS="NavBarFont1"><B>Index</B></FONT></A> &nbsp;</TD><TD CLASS="NavBarRow1"><A HREF="../generator.html"><FONT CLASS="NavBarFont1"><B>Generator</B></FONT></A> &nbsp;</TD>
+</TR>
+</TABLE>
+</TD><TD rowspan="3" VALIGN="top" ALIGN="right"><EM><b>PL/JSON</b></EM></TD>
+</TR>
+<TR>
+<TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+      SUMMARY:  <A HREF="#field_summary">FIELD</A> | <A HREF="#type_summary">TYPE</A> | <A HREF="#method_summary">METHOD</A></FONT></TD><TD CLASS="NavBarRow3" VALIGN="top"><FONT SIZE="-2">
+    DETAIL:  <A HREF="#field_detail">FIELD</A> | <A HREF="#type_detail">TYPE</A> | <A HREF="#method_detail">METHOD</A></FONT></TD>
+</TR>
+</TABLE>
+<HR>
+</BODY>
+</HTML>

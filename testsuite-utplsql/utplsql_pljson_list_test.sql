@@ -194,15 +194,15 @@ create or replace package body utplsql_pljson_list_test is
   
   -- add different types
   procedure test_add_types is
-    l pljson_list; elem pljson_element;
+    l pljson_list; elem pljson_value;
   begin
     l := pljson_list();
     l.append('varchar2');
     l.append(13);
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
     l.append(2.718281828459e210d);
-    l.append(pljson_bool(false));
-    l.append(pljson_null());
+    l.append(pljson_value(false));
+    l.append(pljson_value.makenull);
     l.append(pljson_list('[1,2,3]'));
     assertTrue(l.count = 6, 'l.count = 6');
     l.append(l.head);
@@ -309,7 +309,7 @@ create or replace package body utplsql_pljson_list_test is
   
   -- get first and last
   procedure test_get_first_last is
-    l pljson_list; n pljson_element;
+    l pljson_list; n pljson_value;
   begin
     l := pljson_list();
     assertTrue(l.head is null, 'l.head is null');
@@ -331,7 +331,7 @@ create or replace package body utplsql_pljson_list_test is
   procedure test_insert_null_number is
     obj pljson_list := pljson_list();
     x number := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.append(x);
     n := obj.head;
@@ -343,7 +343,7 @@ create or replace package body utplsql_pljson_list_test is
     obj pljson_list := pljson_list();
     x1 varchar2(20) := null;
     x2 varchar2(20) := '';
-    n pljson_element;
+    n pljson_value;
     test_name varchar2(100);
   begin
     test_name := '.get_string()';
@@ -363,7 +363,7 @@ create or replace package body utplsql_pljson_list_test is
   procedure test_insert_null_boolean is
     obj pljson_list := pljson_list();
     x boolean := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.append(x);
     n := obj.head;
@@ -373,8 +373,8 @@ create or replace package body utplsql_pljson_list_test is
   -- insert null
   procedure test_insert_null is
     obj pljson_list := pljson_list();
-    x pljson_element := null;
-    n pljson_element;
+    x pljson_value := null;
+    n pljson_value;
   begin
     obj.append(x);
     n := obj.head;
@@ -385,7 +385,7 @@ create or replace package body utplsql_pljson_list_test is
   procedure test_insert_null_pljson_list is
     obj pljson_list := pljson_list();
     x pljson_list := null;
-    n pljson_element;
+    n pljson_value;
   begin
     obj.append(x);
     n := obj.head;

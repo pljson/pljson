@@ -1,0 +1,2152 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE APPLICATION SYSTEM "application.dtd">
+<APPLICATION NAME="PL/JSON">
+  <OVERVIEW><![CDATA[<p>
+  <em>PL/JSON</em> is a JSON parser and renderer for Oracle PL/SQL.
+  The API is meant to be simple and robust. Your best starting point in
+  this documention is the <code>PLJSON</code> object type document.
+</p>
+]]></OVERVIEW>
+  <OBJECT_TYPE NAME="PLJSON_VARRAY" SCHEMA="">
+    <COLLECTIONTYPE NAME="TABLE"/>
+    <SUPERTYPE NAME="VARCHAR2(32767)">
+      <RETURN COLLECTIONTYPE="TABLE" NAME="COLLECTION" SUPERTYPE="VARCHAR2(32767)" TYPE="TABLE OF VARCHAR2(32767)">
+        <COMMENT><![CDATA[Collection Type : table OF varchar2(32767)]]></COMMENT>
+      </RETURN>
+    </SUPERTYPE>
+    <SUMMARY END_COLUMN="65" END_LINE="1" LINES="1" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <OBJECT_TYPE NAME="PLJSON" SCHEMA="">
+    <SUPERTYPE NAME="PLJSON_ELEMENT">
+      <RETURN TYPE="PLJSON_ELEMENT"/>
+    </SUPERTYPE>
+    <COMMENT><![CDATA[ <p>This package defines <em>PL/JSON</em>'s representation of the JSON
+ object type, e.g.:</p>
+ <pre>
+ {
+   "foo": "bar",
+   "baz": 42
+ }
+ </pre>
+ <p>The primary method exported by this package is the <code>pljson</code>
+ method.</p>
+ <strong>Example:</strong>
+ <pre>
+ declare
+   myjson pljson := pljson('{ "foo": "foo", "bar": [0, 1, 2], "baz": { "foobar": "foobar" } }');
+ begin
+   myjson.get('foo').print(); // => dbms_output.put_line('foo')
+   myjson.get('bar[1]').print(); // => dbms_output.put_line('0')
+   myjson.get('baz.foobar').print(); // => dbms_output.put_line('foobar')
+ end;
+ </pre>
+]]></COMMENT>
+    <TAG TYPE="@HEADCOM">
+      <COMMENT>
+      </COMMENT>
+    </TAG>
+    <VARIABLE NAME="JSON_DATA" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="PLJSON_VALUE_ARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="CHECK_FOR_DUPLICATE" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="NUMBER"/>
+    </VARIABLE>
+    <FUNCTION NAME="PLJSON" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Primary constructor that creates an empty object.</p>
+ <p>Internally, a <code>pljson</code> "object" is an array of values.</p>
+ <pre>
+   decleare
+     myjson pljson := pljson();
+   begin
+     myjson.put('foo', 'bar');
+     dbms_output.put_line(myjson.get('foo')); // "bar"
+   end;
+ </pre>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Primary constructor that creates an empty object.</p>
+ <p>Internally, a <code>pljson</code> "object" is an array of values.</p>
+ <pre>
+   decleare
+     myjson pljson := pljson();
+   begin
+     myjson.put('foo', 'bar');
+     dbms_output.put_line(myjson.get('foo')); // "bar"
+   end;
+ </pre>
+]]></COMMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="46" END_LINE="77" LINES="1" START_COLUMN="24" START_LINE="77"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Construct a <code>pljson</code> instance from a given string of JSON.</p>
+ <pre>
+   decleare
+     myjson pljson := pljson('{"foo": "bar"}');
+   begin
+     dbms_output.put_line(myjson.get('foo')); // "bar"
+   end;
+ </pre>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Construct a <code>pljson</code> instance from a given string of JSON.</p>
+ <pre>
+   decleare
+     myjson pljson := pljson('{"foo": "bar"}');
+   begin
+     dbms_output.put_line(myjson.get('foo')); // "bar"
+   end;
+ </pre>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[The JSON to parse into a <code>pljson</code> object.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str The JSON to parse into a <code>pljson</code> object.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="60" END_LINE="93" LINES="1" START_COLUMN="24" START_LINE="93"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Construct a <code>pljson</code> instance from a given CLOB of JSON.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Construct a <code>pljson</code> instance from a given CLOB of JSON.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="CLOB">
+        <COMMENT><![CDATA[The CLOB to parse into a <code>pljson</code> object.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str The CLOB to parse into a <code>pljson</code> object.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="59" END_LINE="101" LINES="1" START_COLUMN="24" START_LINE="101"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Construct a <code>pljson</code> instance from a given BLOB of JSON.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Construct a <code>pljson</code> instance from a given BLOB of JSON.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="BLOB">
+        <COMMENT><![CDATA[The BLOB to parse into a <code>pljson</code> object.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="'UTF8'" MODE="IN" NAME="CHARSET" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[The character set of the BLOB data (defaults to UTF-8).]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str The BLOB to parse into a <code>pljson</code> object.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[charset The character set of the BLOB data (defaults to UTF-8).]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="92" END_LINE="110" LINES="1" START_COLUMN="24" START_LINE="110"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Construct a <code>pljson</code> instance from
+ a given table of key,value pairs of type varchar2.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Construct a <code>pljson</code> instance from
+ a given table of key,value pairs of type varchar2.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR_ARRAY" TYPE="PLJSON_VARRAY">
+        <COMMENT><![CDATA[The pljson_varray (table of varchar2) to parse into a <code>pljson</code> object.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str_array The pljson_varray (table of varchar2) to parse into a <code>pljson</code> object.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>pljson</code> instance.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="71" END_LINE="119" LINES="1" START_COLUMN="24" START_LINE="119"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create a new <code>pljson</code> object from a current <code>pljson_value</code>.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create a new <code>pljson</code> object from a current <code>pljson_value</code>.
+ <pre>
+   declare
+    myjson pljson := pljson('{"foo": {"bar": "baz"}}');
+    newjson pljson;
+   begin
+    newjson := pljson(myjson.get('foo').to_json_value())
+   end;
+ </pre>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_VALUE">
+        <COMMENT><![CDATA[The <code>pljson_value</code> to cast to a <code>pljson</code> object.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[An instance of <code>pljson</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[elem The <code>pljson_value</code> to cast to a <code>pljson</code> object.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="65" END_LINE="136" LINES="1" START_COLUMN="24" START_LINE="136"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create a new <code>pljson</code> object from a current <code>pljson_list</code>.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create a new <code>pljson</code> object from a current <code>pljson_list</code>.
+]]></COMMENT>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="L" TYPE="PLJSON_LIST">
+        <COMMENT><![CDATA[The array to create a new object from.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[An instance of <code>pljson</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[l The array to create a new object from.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="75" END_LINE="144" LINES="1" START_COLUMN="24" START_LINE="144"/>
+    </FUNCTION>
+    <PROCEDURE NAME="REMOVE" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Remove a key and value from an object.</p>
+ <pre>
+   declare
+     myjson pljson := pljson('{"foo": "foo", "bar": "bar"}')
+   begin
+     myjson.remove('bar'); // => '{"foo": "foo"}'
+   end;
+ </pre>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Remove a key and value from an object.</p>
+ <pre>
+   declare
+     myjson pljson := pljson('{"foo": "foo", "bar": "bar"}')
+   begin
+     myjson.remove('bar'); // => '{"foo": "foo"}'
+   end;
+ </pre>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[The key name to remove.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_name The key name to remove.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="45" END_LINE="160" LINES="1" START_COLUMN="20" START_LINE="160"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Add a <code>pljson</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Add a <code>pljson</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[Name of the key to add/update.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT MODE="IN" NAME="PAIR_VALUE" TYPE="PLJSON_VALUE">
+        <COMMENT><![CDATA[The value to associate with the key.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_name Name of the key to add/update.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_value The value to associate with the key.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="129" END_LINE="169" LINES="1" START_COLUMN="20" START_LINE="169"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Add a <code>varchar2</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Add a <code>varchar2</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[Name of the key to add/update.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT MODE="IN" NAME="PAIR_VALUE" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[The value to associate with the key.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_name Name of the key to add/update.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_value The value to associate with the key.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="125" END_LINE="178" LINES="1" START_COLUMN="20" START_LINE="178"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Add a <code>number</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Add a <code>number</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[Name of the key to add/update.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT MODE="IN" NAME="PAIR_VALUE" TYPE="NUMBER">
+        <COMMENT><![CDATA[The value to associate with the key.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_name Name of the key to add/update.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_value The value to associate with the key.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="123" END_LINE="187" LINES="1" START_COLUMN="20" START_LINE="187"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Add a <code>binary_double</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Add a <code>binary_double</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[Name of the key to add/update.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT MODE="IN" NAME="PAIR_VALUE" TYPE="BINARY_DOUBLE">
+        <COMMENT><![CDATA[The value to associate with the key.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_name Name of the key to add/update.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_value The value to associate with the key.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="130" END_LINE="197" LINES="1" START_COLUMN="20" START_LINE="197"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Add a <code>boolean</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Add a <code>boolean</code> instance into the current instance under a
+ given key name.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[Name of the key to add/update.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT MODE="IN" NAME="PAIR_VALUE" TYPE="BOOLEAN">
+        <COMMENT><![CDATA[The value to associate with the key.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_name Name of the key to add/update.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_value The value to associate with the key.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="124" END_LINE="206" LINES="1" START_COLUMN="20" START_LINE="206"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="CHECK_DUPLICATE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="V_SET" TYPE="BOOLEAN"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="76" END_LINE="208" LINES="1" START_COLUMN="20" START_LINE="208"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REMOVE_DUPLICATES" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="63" END_LINE="209" LINES="1" START_COLUMN="20" START_LINE="209"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="PAIR_VALUE" TYPE="PLJSON"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="123" END_LINE="224" LINES="1" START_COLUMN="20" START_LINE="224"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="PAIR_VALUE" TYPE="PLJSON_LIST"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="128" END_LINE="238" LINES="1" START_COLUMN="20" START_LINE="238"/>
+    </PROCEDURE>
+    <FUNCTION NAME="COUNT" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Return the number values in the object.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Return the number values in the object. Essentially, the number of keys
+ in the object.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION NUMBER">
+        <COMMENT><![CDATA[The number of values in the object.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[The number of values in the object.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="32" END_LINE="247" LINES="1" START_COLUMN="19" START_LINE="247"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve the value of a given key.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve the value of a given key.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[The name of the value to retrieve.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_VALUE">
+        <COMMENT><![CDATA[An instance of <code>pljson_value</code>, or <code>null</code>
+ if it could not be found.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_name The name of the value to retrieve.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_value</code>, or <code>null</code>
+ if it could not be found.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="50" END_LINE="256" LINES="1" START_COLUMN="19" START_LINE="256"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve a value based on its position in the internal storage array.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve a value based on its position in the internal storage array.
+ It is recommended you use name based retrieval.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER">
+        <COMMENT><![CDATA[Index of the value in the internal storage array.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_VALUE">
+        <COMMENT><![CDATA[An instance of <code>pljson_value</code>, or <code>null</code>
+ if it could not be found.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[position Index of the value in the internal storage array.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_value</code>, or <code>null</code>
+ if it could not be found.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="52" END_LINE="266" LINES="1" START_COLUMN="19" START_LINE="266"/>
+    </FUNCTION>
+    <FUNCTION NAME="INDEX_OF" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Determine the position of a given value within the internal storage
+ array.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Determine the position of a given value within the internal storage
+ array.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[The name of the value to retrieve the index for.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER FUNCTION NUMBER">
+        <COMMENT><![CDATA[An index number, or <code>-1</code> if it could not be found.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_name The name of the value to retrieve the index for.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An index number, or <code>-1</code> if it could not be found.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="55" END_LINE="275" LINES="1" START_COLUMN="19" START_LINE="275"/>
+    </FUNCTION>
+    <FUNCTION NAME="EXIST" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Determine if a given value exists within the object.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Determine if a given value exists within the object.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="PAIR_NAME" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[The name of the value to check for.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN">
+        <COMMENT><![CDATA[<code>true</code> if the value exists, <code>false</code> otherwise.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[pair_name The name of the value to check for.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[<code>true</code> if the value exists, <code>false</code> otherwise.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="52" END_LINE="283" LINES="1" START_COLUMN="19" START_LINE="283"/>
+    </FUNCTION>
+    <FUNCTION NAME="TO_CHAR" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Serialize the object to a JSON representation string.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Serialize the object to a JSON representation string.</p>
+]]></COMMENT>
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN">
+        <COMMENT><![CDATA[Enable pretty printing by formatting with spaces. Default: <code>true</code>.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="0" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER">
+        <COMMENT><![CDATA[Wrap output to a specific number of characters per line. Default: <code>0<code> (infinite).]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER FUNCTION VARCHAR2">
+        <COMMENT><![CDATA[A <code>varchar2</code> string.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[spaces Enable pretty printing by formatting with spaces. Default: <code>true</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[chars_per_line Wrap output to a specific number of characters per line. Default: <code>0<code> (infinite).]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>varchar2</code> string.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="96" END_LINE="293" LINES="1" START_COLUMN="19" START_LINE="293"/>
+    </FUNCTION>
+    <PROCEDURE NAME="TO_CLOB" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Serialize the object to a JSON representation and store it in a CLOB.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Serialize the object to a JSON representation and store it in a CLOB.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="BUF" TYPE="CLOB">
+        <COMMENT><![CDATA[The CLOB in which to store the results.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="FALSE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN">
+        <COMMENT><![CDATA[Enable pretty printing by formatting with spaces. Default: <code>false</code>.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="0" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER">
+        <COMMENT><![CDATA[Wrap output to a specific number of characters per line. Default: <code>0<code> (infinite).]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="ERASE_CLOB" TYPE="BOOLEAN">
+        <COMMENT><![CDATA[Whether or not to wipe the storage CLOB prior to serialization. Default: <code>true</code>.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[buf The CLOB in which to store the results.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[spaces Enable pretty printing by formatting with spaces. Default: <code>false</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[chars_per_line Wrap output to a specific number of characters per line. Default: <code>0<code> (infinite).]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[erase_clob Whether or not to wipe the storage CLOB prior to serialization. Default: <code>true</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>varchar2</code> string.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="162" END_LINE="304" LINES="1" START_COLUMN="20" START_LINE="304"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PRINT" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Print a JSON representation of the object via <code>DBMS_OUTPUT</code>.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Print a JSON representation of the object via <code>DBMS_OUTPUT</code>.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN">
+        <COMMENT><![CDATA[Enable pretty printing by formatting with spaces. Default: <code>true</code>.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="8192" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER">
+        <COMMENT><![CDATA[Wrap output to a specific number of characters per line. Default: <code>8192<code> (<code>32512</code> is maximum).]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="JSONP" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[Name of a function for wrapping the output as JSONP. Default: <code>null</code>.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[spaces Enable pretty printing by formatting with spaces. Default: <code>true</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[chars_per_line Wrap output to a specific number of characters per line. Default: <code>8192<code> (<code>32512</code> is maximum).]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[jsonp Name of a function for wrapping the output as JSONP. Default: <code>null</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>varchar2</code> string.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="134" END_LINE="314" LINES="1" START_COLUMN="20" START_LINE="314"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="HTP" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Print a JSON representation of the object via <code>HTP.PRN</code>.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Print a JSON representation of the object via <code>HTP.PRN</code>.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT DEFAULT="FALSE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN">
+        <COMMENT><![CDATA[Enable pretty printing by formatting with spaces. Default: <code>true</code>.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="0" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER">
+        <COMMENT><![CDATA[Wrap output to a specific number of characters per line. Default: <code>0<code> (infinite).]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="JSONP" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[Name of a function for wrapping the output as JSONP. Default: <code>null</code>.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[spaces Enable pretty printing by formatting with spaces. Default: <code>true</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[chars_per_line Wrap output to a specific number of characters per line. Default: <code>0<code> (infinite).]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[jsonp Name of a function for wrapping the output as JSONP. Default: <code>null</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>varchar2</code> string.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="130" END_LINE="324" LINES="1" START_COLUMN="20" START_LINE="324"/>
+    </PROCEDURE>
+    <FUNCTION NAME="TO_JSON_VALUE" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Convert the object to a <code>pljson_value</code> for use in other methods
+ of the PL/JSON API.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Convert the object to a <code>pljson_value</code> for use in other methods
+ of the PL/JSON API.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_VALUE"/>
+      <TAG TYPE="@RETURNS">
+        <COMMENT><![CDATA[An instance of <code>pljson_value</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="40" END_LINE="332" LINES="1" START_COLUMN="19" START_LINE="332"/>
+    </FUNCTION>
+    <FUNCTION NAME="PATH" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve a value from the internal storage array based on a path string
+ and a starting index.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve a value from the internal storage array based on a path string
+ and a starting index.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[A string path, e.g. <code>'foo.bar[1]'</code>.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER">
+        <COMMENT><![CDATA[The index in the internal storage array to start from.
+ This should only be necessary under special circumstances. Default: <code>1</code>.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_VALUE">
+        <COMMENT><![CDATA[An instance of <code>pljson_value</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[json_path A string path, e.g. <code>'foo.bar[1]'</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[base The index in the internal storage array to start from.
+ This should only be necessary under special circumstances. Default: <code>1</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_value</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="74" END_LINE="344" LINES="1" START_COLUMN="19" START_LINE="344"/>
+    </FUNCTION>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_VALUE"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="116" END_LINE="347" LINES="1" START_COLUMN="20" START_LINE="347"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="112" END_LINE="348" LINES="1" START_COLUMN="20" START_LINE="348"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="110" END_LINE="349" LINES="1" START_COLUMN="20" START_LINE="349"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BINARY_DOUBLE"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="117" END_LINE="351" LINES="1" START_COLUMN="20" START_LINE="351"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="111" END_LINE="352" LINES="1" START_COLUMN="20" START_LINE="352"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_LIST"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="115" END_LINE="353" LINES="1" START_COLUMN="20" START_LINE="353"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="110" END_LINE="354" LINES="1" START_COLUMN="20" START_LINE="354"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_REMOVE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="100" END_LINE="357" LINES="1" START_COLUMN="20" START_LINE="357"/>
+    </PROCEDURE>
+    <FUNCTION NAME="GET_VALUES" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve all of the values within the object as a <code>pljson_list</code>.</p>
+ <pre>
+ myjson := pljson('{"foo": "bar"}');
+ myjson.get_values(); // ['bar']
+ </pre>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve all of the values within the object as a <code>pljson_list</code>.</p>
+ <pre>
+ myjson := pljson('{"foo": "bar"}');
+ myjson.get_values(); // ['bar']
+ </pre>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_LIST">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="37" END_LINE="370" LINES="1" START_COLUMN="19" START_LINE="370"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_KEYS" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve all of the keys within the object as a <code>pljson_list</code>.</p>
+ <pre>
+ myjson := pljson('{"foo": "bar"}');
+ myjson.get_keys(); // ['foo']
+ </pre>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve all of the keys within the object as a <code>pljson_list</code>.</p>
+ <pre>
+ myjson := pljson('{"foo": "bar"}');
+ myjson.get_keys(); // ['foo']
+ </pre>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_LIST">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="35" END_LINE="382" LINES="1" START_COLUMN="19" START_LINE="382"/>
+    </FUNCTION>
+    <SUMMARY END_COLUMN="12" END_LINE="384" LINES="384" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <OBJECT_TYPE NAME="PLJSON_ELEMENT" SCHEMA="">
+    <VARIABLE NAME="OBJ_TYPE" VERSION="1">
+      <RETURN TYPE="NUMBER"/>
+    </VARIABLE>
+    <SUMMARY END_COLUMN="10" END_LINE="5" LINES="5" START_COLUMN="25" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <PACKAGE NAME="PLJSON_EXT" SCHEMA="">
+    <FUNCTION NAME="PARSEPATH">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>This package contains the path implementation and adds support for dates
+ and binary lob's.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>This package contains the path implementation and adds support for dates
+ and binary lob's. Dates are not a part of the JSON standard, so it's up to
+ you to specify how you would like to handle dates. The
+ current implementation specifies a date to be a string which follows the
+ format: <code>yyyy-mm-dd hh24:mi:ss</code>. If your needs differ from this,
+ then you must rewrite the functions in the implementation.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="PLJSON_LIST"/>
+      <TAG TYPE="@HEADERCOM">
+        <COMMENT>
+        </COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="83" END_LINE="37" LINES="1" START_COLUMN="12" START_LINE="37"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_JSON_VALUE">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="V_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="98" END_LINE="40" LINES="1" START_COLUMN="12" START_LINE="40"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_STRING">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="VARCHAR2"/>
+      <SUMMARY END_COLUMN="94" END_LINE="41" LINES="1" START_COLUMN="12" START_LINE="41"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_NUMBER">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="92" END_LINE="42" LINES="1" START_COLUMN="12" START_LINE="42"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_DOUBLE">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="BINARY_DOUBLE"/>
+      <SUMMARY END_COLUMN="99" END_LINE="43" LINES="1" START_COLUMN="12" START_LINE="43"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_JSON">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="PLJSON"/>
+      <SUMMARY END_COLUMN="92" END_LINE="44" LINES="1" START_COLUMN="12" START_LINE="44"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_JSON_LIST">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="PLJSON_LIST"/>
+      <SUMMARY END_COLUMN="97" END_LINE="45" LINES="1" START_COLUMN="12" START_LINE="45"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_BOOL">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="BOOLEAN"/>
+      <SUMMARY END_COLUMN="93" END_LINE="46" LINES="1" START_COLUMN="12" START_LINE="46"/>
+    </FUNCTION>
+    <PROCEDURE NAME="PUT">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="97" END_LINE="49" LINES="1" START_COLUMN="13" START_LINE="49"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="97" END_LINE="50" LINES="1" START_COLUMN="13" START_LINE="50"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BINARY_DOUBLE"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="100" END_LINE="51" LINES="1" START_COLUMN="13" START_LINE="51"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="99" END_LINE="52" LINES="1" START_COLUMN="13" START_LINE="52"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_LIST"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="99" END_LINE="53" LINES="1" START_COLUMN="13" START_LINE="53"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="97" END_LINE="54" LINES="1" START_COLUMN="13" START_LINE="54"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PUT">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_VALUE"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="99" END_LINE="55" LINES="1" START_COLUMN="13" START_LINE="55"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REMOVE">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="83" END_LINE="57" LINES="1" START_COLUMN="13" START_LINE="57"/>
+    </PROCEDURE>
+    <FUNCTION NAME="PP">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="V_PATH" TYPE="VARCHAR2"/>
+      <RETURN TYPE="VARCHAR2"/>
+      <SUMMARY END_COLUMN="59" END_LINE="60" LINES="1" START_COLUMN="12" START_LINE="60"/>
+    </FUNCTION>
+    <PROCEDURE NAME="PP">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="V_PATH" TYPE="VARCHAR2"/>
+      <SUMMARY END_COLUMN="44" END_LINE="61" LINES="1" START_COLUMN="13" START_LINE="61"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PP_HTP">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="V_PATH" TYPE="VARCHAR2"/>
+      <SUMMARY END_COLUMN="48" END_LINE="62" LINES="1" START_COLUMN="13" START_LINE="62"/>
+    </PROCEDURE>
+    <FUNCTION NAME="IS_INTEGER">
+      <ARGUMENT MODE="IN" NAME="V" TYPE="PLJSON_VALUE"/>
+      <RETURN TYPE="BOOLEAN"/>
+      <SUMMARY END_COLUMN="53" END_LINE="65" LINES="1" START_COLUMN="12" START_LINE="65"/>
+    </FUNCTION>
+    <VARIABLE DEFAULT="'yyyy-mm-dd hh24:mi:ss'" NAME="FORMAT_STRING">
+      <RETURN TYPE="VARCHAR2(30 CHAR)"/>
+    </VARIABLE>
+    <FUNCTION NAME="TO_JSON_VALUE">
+      <ARGUMENT MODE="IN" NAME="D" TYPE="DATE"/>
+      <RETURN TYPE="PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="53" END_LINE="69" LINES="1" START_COLUMN="12" START_LINE="69"/>
+    </FUNCTION>
+    <FUNCTION NAME="IS_DATE">
+      <ARGUMENT MODE="IN" NAME="V" TYPE="PLJSON_VALUE"/>
+      <RETURN TYPE="BOOLEAN"/>
+      <SUMMARY END_COLUMN="50" END_LINE="71" LINES="1" START_COLUMN="12" START_LINE="71"/>
+    </FUNCTION>
+    <FUNCTION NAME="TO_DATE">
+      <ARGUMENT MODE="IN" NAME="V" TYPE="PLJSON_VALUE"/>
+      <RETURN TYPE="DATE"/>
+      <SUMMARY END_COLUMN="47" END_LINE="73" LINES="1" START_COLUMN="12" START_LINE="73"/>
+    </FUNCTION>
+    <FUNCTION NAME="TO_DATE2">
+      <ARGUMENT MODE="IN" NAME="V" TYPE="PLJSON_VALUE"/>
+      <RETURN TYPE="DATE"/>
+      <SUMMARY END_COLUMN="48" END_LINE="75" LINES="1" START_COLUMN="12" START_LINE="75"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_DATE">
+      <ARGUMENT MODE="IN" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="DATE"/>
+      <SUMMARY END_COLUMN="82" END_LINE="77" LINES="1" START_COLUMN="12" START_LINE="77"/>
+    </FUNCTION>
+    <PROCEDURE NAME="PUT">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <ARGUMENT MODE="IN" NAME="PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="DATE"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <SUMMARY END_COLUMN="91" END_LINE="78" LINES="1" START_COLUMN="13" START_LINE="78"/>
+    </PROCEDURE>
+    <FUNCTION NAME="ENCODEBASE64BLOB2CLOB">
+      <ARGUMENT MODE="IN" NAME="P_BLOB" TYPE="BLOB"/>
+      <RETURN TYPE="CLOB"/>
+      <SUMMARY END_COLUMN="62" END_LINE="83" LINES="1" START_COLUMN="12" START_LINE="83"/>
+    </FUNCTION>
+    <FUNCTION NAME="DECODEBASE64CLOB2BLOB">
+      <ARGUMENT MODE="IN" NAME="P_CLOB" TYPE="CLOB"/>
+      <RETURN TYPE="BLOB"/>
+      <SUMMARY END_COLUMN="58" END_LINE="89" LINES="1" START_COLUMN="12" START_LINE="89"/>
+    </FUNCTION>
+    <FUNCTION NAME="BASE64">
+      <ARGUMENT MODE="IN" NAME="BINARYDATA" TYPE="BLOB"/>
+      <RETURN TYPE="PLJSON_LIST"/>
+      <SUMMARY END_COLUMN="54" END_LINE="91" LINES="1" START_COLUMN="12" START_LINE="91"/>
+    </FUNCTION>
+    <FUNCTION NAME="BASE64">
+      <ARGUMENT MODE="IN" NAME="L" TYPE="PLJSON_LIST"/>
+      <RETURN TYPE="BLOB"/>
+      <SUMMARY END_COLUMN="45" END_LINE="92" LINES="1" START_COLUMN="12" START_LINE="92"/>
+    </FUNCTION>
+    <FUNCTION NAME="ENCODE">
+      <ARGUMENT MODE="IN" NAME="BINARYDATA" TYPE="BLOB"/>
+      <RETURN TYPE="PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="55" END_LINE="94" LINES="1" START_COLUMN="12" START_LINE="94"/>
+    </FUNCTION>
+    <FUNCTION NAME="DECODE">
+      <ARGUMENT MODE="IN" NAME="V" TYPE="PLJSON_VALUE"/>
+      <RETURN TYPE="BLOB"/>
+      <SUMMARY END_COLUMN="46" END_LINE="95" LINES="1" START_COLUMN="12" START_LINE="95"/>
+    </FUNCTION>
+    <PROCEDURE NAME="BLOB2CLOB">
+      <ARGUMENT MODE="IN" NAME="B" TYPE="BLOB"/>
+      <ARGUMENT MODE="OUT" NAME="C" TYPE="CLOB"/>
+      <ARGUMENT DEFAULT="'UTF8'" MODE="IN" NAME="CHARSET" TYPE="VARCHAR2"/>
+      <SUMMARY END_COLUMN="75" END_LINE="100" LINES="1" START_COLUMN="13" START_LINE="100"/>
+    </PROCEDURE>
+    <SUMMARY END_COLUMN="15" END_LINE="102" LINES="102" START_COLUMN="27" START_LINE="1"/>
+  </PACKAGE>
+  <OBJECT_TYPE NAME="PLJSON_VARRAY" SCHEMA="">
+    <COLLECTIONTYPE NAME="TABLE"/>
+    <SUPERTYPE NAME="VARCHAR2(32767)">
+      <RETURN COLLECTIONTYPE="TABLE" NAME="COLLECTION" SUPERTYPE="VARCHAR2(32767)" TYPE="TABLE OF VARCHAR2(32767)">
+        <COMMENT><![CDATA[Collection Type : table OF varchar2(32767)]]></COMMENT>
+      </RETURN>
+    </SUPERTYPE>
+    <SUMMARY END_COLUMN="65" END_LINE="1" LINES="1" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <OBJECT_TYPE NAME="PLJSON_NARRAY" SCHEMA="">
+    <COLLECTIONTYPE NAME="TABLE"/>
+    <SUPERTYPE NAME="NUMBER">
+      <RETURN COLLECTIONTYPE="TABLE" NAME="COLLECTION" SUPERTYPE="NUMBER" TYPE="TABLE OF NUMBER">
+        <COMMENT><![CDATA[Collection Type : table OF number]]></COMMENT>
+      </RETURN>
+    </SUPERTYPE>
+    <SUMMARY END_COLUMN="56" END_LINE="1" LINES="1" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <OBJECT_TYPE NAME="PLJSON_LIST" SCHEMA="">
+    <SUPERTYPE NAME="PLJSON_ELEMENT">
+      <RETURN TYPE="PLJSON_ELEMENT"/>
+    </SUPERTYPE>
+    <COMMENT><![CDATA[ <p>This package defines <em>PL/JSON</em>'s representation of the JSON
+ array type, e.g. <code>[1, 2, "foo", "bar"]</code>.</p>
+ <p>The primary method exported by this package is the <code>pljson_list</code>
+ method.</p>
+ <strong>Example:</strong>
+ <pre>
+ declare
+   myarr pljson_list := pljson_list('[1, 2, "foo", "bar"]');
+ begin
+   myarr.get(1).print(); // => dbms_output.put_line(1)
+   myarr.get(3).print(); // => dbms_output.put_line('foo')
+ end;
+ </pre>
+]]></COMMENT>
+    <TAG TYPE="@HEADCOM">
+      <COMMENT>
+      </COMMENT>
+    </TAG>
+    <VARIABLE NAME="LIST_DATA" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="PLJSON_VALUE_ARRAY"/>
+    </VARIABLE>
+    <FUNCTION NAME="PLJSON_LIST" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create an empty list.</p>
+ <pre>
+ declare
+   myarr pljson_list := pljson_list();
+ begin
+   dbms_output.put_line(myarr.count()); // => 0
+ end;
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create an empty list.</p>
+ <pre>
+ declare
+   myarr pljson_list := pljson_list();
+ begin
+   dbms_output.put_line(myarr.count()); // => 0
+ end;
+]]></COMMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.
+/]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.
+/]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="51" END_LINE="61" LINES="1" START_COLUMN="24" START_LINE="61"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_LIST" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create an instance from a given JSON array representation.</p>
+ <pre>
+ declare
+   myarr pljson_list := pljson_list('[1, 2, "foo", "bar"]');
+ begin
+   myarr.get(1).print(); // => dbms_output.put_line(1)
+   myarr.get(3).print(); // => dbms_output.put_line('foo')
+ end;
+ </pre>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create an instance from a given JSON array representation.</p>
+ <pre>
+ declare
+   myarr pljson_list := pljson_list('[1, 2, "foo", "bar"]');
+ begin
+   myarr.get(1).print(); // => dbms_output.put_line(1)
+   myarr.get(3).print(); // => dbms_output.put_line('foo')
+ end;
+ </pre>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[The JSON array string to parse.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str The JSON array string to parse.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="65" END_LINE="78" LINES="1" START_COLUMN="24" START_LINE="78"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_LIST" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create an instance from a given JSON array representation stored in
+ a <code>CLOB</code>.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create an instance from a given JSON array representation stored in
+ a <code>CLOB</code>.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="CLOB">
+        <COMMENT><![CDATA[The <code>CLOB</code> to parse.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str The <code>CLOB</code> to parse.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="61" END_LINE="87" LINES="1" START_COLUMN="24" START_LINE="87"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_LIST" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create an instance from a given JSON array representation stored in
+ a <code>BLOB</code>.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create an instance from a given JSON array representation stored in
+ a <code>BLOB</code>.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="BLOB">
+        <COMMENT><![CDATA[The <code>BLOB</code> to parse.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="'UTF8'" MODE="IN" NAME="CHARSET" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[The character set of the BLOB data (defaults to UTF-8).]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str The <code>BLOB</code> to parse.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[charset The character set of the BLOB data (defaults to UTF-8).]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="94" END_LINE="97" LINES="1" START_COLUMN="24" START_LINE="97"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_LIST" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create an instance instance from a given table of string values of type varchar2.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create an instance instance from a given table of string values of type varchar2.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR_ARRAY" TYPE="PLJSON_VARRAY">
+        <COMMENT><![CDATA[The pljson_varray (table of varchar2) of string values.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str_array The pljson_varray (table of varchar2) of string values.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="76" END_LINE="105" LINES="1" START_COLUMN="24" START_LINE="105"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_LIST" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create an instance instance from a given table of string values of type varchar2.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create an instance instance from a given table of string values of type varchar2.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="NUM_ARRAY" TYPE="PLJSON_NARRAY"/>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str_array The pljson_varray (table of varchar2) of string values.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="76" END_LINE="113" LINES="1" START_COLUMN="24" START_LINE="113"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_LIST" SCOPE="CONSTRUCTOR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create an instance from a given instance of <code>pljson_value</code>
+ that represents an array.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create an instance from a given instance of <code>pljson_value</code>
+ that represents an array.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_VALUE">
+        <COMMENT><![CDATA[The <code>pljson_value</code> to cast to a <code>pljson_list</code>.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[elem The <code>pljson_value</code> to cast to a <code>pljson_list</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_list</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="70" END_LINE="122" LINES="1" START_COLUMN="24" START_LINE="122"/>
+    </FUNCTION>
+    <PROCEDURE NAME="APPEND" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_VALUE"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="111" END_LINE="124" LINES="1" START_COLUMN="20" START_LINE="124"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="APPEND" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="107" END_LINE="125" LINES="1" START_COLUMN="20" START_LINE="125"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="APPEND" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="105" END_LINE="126" LINES="1" START_COLUMN="20" START_LINE="126"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="APPEND" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BINARY_DOUBLE"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="112" END_LINE="128" LINES="1" START_COLUMN="20" START_LINE="128"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="APPEND" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="106" END_LINE="129" LINES="1" START_COLUMN="20" START_LINE="129"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="APPEND" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_LIST"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="110" END_LINE="130" LINES="1" START_COLUMN="20" START_LINE="130"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REPLACE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_VALUE"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="99" END_LINE="132" LINES="1" START_COLUMN="20" START_LINE="132"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REPLACE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="VARCHAR2"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="95" END_LINE="133" LINES="1" START_COLUMN="20" START_LINE="133"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REPLACE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="93" END_LINE="134" LINES="1" START_COLUMN="20" START_LINE="134"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REPLACE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BINARY_DOUBLE"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="100" END_LINE="136" LINES="1" START_COLUMN="20" START_LINE="136"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REPLACE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BOOLEAN"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="94" END_LINE="137" LINES="1" START_COLUMN="20" START_LINE="137"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REPLACE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_LIST"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="98" END_LINE="138" LINES="1" START_COLUMN="20" START_LINE="138"/>
+    </PROCEDURE>
+    <FUNCTION NAME="COUNT" SCOPE="MEMBER" VERSION="1">
+      <RETURN TYPE="MEMBER FUNCTION NUMBER"/>
+      <SUMMARY END_COLUMN="32" END_LINE="140" LINES="1" START_COLUMN="19" START_LINE="140"/>
+    </FUNCTION>
+    <PROCEDURE NAME="REMOVE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="79" END_LINE="141" LINES="1" START_COLUMN="20" START_LINE="141"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REMOVE_FIRST" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="63" END_LINE="142" LINES="1" START_COLUMN="20" START_LINE="142"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="REMOVE_LAST" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="62" END_LINE="143" LINES="1" START_COLUMN="20" START_LINE="143"/>
+    </PROCEDURE>
+    <FUNCTION NAME="GET" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="POSITION" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="52" END_LINE="144" LINES="1" START_COLUMN="19" START_LINE="144"/>
+    </FUNCTION>
+    <FUNCTION NAME="HEAD" SCOPE="MEMBER" VERSION="1">
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="31" END_LINE="145" LINES="1" START_COLUMN="19" START_LINE="145"/>
+    </FUNCTION>
+    <FUNCTION NAME="LAST" SCOPE="MEMBER" VERSION="1">
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="31" END_LINE="146" LINES="1" START_COLUMN="19" START_LINE="146"/>
+    </FUNCTION>
+    <FUNCTION NAME="TAIL" SCOPE="MEMBER" VERSION="1">
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_LIST"/>
+      <SUMMARY END_COLUMN="31" END_LINE="147" LINES="1" START_COLUMN="19" START_LINE="147"/>
+    </FUNCTION>
+    <FUNCTION NAME="TO_CHAR" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="0" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER FUNCTION VARCHAR2"/>
+      <SUMMARY END_COLUMN="96" END_LINE="150" LINES="1" START_COLUMN="19" START_LINE="150"/>
+    </FUNCTION>
+    <PROCEDURE NAME="TO_CLOB" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="BUF" TYPE="CLOB"/>
+      <ARGUMENT DEFAULT="FALSE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="0" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="ERASE_CLOB" TYPE="BOOLEAN"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="167" END_LINE="151" LINES="1" START_COLUMN="20" START_LINE="151"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PRINT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="8192" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="JSONP" TYPE="VARCHAR2"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="139" END_LINE="152" LINES="1" START_COLUMN="20" START_LINE="152"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="HTP" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT DEFAULT="FALSE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="0" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="JSONP" TYPE="VARCHAR2"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="135" END_LINE="153" LINES="1" START_COLUMN="20" START_LINE="153"/>
+    </PROCEDURE>
+    <FUNCTION NAME="PATH" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="74" END_LINE="156" LINES="1" START_COLUMN="19" START_LINE="156"/>
+    </FUNCTION>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_VALUE"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="121" END_LINE="158" LINES="1" START_COLUMN="20" START_LINE="158"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="117" END_LINE="159" LINES="1" START_COLUMN="20" START_LINE="159"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="115" END_LINE="160" LINES="1" START_COLUMN="20" START_LINE="160"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BINARY_DOUBLE"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="122" END_LINE="162" LINES="1" START_COLUMN="20" START_LINE="162"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="116" END_LINE="163" LINES="1" START_COLUMN="20" START_LINE="163"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_PUT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_LIST"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="120" END_LINE="164" LINES="1" START_COLUMN="20" START_LINE="164"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PATH_REMOVE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="SELF" TYPE="PLJSON_LIST"/>
+      <ARGUMENT MODE="IN" NAME="JSON_PATH" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="BASE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="105" END_LINE="167" LINES="1" START_COLUMN="20" START_LINE="167"/>
+    </PROCEDURE>
+    <FUNCTION NAME="TO_JSON_VALUE" SCOPE="MEMBER" VERSION="1">
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="40" END_LINE="169" LINES="1" START_COLUMN="19" START_LINE="169"/>
+    </FUNCTION>
+    <SUMMARY END_COLUMN="12" END_LINE="189" LINES="189" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <PACKAGE NAME="PLJSON_PARSER" SCHEMA="">
+    <TYPE NAME="RTOKEN">
+      <COMMENT_FIRST_LINE><![CDATA[ Internal type for processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Internal type for processing. 
+]]></COMMENT>
+      <FIELD NAME="TYPE_NAME" TYPE="VARCHAR2(7)"/>
+      <FIELD NAME="LINE" TYPE="PLS_INTEGER"/>
+      <FIELD NAME="COL" TYPE="PLS_INTEGER"/>
+      <FIELD NAME="DATA" TYPE="VARCHAR2(32767)"/>
+      <FIELD NAME="DATA_OVERFLOW" TYPE="CLOB"/>
+      <RETURN TYPE="RECORD"/>
+    </TYPE>
+    <TYPE NAME="LTOKENS">
+      <RETURN TYPE="table OF rToken INDEX BY pls_integer"/>
+    </TYPE>
+    <TYPE NAME="JSON_SRC">
+      <FIELD NAME="LEN" TYPE="NUMBER"/>
+      <FIELD NAME="OFFSET" TYPE="NUMBER"/>
+      <FIELD NAME="SRC" TYPE="VARCHAR2(32767)"/>
+      <FIELD NAME="S_CLOB" TYPE="CLOB"/>
+      <RETURN TYPE="RECORD"/>
+    </TYPE>
+    <VARIABLE DEFAULT="FALSE" NAME="JSON_STRICT">
+      <RETURN TYPE="BOOLEAN"/>
+    </VARIABLE>
+    <FUNCTION NAME="NEXT_CHAR">
+      <ARGUMENT MODE="IN" NAME="INDX" TYPE="NUMBER"/>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="S" TYPE="JSON_SRC"/>
+      <RETURN TYPE="VARCHAR2"/>
+      <SUMMARY END_COLUMN="76" END_LINE="40" LINES="1" START_COLUMN="12" START_LINE="40"/>
+    </FUNCTION>
+    <FUNCTION NAME="NEXT_CHAR2">
+      <ARGUMENT MODE="IN" NAME="INDX" TYPE="NUMBER"/>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="S" TYPE="JSON_SRC"/>
+      <ARGUMENT DEFAULT="1" MODE="IN" NAME="AMOUNT" TYPE="NUMBER"/>
+      <RETURN TYPE="VARCHAR2"/>
+      <SUMMARY END_COLUMN="102" END_LINE="41" LINES="1" START_COLUMN="12" START_LINE="41"/>
+    </FUNCTION>
+    <FUNCTION NAME="PARSEOBJ">
+      <ARGUMENT MODE="IN" NAME="TOKENS" TYPE="LTOKENS"/>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="INDX" TYPE="PLS_INTEGER"/>
+      <RETURN TYPE="PLJSON"/>
+      <SUMMARY END_COLUMN="82" END_LINE="42" LINES="1" START_COLUMN="12" START_LINE="42"/>
+    </FUNCTION>
+    <FUNCTION NAME="PREPARECLOB">
+      <ARGUMENT MODE="IN" NAME="BUF" TYPE="CLOB"/>
+      <RETURN TYPE="PLJSON_PARSER.JSON_SRC"/>
+      <SUMMARY END_COLUMN="66" END_LINE="44" LINES="1" START_COLUMN="12" START_LINE="44"/>
+    </FUNCTION>
+    <FUNCTION NAME="PREPAREVARCHAR2">
+      <ARGUMENT MODE="IN" NAME="BUF" TYPE="VARCHAR2"/>
+      <RETURN TYPE="PLJSON_PARSER.JSON_SRC"/>
+      <SUMMARY END_COLUMN="74" END_LINE="45" LINES="1" START_COLUMN="12" START_LINE="45"/>
+    </FUNCTION>
+    <FUNCTION NAME="LEXER">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="JSRC" TYPE="JSON_SRC"/>
+      <RETURN TYPE="LTOKENS"/>
+      <SUMMARY END_COLUMN="61" END_LINE="46" LINES="1" START_COLUMN="12" START_LINE="46"/>
+    </FUNCTION>
+    <PROCEDURE NAME="PRINT_TOKEN">
+      <ARGUMENT MODE="IN" NAME="T" TYPE="RTOKEN"/>
+      <SUMMARY END_COLUMN="34" END_LINE="47" LINES="1" START_COLUMN="13" START_LINE="47"/>
+    </PROCEDURE>
+    <FUNCTION NAME="PARSER">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Primary parsing method.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Primary parsing method. It can parse a JSON object.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="VARCHAR2"/>
+      <RETURN TYPE="PLJSON">
+        <COMMENT><![CDATA[An instance of <code>pljson</code>.]]></COMMENT>
+      </RETURN>
+      <THROWS NAME="PARSER_ERROR">
+        <COMMENT><![CDATA[ -20101 when invalid input found.]]></COMMENT>
+      </THROWS>
+      <THROWS NAME="SCANNER_ERROR">
+        <COMMENT><![CDATA[ -20100 when lexing fails.]]></COMMENT>
+      </THROWS>
+      <TAG TYPE="@THROWS">
+        <COMMENT><![CDATA[PARSER_ERROR -20101 when invalid input found.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@THROWS">
+        <COMMENT><![CDATA[SCANNER_ERROR -20100 when lexing fails.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="46" END_LINE="56" LINES="1" START_COLUMN="12" START_LINE="56"/>
+    </FUNCTION>
+    <FUNCTION NAME="PARSE_LIST">
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="VARCHAR2"/>
+      <RETURN TYPE="PLJSON_LIST"/>
+      <SUMMARY END_COLUMN="55" END_LINE="57" LINES="1" START_COLUMN="12" START_LINE="57"/>
+    </FUNCTION>
+    <FUNCTION NAME="PARSE_ANY">
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="VARCHAR2"/>
+      <RETURN TYPE="PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="55" END_LINE="58" LINES="1" START_COLUMN="12" START_LINE="58"/>
+    </FUNCTION>
+    <FUNCTION NAME="PARSER">
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="CLOB"/>
+      <RETURN TYPE="PLJSON"/>
+      <SUMMARY END_COLUMN="42" END_LINE="59" LINES="1" START_COLUMN="12" START_LINE="59"/>
+    </FUNCTION>
+    <FUNCTION NAME="PARSE_LIST">
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="CLOB"/>
+      <RETURN TYPE="PLJSON_LIST"/>
+      <SUMMARY END_COLUMN="51" END_LINE="60" LINES="1" START_COLUMN="12" START_LINE="60"/>
+    </FUNCTION>
+    <FUNCTION NAME="PARSE_ANY">
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="CLOB"/>
+      <RETURN TYPE="PLJSON_VALUE"/>
+      <SUMMARY END_COLUMN="51" END_LINE="61" LINES="1" START_COLUMN="12" START_LINE="61"/>
+    </FUNCTION>
+    <PROCEDURE NAME="REMOVE_DUPLICATES">
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="OBJ" TYPE="PLJSON"/>
+      <SUMMARY END_COLUMN="56" END_LINE="62" LINES="1" START_COLUMN="13" START_LINE="62"/>
+    </PROCEDURE>
+    <FUNCTION NAME="GET_VERSION">
+      <RETURN TYPE="VARCHAR2"/>
+      <SUMMARY END_COLUMN="39" END_LINE="63" LINES="1" START_COLUMN="12" START_LINE="63"/>
+    </FUNCTION>
+    <SUMMARY END_COLUMN="18" END_LINE="65" LINES="65" START_COLUMN="27" START_LINE="1"/>
+  </PACKAGE>
+  <OBJECT_TYPE NAME="PLJSON_VALUE" SCHEMA="">
+    <COMMENT><![CDATA[ <p>Underlying type for all of <em>PL/JSON</em>. Each <code>pljson</code>
+ or <code>pljson_list</code> object is composed of
+ <code>pljson_value</code> objects.</p>
+ <p>Generally, you should not need to directly use the constructors provided
+ by this portion of the API. The methods on <code>pljson</code> and
+ <code>pljson_list</code> should be used instead.</p>
+]]></COMMENT>
+    <TAG TYPE="@HEADCOM">
+      <COMMENT>
+      </COMMENT>
+    </TAG>
+    <VARIABLE NAME="TYPEVAL" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Internal property that indicates the JSON type represented:<p>
+ <ol>
+   <li><code>object</code></li>
+   <li><code>array</code></li>
+   <li><code>string</code></li>
+   <li><code>number</code></li>
+   <li><code>bool</code></li>
+   <li><code>null</code></li>
+ </ol>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Internal property that indicates the JSON type represented:<p>
+ <ol>
+   <li><code>object</code></li>
+   <li><code>array</code></li>
+   <li><code>string</code></li>
+   <li><code>number</code></li>
+   <li><code>bool</code></li>
+   <li><code>null</code></li>
+ </ol>
+]]></COMMENT>
+      <RETURN TYPE="NUMBER(1)"/>
+    </VARIABLE>
+    <VARIABLE NAME="STR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="VARCHAR2(32767)"/>
+    </VARIABLE>
+    <VARIABLE NAME="NUM" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="NUMBER"/>
+    </VARIABLE>
+    <VARIABLE NAME="NUM_DOUBLE" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="BINARY_DOUBLE"/>
+    </VARIABLE>
+    <VARIABLE NAME="NUM_REPR_NUMBER_P" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="VARCHAR2(1)"/>
+    </VARIABLE>
+    <VARIABLE NAME="NUM_REPR_DOUBLE_P" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="VARCHAR2(1)"/>
+    </VARIABLE>
+    <VARIABLE NAME="OBJECT_OR_ARRAY" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="PLJSON_ELEMENT"/>
+    </VARIABLE>
+    <VARIABLE NAME="EXTENDED_STR" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="CLOB"/>
+    </VARIABLE>
+    <VARIABLE NAME="MAPNAME" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="VARCHAR2(4000)"/>
+    </VARIABLE>
+    <VARIABLE NAME="MAPINDX" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private variable for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private variable for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="NUMBER(32)"/>
+    </VARIABLE>
+    <FUNCTION NAME="PLJSON_VALUE" SCOPE="CONSTRUCTOR" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="ELEM" TYPE="PLJSON_ELEMENT"/>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT"/>
+      <SUMMARY END_COLUMN="73" END_LINE="70" LINES="1" START_COLUMN="24" START_LINE="70"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_VALUE" SCOPE="CONSTRUCTOR" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="VARCHAR2"/>
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="ESC" TYPE="BOOLEAN"/>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT"/>
+      <SUMMARY END_COLUMN="92" END_LINE="71" LINES="1" START_COLUMN="24" START_LINE="71"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_VALUE" SCOPE="CONSTRUCTOR" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="CLOB"/>
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="ESC" TYPE="BOOLEAN"/>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT"/>
+      <SUMMARY END_COLUMN="88" END_LINE="72" LINES="1" START_COLUMN="24" START_LINE="72"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_VALUE" SCOPE="CONSTRUCTOR" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="NUM" TYPE="NUMBER"/>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT"/>
+      <SUMMARY END_COLUMN="64" END_LINE="73" LINES="1" START_COLUMN="24" START_LINE="73"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_VALUE" SCOPE="CONSTRUCTOR" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="NUM_DOUBLE" TYPE="BINARY_DOUBLE"/>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT"/>
+      <SUMMARY END_COLUMN="78" END_LINE="75" LINES="1" START_COLUMN="24" START_LINE="75"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_VALUE" SCOPE="CONSTRUCTOR" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="B" TYPE="BOOLEAN"/>
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT"/>
+      <SUMMARY END_COLUMN="63" END_LINE="76" LINES="1" START_COLUMN="24" START_LINE="76"/>
+    </FUNCTION>
+    <FUNCTION NAME="PLJSON_VALUE" SCOPE="CONSTRUCTOR" VERSION="1">
+      <RETURN TYPE="CONSTRUCTOR FUNCTION SELF AS RESULT"/>
+      <SUMMARY END_COLUMN="52" END_LINE="77" LINES="1" START_COLUMN="24" START_LINE="77"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_ELEMENT" SCOPE="MEMBER" VERSION="1">
+      <RETURN TYPE="MEMBER FUNCTION PLJSON_ELEMENT"/>
+      <SUMMARY END_COLUMN="38" END_LINE="79" LINES="1" START_COLUMN="19" START_LINE="79"/>
+    </FUNCTION>
+    <FUNCTION NAME="MAKENULL" SCOPE="STATIC" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Create an empty <code>pljson_value</code>.</p>
+ <pre>
+ declare
+   myval pljson_value := pljson_value.makenull();
+ begin
+   myval.parse_number('42');
+   myval.print(); // => dbms_output.put_line('42');
+ end;
+ </pre>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Create an empty <code>pljson_value</code>.</p>
+ <pre>
+ declare
+   myval pljson_value := pljson_value.makenull();
+ begin
+   myval.parse_number('42');
+   myval.print(); // => dbms_output.put_line('42');
+ end;
+ </pre>
+]]></COMMENT>
+      <RETURN TYPE="STATIC FUNCTION PLJSON_VALUE">
+        <COMMENT><![CDATA[An instance of <code>pljson_value</code>.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>pljson_value</code>.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="35" END_LINE="95" LINES="1" START_COLUMN="19" START_LINE="95"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_TYPE" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve the name of the type represented by the <code>pljson_value</code>.</p>
+ <p>Possible return values:</p>
+ <ul>
+   <li><code>object</code></li>
+   <li><code>array</code></li>
+   <li><code>string</code></li>
+   <li><code>number</code></li>
+   <li><code>bool</code></li>
+   <li><code>null</code></li>
+ </ul>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve the name of the type represented by the <code>pljson_value</code>.</p>
+ <p>Possible return values:</p>
+ <ul>
+   <li><code>object</code></li>
+   <li><code>array</code></li>
+   <li><code>string</code></li>
+   <li><code>number</code></li>
+   <li><code>bool</code></li>
+   <li><code>null</code></li>
+ </ul>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION VARCHAR2">
+        <COMMENT><![CDATA[The name of the type represented.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[The name of the type represented.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="35" END_LINE="111" LINES="1" START_COLUMN="19" START_LINE="111"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_STRING" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve the value as a string (<code>varchar2</code>).</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve the value as a string (<code>varchar2</code>).</p>
+]]></COMMENT>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="MAX_BYTE_SIZE" TYPE="NUMBER">
+        <COMMENT><![CDATA[Retreive the value up to a specific number of bytes. Default: <code>null</code>.]]></COMMENT>
+      </ARGUMENT>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="MAX_CHAR_SIZE" TYPE="NUMBER">
+        <COMMENT><![CDATA[Retrieve the value up to a specific number of characters. Default: <code>null</code>.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER FUNCTION VARCHAR2">
+        <COMMENT><![CDATA[An instance of <code>varchar2</code> or <code>null</code> value is not a string.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[max_byte_size Retreive the value up to a specific number of bytes. Default: <code>null</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[max_char_size Retrieve the value up to a specific number of characters. Default: <code>null</code>.]]></COMMENT>
+      </TAG>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>varchar2</code> or <code>null</code> value is not a string.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="107" END_LINE="120" LINES="1" START_COLUMN="19" START_LINE="120"/>
+    </FUNCTION>
+    <PROCEDURE NAME="GET_STRING" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve the value as a string represented by a <code>CLOB</code>.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve the value as a string represented by a <code>CLOB</code>.</p>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON_VALUE"/>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="BUF" TYPE="CLOB">
+        <COMMENT><![CDATA[The <code>CLOB</code> in which to store the string.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[buf The <code>CLOB</code> in which to store the string.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="75" END_LINE="127" LINES="1" START_COLUMN="20" START_LINE="127"/>
+    </PROCEDURE>
+    <FUNCTION NAME="GET_NUMBER" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve the value as a <code>number</code>.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve the value as a <code>number</code>.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION NUMBER">
+        <COMMENT><![CDATA[An instance of <code>number</code> or <code>null</code> if the value isn't a number.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>number</code> or <code>null</code> if the value isn't a number.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="37" END_LINE="134" LINES="1" START_COLUMN="19" START_LINE="134"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_DOUBLE" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve the value as a <code>binary_double</code>.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve the value as a <code>binary_double</code>.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BINARY_DOUBLE">
+        <COMMENT><![CDATA[An instance of <code>binary_double</code> or <code>null</code> if the value isn't a number.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>binary_double</code> or <code>null</code> if the value isn't a number.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="37" END_LINE="142" LINES="1" START_COLUMN="19" START_LINE="142"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_BOOL" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve the value as a <code>boolean</code>.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve the value as a <code>boolean</code>.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN">
+        <COMMENT><![CDATA[An instance of <code>boolean</code> or <code>null</code> if the value isn't a boolean.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[An instance of <code>boolean</code> or <code>null</code> if the value isn't a boolean.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="35" END_LINE="149" LINES="1" START_COLUMN="19" START_LINE="149"/>
+    </FUNCTION>
+    <FUNCTION NAME="GET_NULL" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Retrieve the value as a string <code>'null'<code>.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Retrieve the value as a string <code>'null'<code>.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION VARCHAR2">
+        <COMMENT><![CDATA[A <code>varchar2</code> with the value <code>'null'</code> or
+ an actual <code>null</code> if the value isn't a JSON "null".]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>varchar2</code> with the value <code>'null'</code> or
+ an actual <code>null</code> if the value isn't a JSON "null".]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="35" END_LINE="157" LINES="1" START_COLUMN="19" START_LINE="157"/>
+    </FUNCTION>
+    <FUNCTION NAME="IS_OBJECT" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Determine if the value represents an "object" type.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Determine if the value represents an "object" type.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN">
+        <COMMENT><![CDATA[<code>true</code> if the value is an object, <code>false</code> otherwise.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[<code>true</code> if the value is an object, <code>false</code> otherwise.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="36" END_LINE="164" LINES="1" START_COLUMN="19" START_LINE="164"/>
+    </FUNCTION>
+    <FUNCTION NAME="IS_ARRAY" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Determine if the value represents an "array" type.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Determine if the value represents an "array" type.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN">
+        <COMMENT><![CDATA[<code>true</code> if the value is an array, <code>false</code> otherwise.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[<code>true</code> if the value is an array, <code>false</code> otherwise.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="35" END_LINE="171" LINES="1" START_COLUMN="19" START_LINE="171"/>
+    </FUNCTION>
+    <FUNCTION NAME="IS_STRING" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Determine if the value represents a "string" type.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Determine if the value represents a "string" type.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN">
+        <COMMENT><![CDATA[<code>true</code> if the value is a string, <code>false</code> otherwise.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[<code>true</code> if the value is a string, <code>false</code> otherwise.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="36" END_LINE="178" LINES="1" START_COLUMN="19" START_LINE="178"/>
+    </FUNCTION>
+    <FUNCTION NAME="IS_NUMBER" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Determine if the value represents a "number" type.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Determine if the value represents a "number" type.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN">
+        <COMMENT><![CDATA[<code>true</code> if the value is a number, <code>false</code> otherwise.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[<code>true</code> if the value is a number, <code>false</code> otherwise.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="36" END_LINE="185" LINES="1" START_COLUMN="19" START_LINE="185"/>
+    </FUNCTION>
+    <FUNCTION NAME="IS_BOOL" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Determine if the value represents a "boolean" type.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Determine if the value represents a "boolean" type.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN">
+        <COMMENT><![CDATA[<code>true</code> if the value is a boolean, <code>false</code> otherwise.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[<code>true</code> if the value is a boolean, <code>false</code> otherwise.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="34" END_LINE="192" LINES="1" START_COLUMN="19" START_LINE="192"/>
+    </FUNCTION>
+    <FUNCTION NAME="IS_NULL" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Determine if the value represents a "null" type.</p>
+]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Determine if the value represents a "null" type.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN">
+        <COMMENT><![CDATA[<code>true</code> if the value is a null, <code>false</code> otherwise.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[<code>true</code> if the value is a null, <code>false</code> otherwise.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="34" END_LINE="199" LINES="1" START_COLUMN="19" START_LINE="199"/>
+    </FUNCTION>
+    <FUNCTION NAME="IS_NUMBER_REPR_NUMBER" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private method for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private method for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN"/>
+      <SUMMARY END_COLUMN="48" END_LINE="204" LINES="1" START_COLUMN="19" START_LINE="204"/>
+    </FUNCTION>
+    <FUNCTION NAME="IS_NUMBER_REPR_DOUBLE" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ Private method for internal processing.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ Private method for internal processing. 
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION BOOLEAN"/>
+      <SUMMARY END_COLUMN="48" END_LINE="207" LINES="1" START_COLUMN="19" START_LINE="207"/>
+    </FUNCTION>
+    <PROCEDURE NAME="PARSE_NUMBER" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Parses a string into a number.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Parses a string into a number. This method will automatically cast to
+ a <code>binary_double</code> if it is necessary.</p>
+ <pre>
+ declare
+   mynum pljson_value := pljson_value('42');
+ begin
+   dbms_output.put_line('mynum is a string: ' || mynum.is_string()); // 'true'
+   mynum.parse_number('42');
+   dbms_output.put_line('mynum is a number: ' || mynum.is_number()); // 'true'
+ end;
+ </pre>
+]]></COMMENT>
+      <ARGUMENT MODE="IN" NAME="STR" TYPE="VARCHAR2">
+        <COMMENT><![CDATA[A <code>varchar2</code> to parse into a number.]]></COMMENT>
+      </ARGUMENT>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <TAG TYPE="@PARAM">
+        <COMMENT><![CDATA[str A <code>varchar2</code> to parse into a number.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="45" END_LINE="233" LINES="1" START_COLUMN="20" START_LINE="233"/>
+    </PROCEDURE>
+    <FUNCTION NAME="NUMBER_TOSTRING" SCOPE="MEMBER" VERSION="1">
+      <COMMENT_FIRST_LINE><![CDATA[ <p>Return a <code>varchar2</code> representation of a <code>number</code>
+ type.]]></COMMENT_FIRST_LINE>
+      <COMMENT><![CDATA[ <p>Return a <code>varchar2</code> representation of a <code>number</code>
+ type. This is primarily intended to be used within PL/JSON internally.</p>
+]]></COMMENT>
+      <RETURN TYPE="MEMBER FUNCTION VARCHAR2">
+        <COMMENT><![CDATA[A <code>varchar2</code> up to 4000 characters.]]></COMMENT>
+      </RETURN>
+      <TAG TYPE="@RETURN">
+        <COMMENT><![CDATA[A <code>varchar2</code> up to 4000 characters.]]></COMMENT>
+      </TAG>
+      <SUMMARY END_COLUMN="42" END_LINE="243" LINES="1" START_COLUMN="19" START_LINE="243"/>
+    </FUNCTION>
+    <FUNCTION NAME="TO_CHAR" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="0" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER FUNCTION VARCHAR2"/>
+      <SUMMARY END_COLUMN="96" END_LINE="246" LINES="1" START_COLUMN="19" START_LINE="246"/>
+    </FUNCTION>
+    <PROCEDURE NAME="TO_CLOB" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON_VALUE"/>
+      <ARGUMENT MODE="IN OUT NOCOPY" NAME="BUF" TYPE="CLOB"/>
+      <ARGUMENT DEFAULT="FALSE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="0" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="ERASE_CLOB" TYPE="BOOLEAN"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="168" END_LINE="247" LINES="1" START_COLUMN="20" START_LINE="247"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="PRINT" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON_VALUE"/>
+      <ARGUMENT DEFAULT="TRUE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="8192" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="JSONP" TYPE="VARCHAR2"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="140" END_LINE="248" LINES="1" START_COLUMN="20" START_LINE="248"/>
+    </PROCEDURE>
+    <PROCEDURE NAME="HTP" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON_VALUE"/>
+      <ARGUMENT DEFAULT="FALSE" MODE="IN" NAME="SPACES" TYPE="BOOLEAN"/>
+      <ARGUMENT DEFAULT="0" MODE="IN" NAME="CHARS_PER_LINE" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="JSONP" TYPE="VARCHAR2"/>
+      <RETURN TYPE="MEMBER PROCEDURE"/>
+      <SUMMARY END_COLUMN="136" END_LINE="249" LINES="1" START_COLUMN="20" START_LINE="249"/>
+    </PROCEDURE>
+    <FUNCTION NAME="VALUE_OF" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON_VALUE"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="MAX_BYTE_SIZE" TYPE="NUMBER"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="MAX_CHAR_SIZE" TYPE="NUMBER"/>
+      <RETURN TYPE="MEMBER FUNCTION VARCHAR2"/>
+      <SUMMARY END_COLUMN="127" END_LINE="251" LINES="1" START_COLUMN="19" START_LINE="251"/>
+    </FUNCTION>
+    <SUMMARY END_COLUMN="12" END_LINE="253" LINES="253" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <OBJECT_TYPE NAME="PLJSON_VALUE_ARRAY" SCHEMA="">
+    <COLLECTIONTYPE NAME="TABLE"/>
+    <SUPERTYPE NAME="PLJSON_VALUE">
+      <RETURN COLLECTIONTYPE="TABLE" NAME="COLLECTION" SUPERTYPE="PLJSON_VALUE" TYPE="TABLE OF PLJSON_VALUE">
+        <COMMENT><![CDATA[Collection Type : table OF pljson_value]]></COMMENT>
+      </RETURN>
+    </SUPERTYPE>
+    <SUMMARY END_COLUMN="67" END_LINE="1" LINES="1" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <OBJECT_TYPE NAME="PLJSON_VARRAY" SCHEMA="">
+    <COLLECTIONTYPE NAME="TABLE"/>
+    <SUPERTYPE NAME="VARCHAR2(32767)">
+      <RETURN COLLECTIONTYPE="TABLE" NAME="COLLECTION" SUPERTYPE="VARCHAR2(32767)" TYPE="TABLE OF VARCHAR2(32767)">
+        <COMMENT><![CDATA[Collection Type : table OF varchar2(32767)]]></COMMENT>
+      </RETURN>
+    </SUPERTYPE>
+    <SUMMARY END_COLUMN="65" END_LINE="1" LINES="1" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <OBJECT_TYPE NAME="PLJSON_NARRAY" SCHEMA="">
+    <COLLECTIONTYPE NAME="TABLE"/>
+    <SUPERTYPE NAME="NUMBER">
+      <RETURN COLLECTIONTYPE="TABLE" NAME="COLLECTION" SUPERTYPE="NUMBER" TYPE="TABLE OF NUMBER">
+        <COMMENT><![CDATA[Collection Type : table OF number]]></COMMENT>
+      </RETURN>
+    </SUPERTYPE>
+    <SUMMARY END_COLUMN="56" END_LINE="1" LINES="1" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <OBJECT_TYPE NAME="PLJSON_VTAB" SCHEMA="">
+    <COLLECTIONTYPE NAME="TABLE"/>
+    <SUPERTYPE NAME="PLJSON_VARRAY">
+      <RETURN COLLECTIONTYPE="TABLE" NAME="COLLECTION" SUPERTYPE="PLJSON_VARRAY" TYPE="TABLE OF PLJSON_VARRAY">
+        <COMMENT><![CDATA[Collection Type : table OF pljson_varray]]></COMMENT>
+      </RETURN>
+    </SUPERTYPE>
+    <SUMMARY END_COLUMN="61" END_LINE="1" LINES="1" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <OBJECT_TYPE NAME="PLJSON_TABLE_IMPL" SCHEMA="">
+    <VARIABLE NAME="STR" VERSION="1">
+      <RETURN TYPE="CLOB"/>
+    </VARIABLE>
+    <VARIABLE NAME="COLUMN_PATHS" VERSION="1">
+      <RETURN TYPE="PLJSON_VARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="COLUMN_NAMES" VERSION="1">
+      <RETURN TYPE="PLJSON_VARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="TABLE_MODE" VERSION="1">
+      <RETURN TYPE="VARCHAR2(20)"/>
+    </VARIABLE>
+    <VARIABLE NAME="DATA_TAB" VERSION="1">
+      <RETURN TYPE="PLJSON_VTAB"/>
+    </VARIABLE>
+    <VARIABLE NAME="ROW_IND" VERSION="1">
+      <RETURN TYPE="PLJSON_NARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="ROW_COUNT" VERSION="1">
+      <RETURN TYPE="PLJSON_NARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="NESTED_PATH_FULL" VERSION="1">
+      <RETURN TYPE="PLJSON_VARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="NESTED_PATH_EXT" VERSION="1">
+      <RETURN TYPE="PLJSON_VARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="START_COLUMN" VERSION="1">
+      <RETURN TYPE="PLJSON_NARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="NESTED_PATH_LITERAL" VERSION="1">
+      <RETURN TYPE="PLJSON_VARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="COLUMN_NESTED_INDEX" VERSION="1">
+      <RETURN TYPE="PLJSON_NARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="COLUMN_PATH_PART" VERSION="1">
+      <RETURN TYPE="PLJSON_VARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="COLUMN_VAL" VERSION="1">
+      <RETURN TYPE="PLJSON_VARRAY"/>
+    </VARIABLE>
+    <VARIABLE NAME="ROOT_ARRAY_SIZE" VERSION="1">
+      <RETURN TYPE="NUMBER"/>
+    </VARIABLE>
+    <VARIABLE NAME="JSON_OBJ" VERSION="1">
+      <RETURN TYPE="PLJSON"/>
+    </VARIABLE>
+    <VARIABLE NAME="RET_TYPE" VERSION="1">
+      <RETURN TYPE="ANYTYPE"/>
+    </VARIABLE>
+    <FUNCTION NAME="ODCITABLEDESCRIBE" SCOPE="STATIC" VERSION="1">
+      <ARGUMENT MODE="OUT" NAME="RTYPE" TYPE="ANYTYPE"/>
+      <ARGUMENT MODE="IN" NAME="JSON_STR" TYPE="CLOB"/>
+      <ARGUMENT MODE="IN" NAME="COLUMN_PATHS" TYPE="PLJSON_VARRAY"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="COLUMN_NAMES" TYPE="PLJSON_VARRAY"/>
+      <ARGUMENT DEFAULT="'cartesian'" MODE="IN" NAME="TABLE_MODE" TYPE="VARCHAR2"/>
+      <RETURN TYPE="STATIC FUNCTION NUMBER"/>
+      <SUMMARY END_COLUMN="12" END_LINE="120" LINES="5" START_COLUMN="19" START_LINE="116"/>
+    </FUNCTION>
+    <FUNCTION NAME="ODCITABLEPREPARE" SCOPE="STATIC" VERSION="1">
+      <ARGUMENT MODE="OUT" NAME="SCTX" TYPE="PLJSON_TABLE_IMPL"/>
+      <ARGUMENT MODE="IN" NAME="TI" TYPE="SYS.ODCITABFUNCINFO"/>
+      <ARGUMENT MODE="IN" NAME="JSON_STR" TYPE="CLOB"/>
+      <ARGUMENT MODE="IN" NAME="COLUMN_PATHS" TYPE="PLJSON_VARRAY"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="COLUMN_NAMES" TYPE="PLJSON_VARRAY"/>
+      <ARGUMENT DEFAULT="'cartesian'" MODE="IN" NAME="TABLE_MODE" TYPE="VARCHAR2"/>
+      <RETURN TYPE="STATIC FUNCTION NUMBER"/>
+      <SUMMARY END_COLUMN="12" END_LINE="127" LINES="6" START_COLUMN="19" START_LINE="122"/>
+    </FUNCTION>
+    <FUNCTION NAME="ODCITABLESTART" SCOPE="STATIC" VERSION="1">
+      <ARGUMENT MODE="IN OUT" NAME="SCTX" TYPE="PLJSON_TABLE_IMPL"/>
+      <ARGUMENT MODE="IN" NAME="JSON_STR" TYPE="CLOB"/>
+      <ARGUMENT MODE="IN" NAME="COLUMN_PATHS" TYPE="PLJSON_VARRAY"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="COLUMN_NAMES" TYPE="PLJSON_VARRAY"/>
+      <ARGUMENT DEFAULT="'cartesian'" MODE="IN" NAME="TABLE_MODE" TYPE="VARCHAR2"/>
+      <RETURN TYPE="STATIC FUNCTION NUMBER"/>
+      <SUMMARY END_COLUMN="12" END_LINE="133" LINES="5" START_COLUMN="19" START_LINE="129"/>
+    </FUNCTION>
+    <FUNCTION NAME="ODCITABLEFETCH" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN OUT" NAME="SELF" TYPE="PLJSON_TABLE_IMPL"/>
+      <ARGUMENT MODE="IN" NAME="NROWS" TYPE="NUMBER"/>
+      <ARGUMENT MODE="OUT" NAME="OUTSET" TYPE="ANYDATASET"/>
+      <RETURN TYPE="MEMBER FUNCTION NUMBER"/>
+      <SUMMARY END_COLUMN="12" END_LINE="137" LINES="3" START_COLUMN="19" START_LINE="135"/>
+    </FUNCTION>
+    <FUNCTION NAME="ODCITABLECLOSE" SCOPE="MEMBER" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="SELF" TYPE="PLJSON_TABLE_IMPL"/>
+      <RETURN TYPE="MEMBER FUNCTION NUMBER"/>
+      <SUMMARY END_COLUMN="68" END_LINE="139" LINES="1" START_COLUMN="19" START_LINE="139"/>
+    </FUNCTION>
+    <FUNCTION NAME="JSON_TABLE" SCOPE="STATIC" VERSION="1">
+      <ARGUMENT MODE="IN" NAME="JSON_STR" TYPE="CLOB"/>
+      <ARGUMENT MODE="IN" NAME="COLUMN_PATHS" TYPE="PLJSON_VARRAY"/>
+      <ARGUMENT DEFAULT="NULL" MODE="IN" NAME="COLUMN_NAMES" TYPE="PLJSON_VARRAY"/>
+      <ARGUMENT DEFAULT="'cartesian'" MODE="IN" NAME="TABLE_MODE" TYPE="VARCHAR2"/>
+      <RETURN TYPE="STATIC FUNCTION ANYDATASET"/>
+      <SUMMARY END_COLUMN="19" END_LINE="145" LINES="5" START_COLUMN="19" START_LINE="141"/>
+    </FUNCTION>
+    <SUMMARY END_COLUMN="2" END_LINE="146" LINES="146" START_COLUMN="24" START_LINE="1"/>
+  </OBJECT_TYPE>
+  <GENERATOR>
+    <OBJECTS>
+      <PROCESSED COUNT="7"/>
+      <SKIPPED COUNT="0"/>
+    </OBJECTS>
+    <CREATED DATE="27/05/18" TIME="19:26"/>
+    <SETTINGS DEFAULT_KEYWORDS_CASE="UPPER" DEFAULT_NAMES_CASE="UPPER" IGNORE_INFORMAL_COMMENTS="TRUE" INPUT_ENCODING="Cp1253" KEYWORDS_TO_DEFAULT_CASE="TRUE" KEYWORDS_TO_LOWER_CASE="FALSE" KEYWORDS_TO_UPPER_CASE="FALSE" NAMES_TO_DEFAULT_CASE="TRUE" NAMES_TO_LOWER_CASE="FALSE" NAMES_TO_UPPER_CASE="FALSE" SHOW_SKIPPED_PACKAGES="TRUE" VERBOSE="FALSE"/>
+  </GENERATOR>
+</APPLICATION>

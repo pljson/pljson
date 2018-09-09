@@ -63,13 +63,13 @@ create or replace package body utplsql_pljson_simple_test is
   
   -- Bool
   procedure test_bool is
-    obj pljson_element;
+    obj pljson_value;
   begin
-    obj := pljson_bool(true);
+    obj := pljson_value(true);
     assertTrue(obj.get_bool, 'obj.get_bool');
     assertFalse(not obj.get_bool, 'not obj.get_bool');
     assertTrue(pljson_printer.pretty_print_any(obj) = 'true', 'pljson_printer.pretty_print_any(obj) = ''true''');
-    obj := pljson_bool(false);
+    obj := pljson_value(false);
     assertFalse(obj.get_bool, 'obj.get_bool');
     assertTrue(not obj.get_bool, 'not obj.get_bool');
     assertTrue(pljson_printer.pretty_print_any(obj) = 'false', 'pljson_printer.pretty_print_any(obj) = ''false''');
@@ -77,9 +77,9 @@ create or replace package body utplsql_pljson_simple_test is
   
   -- Null
   procedure test_null is
-    obj pljson_element;
+    obj pljson_value;
   begin
-    obj := pljson_null();
+    obj := pljson_value();
     assertTrue(obj is not null, 'obj is not null');
     assertTrue(pljson_printer.pretty_print_any(obj) = 'null', 'pljson_printer.pretty_print_any(obj) = ''null''');
     --assertTrue(obj.null_data is null, 'obj.null_data is null'); --doesnt matter really
@@ -87,29 +87,29 @@ create or replace package body utplsql_pljson_simple_test is
   
   -- very small number, issue #69
   procedure test_very_small_number is
-    obj pljson_element;
+    obj pljson_value;
   begin
-    obj := pljson_number(0.5);
+    obj := pljson_value(0.5);
     --dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '0.5', 'pljson_printer.pretty_print_any(obj) = ''0.5''');
     
-    obj := pljson_number(-0.5);
+    obj := pljson_value(-0.5);
     --dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '-0.5', 'pljson_printer.pretty_print_any(obj) = ''-0.5''');
     
-    obj := pljson_number(1.1E-63);
+    obj := pljson_value(1.1E-63);
     --dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '1.1E-63', 'pljson_printer.pretty_print_any(obj) = ''1.1E-63''');
     
-    obj := pljson_number(-1.1e-63d); -- test double too
+    obj := pljson_value(-1.1e-63d); -- test double too
     --dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '-1.1E-63', 'pljson_printer.pretty_print_any(obj) = ''-1.1E-63''');
     
-    obj := pljson_number(3.141592653589793238462643383279e-63);
+    obj := pljson_value(3.141592653589793238462643383279e-63);
     --dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '3.141592653589793238462643383279E-63', 'pljson_printer.pretty_print_any(obj) = ''3.141592653589793238462643383279E-63''');
     
-    obj := pljson_number(2.718281828459e-210d); -- test double too
+    obj := pljson_value(2.718281828459e-210d); -- test double too
     --dbms_output.put_line(pljson_printer.pretty_print_any(obj));
     assertTrue(pljson_printer.pretty_print_any(obj) = '2.718281828459E-210', 'pljson_printer.pretty_print_any(obj) = ''2.718281828459E-210''');
   end;

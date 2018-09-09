@@ -5,8 +5,11 @@ create or replace type pljson_narray as table of number;
 /
 
 set termout on
+
 create or replace type pljson_vtab as table of pljson_varray;
 /
+
+create synonym pljson_table for pljson_table_impl;
 
 create or replace type pljson_table_impl as object (
   
@@ -155,6 +158,3 @@ create or replace type pljson_table_impl as object (
   pipelined using pljson_table_impl
 );
 /
-show err
-
-create synonym pljson_table for pljson_table_impl;
