@@ -203,7 +203,7 @@ column xtra format a10
   column 5 = value of "xtra" in same object as previous column
   
   === NOTE ===
-  in Oracle 12c, any run of json_table will produce 2 new types with Oracle generated names (like ST00001F3lDKZRT/+Zit/T5XWqsw=)
+  in Oracle 11g and 12c, any run of json_table will produce 2 new types with Oracle generated names (like "SYSTPcHv5nozBRE+I3lWIMic2bQ==")
   for each different select (different in number or names of columns)
   these are temporary and should be cleared automatically within 12 hours
 */

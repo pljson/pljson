@@ -76,8 +76,12 @@ create or replace type body pljson_list as
 
   member procedure append(self in out nocopy pljson_list, elem pljson_value, position pls_integer default null) as
     indx pls_integer;
-    insert_value pljson_value := NVL(elem, pljson_value);
+    insert_value pljson_value;
   begin
+    insert_value := elem;
+    if insert_value is null then
+      insert_value := pljson_value;
+    end if;
     if(position is null or position > self.count) then --end of list
       indx := self.count + 1;
       self.list_data.extend(1);
@@ -143,9 +147,13 @@ create or replace type body pljson_list as
   end;
 
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_value) as
-    insert_value pljson_value := NVL(elem, pljson_value);
+    insert_value pljson_value;
     indx number;
   begin
+    insert_value := elem;
+    if insert_value is null then
+      insert_value := pljson_value;
+    end if;
     if(position > self.count) then --end of list
       indx := self.count + 1;
       self.list_data.extend(1);
