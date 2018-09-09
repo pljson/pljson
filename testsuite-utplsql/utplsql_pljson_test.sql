@@ -37,8 +37,8 @@ create or replace package utplsql_pljson_test is
   --%test(Test insert null boolean)
   procedure test_insert_null_boolean;
   
-  --%test(Test insert null pljson_value)
-  procedure test_insert_null_pljson_value;
+  --%test(Test insert null pljson_element)
+  procedure test_insert_null_element;
   
   --%test(Test insert null pljson)
   procedure test_insert_null_pljson;
@@ -185,8 +185,8 @@ create or replace package body utplsql_pljson_test is
     obj := pljson();
     obj.put('A', 'varchar2');
     obj.put('A', 2);
-    obj.put('A', pljson_value(true));
-    obj.put('A', pljson_value());
+    obj.put('A', pljson_bool(true));
+    obj.put('A', pljson_null());
     obj.put('A', pljson());
     obj.put('A', pljson_list('[34,34]'));
     assertTrue(obj.count = 1, 'obj.count = 1');
@@ -260,7 +260,7 @@ create or replace package body utplsql_pljson_test is
   procedure test_insert_null_number is
     obj pljson := pljson();
     x number := null;
-    n pljson_value;
+    n pljson_element;
   begin
     obj.put('X', x);
     n := obj.get('X');
@@ -285,7 +285,7 @@ create or replace package body utplsql_pljson_test is
         fail(test_name);
     end;
     begin
-      test_name := 'x1 := obj.get(''X2'').get_string;';
+      test_name := 'x2 := obj.get(''X2'').get_string;';
       x2 := obj.get('X2').get_string;
       pass(test_name);
     exception
@@ -298,18 +298,18 @@ create or replace package body utplsql_pljson_test is
   procedure test_insert_null_boolean is
     obj pljson := pljson();
     x boolean := null;
-    n pljson_value;
+    n pljson_element;
   begin
     obj.put('X', x);
     n := obj.get('X');
     assertFalse(n is null, 'n is null'); --may seem odd -- but initialized vars are best!
   end;
   
-  -- insert null pljson_value
-  procedure test_insert_null_pljson_value is
+  -- insert null pljson_element
+  procedure test_insert_null_element is
     obj pljson := pljson();
-    x pljson_value := null;
-    n pljson_value;
+    x pljson_element := null;
+    n pljson_element;
   begin
     obj.put('X', x);
     n := obj.get('X');
@@ -320,7 +320,7 @@ create or replace package body utplsql_pljson_test is
   procedure test_insert_null_pljson is
     obj pljson := pljson();
     x pljson := null;
-    n pljson_value;
+    n pljson_element;
   begin
     obj.put('X', x);
     n := obj.get('X');
@@ -331,7 +331,7 @@ create or replace package body utplsql_pljson_test is
   procedure test_insert_null_pljson_list is
     obj pljson := pljson();
     x pljson_list := null;
-    n pljson_value;
+    n pljson_element;
   begin
     obj.put('X', x);
     n := obj.get('X');

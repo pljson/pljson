@@ -38,6 +38,7 @@ create or replace package pljson_xml as
 
 end pljson_xml;
 /
+show err
 
 create or replace package body pljson_xml as
 
@@ -74,12 +75,12 @@ create or replace package body pljson_xml as
     dbms_lob.append(buf_lob, buf_str);
   end flush_clob;
   
-  procedure toString(obj pljson_value, tagname in varchar2, xmlstr in out nocopy clob, xmlbuf in out nocopy varchar2) as
+  procedure toString(obj pljson_element, tagname in varchar2, xmlstr in out nocopy clob, xmlbuf in out nocopy varchar2) as
     v_obj pljson;
     v_list pljson_list;
     
     v_keys pljson_list;
-    v_value pljson_value;
+    v_value pljson_element;
     key_str varchar2(4000);
   begin
     if (obj.is_object()) then
@@ -89,7 +90,7 @@ create or replace package body pljson_xml as
       v_keys := v_obj.get_keys();
       for i in 1 .. v_keys.count loop
         v_value := v_obj.get(i);
-        key_str := v_keys.get(i).str;
+        key_str := v_keys.get_string(i);
         
         if(key_str = 'content') then
           if(v_value.is_array()) then
@@ -119,7 +120,7 @@ create or replace package body pljson_xml as
               end if;
             end loop;
           end;
-        elsif(v_value.is_null() or (v_value.is_string and v_value.get_string = '')) then
+        elsif(v_value.is_null() or (v_value.is_string() and treat(v_value as pljson_string).get_string() = '')) then
           add_to_clob(xmlstr, xmlbuf, '<' || key_str || '/>');
         else
           toString(v_value, key_str, xmlstr, xmlbuf);
@@ -145,7 +146,7 @@ create or replace package body pljson_xml as
   begin
     dbms_lob.createtemporary(xmlstr, true);
     
-    toString(obj.to_json_value(), tagname, xmlstr, xmlbuf);
+    toString(obj, tagname, xmlstr, xmlbuf);
     
     flush_clob(xmlstr, xmlbuf);
     returnValue := xmltype('<?xml version="1.0"?>'||xmlstr);
@@ -155,3 +156,4 @@ create or replace package body pljson_xml as
 
 end pljson_xml;
 /
+show err
