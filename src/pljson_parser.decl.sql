@@ -55,12 +55,13 @@ create or replace package pljson_parser as
    */
   function parser(str varchar2) return pljson;
   function parse_list(str varchar2) return pljson_list;
-  function parse_any(str varchar2) return pljson_value;
+  function parse_any(str varchar2) return pljson_element;
   function parser(str clob) return pljson;
   function parse_list(str clob) return pljson_list;
-  function parse_any(str clob) return pljson_value;
+  function parse_any(str clob) return pljson_element;
   procedure remove_duplicates(obj in out nocopy pljson);
   function get_version return varchar2;
 
 end pljson_parser;
 /
+show err
