@@ -474,11 +474,11 @@ create or replace package body pljson_parser as
   end;
 
   function parseArr(tokens lTokens, indx in out nocopy pls_integer) return pljson_list as
-    e_arr pljson_value_array := pljson_value_array();
+    e_arr pljson_element_array := pljson_element_array();
     ret_list pljson_list := pljson_list();
     v_count number := 0;
     tok rToken;
-    pv pljson_value;
+    pv pljson_number;
   begin
     --value, value, value ]
     if(indx > tokens.count) then p_error('more elements in array was excepted', tok); end if;
@@ -487,26 +487,26 @@ create or replace package body pljson_parser as
       e_arr.extend;
       v_count := v_count + 1;
       case tok.type_name
-        when 'TRUE' then e_arr(v_count) := pljson_value(true);
-        when 'FALSE' then e_arr(v_count) := pljson_value(false);
-        when 'NULL' then e_arr(v_count) := pljson_value;
-        when 'STRING' then e_arr(v_count) := case when tok.data_overflow is not null then pljson_value(tok.data_overflow) else pljson_value(tok.data) end;
-        when 'ESTRING' then e_arr(v_count) := pljson_value(tok.data_overflow, false);
+        when 'TRUE' then e_arr(v_count) := pljson_bool(true);
+        when 'FALSE' then e_arr(v_count) := pljson_bool(false);
+        when 'NULL' then e_arr(v_count) := pljson_null();
+        when 'STRING' then e_arr(v_count) := case when tok.data_overflow is not null then pljson_string(tok.data_overflow) else pljson_string(tok.data) end;
+        when 'ESTRING' then e_arr(v_count) := pljson_string(tok.data_overflow, false);
         /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
-        --when 'NUMBER' then e_arr(v_count) := pljson_value(to_number(replace(tok.data, '.', decimalpoint)));
+        --when 'NUMBER' then e_arr(v_count) := pljson_number(to_number(replace(tok.data, '.', decimalpoint)));
         when 'NUMBER' then
-          pv := pljson_value(0);
+          pv := pljson_number(0);
           pv.parse_number(replace(tok.data, '.', decimalpoint));
           e_arr(v_count) := pv;
         when '[' then
           declare e_list pljson_list; begin
             indx := indx + 1;
             e_list := parseArr(tokens, indx);
-            e_arr(v_count) := e_list.to_json_value;
+            e_arr(v_count) := e_list;
           end;
         when '{' then
           indx := indx + 1;
-          e_arr(v_count) := parseObj(tokens, indx).to_json_value;
+          e_arr(v_count) := parseObj(tokens, indx);
         else
           p_error('Expected a value', tok);
       end case;
@@ -529,22 +529,22 @@ create or replace package body pljson_parser as
     return ret_list;
   end parseArr;
 
-  function parseMem(tokens lTokens, indx in out pls_integer, mem_name varchar2, mem_indx number) return pljson_value as
-    mem pljson_value;
+  function parseMem(tokens lTokens, indx in out pls_integer, mem_name varchar2, mem_indx number) return pljson_element as
+    mem pljson_element;
     tok rToken;
-    pv pljson_value;
+    pv pljson_number;
   begin
     tok := tokens(indx);
     case tok.type_name
-      when 'TRUE' then mem := pljson_value(true);
-      when 'FALSE' then mem := pljson_value(false);
-      when 'NULL' then mem := pljson_value;
-      when 'STRING' then mem := case when tok.data_overflow is not null then pljson_value(tok.data_overflow) else pljson_value(tok.data) end;
-      when 'ESTRING' then mem := pljson_value(tok.data_overflow, false);
+      when 'TRUE' then mem := pljson_bool(true);
+      when 'FALSE' then mem := pljson_bool(false);
+      when 'NULL' then mem := pljson_null();
+      when 'STRING' then mem := case when tok.data_overflow is not null then pljson_string(tok.data_overflow) else pljson_string(tok.data) end;
+      when 'ESTRING' then mem := pljson_string(tok.data_overflow, false);
       /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
-      --when 'NUMBER' then mem := pljson_value(to_number(replace(tok.data, '.', decimalpoint)));
+      --when 'NUMBER' then mem := pljson_number(to_number(replace(tok.data, '.', decimalpoint)));
       when 'NUMBER' then
-        pv := pljson_value(0);
+        pv := pljson_number(0);
         pv.parse_number(replace(tok.data, '.', decimalpoint));
         mem := pv;
       when '[' then
@@ -553,11 +553,11 @@ create or replace package body pljson_parser as
         begin
           indx := indx + 1;
           e_list := parseArr(tokens, indx);
-          mem := e_list.to_json_value;
+          mem := e_list;
         end;
       when '{' then
         indx := indx + 1;
-        mem := parseObj(tokens, indx).to_json_value;
+        mem := parseObj(tokens, indx);
       else
         p_error('Found '||tok.type_name, tok);
     end case;
@@ -585,7 +585,7 @@ create or replace package body pljson_parser as
     obj pljson;
     tok rToken;
     mem_name varchar(4000);
-    arr pljson_value_array := pljson_value_array();
+    arr pljson_element_array := pljson_element_array();
   begin
     --what to expect?
     while(indx <= tokens.count) loop
@@ -617,7 +617,7 @@ create or replace package body pljson_parser as
         if(tok.type_name = ':') then
           --parse
           declare
-            jmb pljson_value;
+            jmb pljson_element;
             x number;
           begin
             x := arr.count + 1;
@@ -746,10 +746,10 @@ create or replace package body pljson_parser as
     return obj;
   end parser;
 
-  function parse_any(str varchar2) return pljson_value as
+  function parse_any(str varchar2) return pljson_element as
     tokens lTokens;
     obj pljson_list;
-    ret pljson_value;
+    ret pljson_element;
     indx pls_integer := 1;
     jsrc json_src;
   begin
@@ -765,7 +765,7 @@ create or replace package body pljson_parser as
     return obj.head();
   end parse_any;
 
-  function parse_any(str clob) return pljson_value as
+  function parse_any(str clob) return pljson_element as
     tokens lTokens;
     obj pljson_list;
     indx pls_integer := 1;
@@ -785,9 +785,9 @@ create or replace package body pljson_parser as
 
   /* last entry is the one to keep */
   procedure remove_duplicates(obj in out nocopy pljson) as
-    type memberlist is table of pljson_value index by varchar2(4000);
+    type memberlist is table of pljson_element index by varchar2(4000);
     members memberlist;
-    nulljsonvalue pljson_value := null;
+    nulljsonvalue pljson_element := null;
     validated pljson := pljson();
     indx varchar2(4000);
   begin
@@ -822,3 +822,4 @@ create or replace package body pljson_parser as
 
 end pljson_parser;
 /
+show err
