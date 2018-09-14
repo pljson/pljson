@@ -157,6 +157,7 @@ create or replace package body pljson_dyn as
     --loop through rows
     while ( dbms_sql.fetch_rows(l_cur) > 0 ) loop
       inner_obj := pljson(); --init for each row
+      inner_obj.check_for_duplicate:=0;
       --loop through columns
       for i in 1..l_cnt loop
         case true
@@ -215,6 +216,7 @@ create or replace package body pljson_dyn as
         else null; --discard other types
         end case;
       end loop;
+      inner_obj.check_for_duplicate:=1;
       outer_list.append(inner_obj);
     end loop;
     dbms_sql.close_cursor(l_cur);
