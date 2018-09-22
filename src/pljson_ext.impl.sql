@@ -30,16 +30,15 @@ create or replace package body pljson_ext as
 
   --extra function checks if number has no fraction
   function is_integer(v pljson_element) return boolean as
-    v_number pljson_number;
     num number;
     num_double binary_double;
     int_number number(38); --the oracle way to specify an integer
     int_double binary_double; --the oracle way to specify an integer
   begin
     /*
-    if (v.is_number) then
-      myint := v.get_number;
-      return (myint = v.get_number); --no rounding errors?
+    if (v.is_number()) then
+      myint := v.get_number();
+      return (myint = v.get_number()); --no rounding errors?
     else
       return false;
     end if;
@@ -48,12 +47,12 @@ create or replace package body pljson_ext as
       raise_application_error(-20109, 'not a number-value');
     end if;
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
-    if (v.is_number_repr_number) then
+    if (v.is_number_repr_number()) then
       num := v.get_number();
       int_number := trunc(num);
       --dbms_output.put_line('number: ' || num || ' -> ' || int_number);
       return (int_number = num); --no rounding errors?
-    elsif (v.is_number_repr_double) then
+    elsif (v.is_number_repr_double()) then
       num_double := v.get_double();
       int_double := trunc(num_double);
       --dbms_output.put_line('double: ' || num_double || ' -> ' || int_double);
@@ -84,7 +83,7 @@ create or replace package body pljson_ext as
   function to_date(v pljson_element) return date as
   begin
     if (v.is_string()) then
-      return standard.to_date(treat(v as pljson_string).get_string, format_string);
+      return standard.to_date(v.get_string(), format_string);
     else
       raise_application_error(-20110, 'not a date-value');
     end if;
@@ -197,11 +196,11 @@ create or replace package body pljson_ext as
       end if;
     end;
     --skip ws
-    procedure skipws as begin while(buf in (chr(9), chr(10), chr(13), ' ')) loop next_char; end loop; end;
+    procedure skipws as begin while (buf in (chr(9), chr(10), chr(13), ' ')) loop next_char; end loop; end;
 
   begin
     next_char();
-    while(buf is not null) loop
+    while (buf is not null) loop
       if (buf = '.') then
         next_char();
         if (buf is null) then raise_application_error(-20110, 'JSON Path parse error: . is not a valid json_path end'); end if;
@@ -279,8 +278,8 @@ create or replace package body pljson_ext as
       begin
         for i in 1 .. ret.count loop
           elem := ret.get(i);
-          if (elem.is_number) then
-            ret.replace(i, treat(elem as pljson_number).get_number()+1);
+          if (elem.is_number()) then
+            ret.replace(i, elem.get_number()+1);
           end if;
         end loop;
       end;
@@ -303,16 +302,16 @@ create or replace package body pljson_ext as
       if (path.get(i).is_string()) then
         --string fetch only on json
         o := pljson(ret);
-        ret := o.get(path.get_string(i));
+        ret := o.get(path.get(i).get_string());
       else
         --number fetch on json and json_list
         if (ret.is_array()) then
           l := pljson_list(ret);
-          ret := l.get(path.get_number(i));
+          ret := l.get(path.get(i).get_number());
         else
           o := pljson(ret);
           l := o.get_values();
-          ret := l.get(path.get_number(i));
+          ret := l.get(path.get(i).get_number());
         end if;
       end if;
     end loop;
@@ -330,10 +329,10 @@ create or replace package body pljson_ext as
     temp pljson_element;
   begin
     temp := get_json_element(obj, path, base);
-    if (temp is null or not temp.is_string) then
+    if (temp is null or not temp.is_string()) then
       return null;
     else
-      return treat(temp as pljson_string).get_string();
+      return temp.get_string();
     end if;
   end;
 
@@ -341,10 +340,10 @@ create or replace package body pljson_ext as
     temp pljson_element;
   begin
     temp := get_json_element(obj, path, base);
-    if (temp is null or not temp.is_number) then
+    if (temp is null or not temp.is_number()) then
       return null;
     else
-      return treat(temp as pljson_number).get_number();
+      return temp.get_number();
     end if;
   end;
 
@@ -353,10 +352,10 @@ create or replace package body pljson_ext as
     temp pljson_element;
   begin
     temp := get_json_element(obj, path, base);
-    if (temp is null or not temp.is_number) then
+    if (temp is null or not temp.is_number()) then
       return null;
     else
-      return treat(temp as pljson_number).get_double();
+      return temp.get_double();
     end if;
   end;
 
@@ -364,10 +363,10 @@ create or replace package body pljson_ext as
     temp pljson_element;
   begin
     temp := get_json_element(obj, path, base);
-    if (temp is null or not temp.is_object) then
+    if (temp is null or not temp.is_object()) then
       return null;
     else
-      return pljson(temp);
+      return treat(temp as pljson);
     end if;
   end;
 
@@ -375,10 +374,10 @@ create or replace package body pljson_ext as
     temp pljson_element;
   begin
     temp := get_json_element(obj, path, base);
-    if (temp is null or not temp.is_array) then
+    if (temp is null or not temp.is_array()) then
       return null;
     else
-      return pljson_list(temp);
+      return treat(temp as pljson_list);
     end if;
   end;
 
@@ -386,10 +385,10 @@ create or replace package body pljson_ext as
     temp pljson_element;
   begin
     temp := get_json_element(obj, path, base);
-    if (temp is null or not temp.is_bool) then
+    if (temp is null or not temp.is_bool()) then
       return null;
     else
-      return treat(temp as pljson_bool).get_bool();
+      return temp.get_bool();
     end if;
   end;
 
@@ -425,7 +424,7 @@ create or replace package body pljson_ext as
       keyval := path.get(i);
       if (keyval.is_number()) then
         --number index
-        keynum := treat(keyval as pljson_number).get_number();
+        keynum := keyval.get_number();
         if ((not temp.is_object()) and (not temp.is_array())) then
           if (val is null) then return; end if;
           backreference.remove_last;
@@ -456,7 +455,7 @@ create or replace package body pljson_ext as
         end if;
       else
         --string index
-        keystring := treat(keyval as pljson_string).get_string();
+        keystring := keyval.get_string();
         if (not temp.is_object()) then
           --backreference.print;
           if (val is null) then return; end if;
@@ -492,9 +491,9 @@ create or replace package body pljson_ext as
       if ( i = 1 ) then
         keyval := path.get(1);
         if (keyval.is_string()) then
-          keystring := treat(keyval as pljson_string).get_string();
+          keystring := keyval.get_string();
         else
-          keynum := treat(keyval as pljson_number).get_number();
+          keynum := keyval.get_number();
           declare
             t1 pljson_element := obj.get(keynum);
           begin
@@ -508,9 +507,9 @@ create or replace package body pljson_ext as
           keyval := path.get(i);
           obj_temp := pljson(temp);
           if (keyval.is_string()) then
-            keystring := treat(keyval as pljson_string).get_string();
+            keystring := keyval.get_string();
           else
-            keynum := treat(keyval as pljson_number).get_number();
+            keynum := keyval.get_number();
             declare
               t1 pljson_element := obj_temp.get(keynum);
             begin
@@ -526,7 +525,7 @@ create or replace package body pljson_ext as
           end if;
         else
           --array only number
-          keynum := path.get_number(i);
+          keynum := path.get(i).get_number();
           list_temp := pljson_list(temp);
           list_temp.remove(keynum);
           if (not inserter is null) then
@@ -546,18 +545,18 @@ create or replace package body pljson_ext as
   procedure put(obj in out nocopy pljson, path varchar2, elem varchar2, base number default 1) as
   begin
     if elem is null then
-        put_internal(obj, path, pljson_null(), base);
+      put_internal(obj, path, pljson_null(), base);
     else
-        put_internal(obj, path, pljson_string(elem), base);
+      put_internal(obj, path, pljson_string(elem), base);
     end if;
   end;
 
   procedure put(obj in out nocopy pljson, path varchar2, elem number, base number default 1) as
   begin
     if elem is null then
-        put_internal(obj, path, pljson_null(), base);
+      put_internal(obj, path, pljson_null(), base);
     else
-        put_internal(obj, path, pljson_number(elem), base);
+      put_internal(obj, path, pljson_number(elem), base);
     end if;
   end;
 
@@ -565,54 +564,54 @@ create or replace package body pljson_ext as
   procedure put(obj in out nocopy pljson, path varchar2, elem binary_double, base number default 1) as
   begin
     if elem is null then
-        put_internal(obj, path, pljson_null(), base);
+      put_internal(obj, path, pljson_null(), base);
     else
-        put_internal(obj, path, pljson_number(elem), base);
+      put_internal(obj, path, pljson_number(elem), base);
     end if;
   end;
 
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson, base number default 1) as
   begin
     if elem is null then
-        put_internal(obj, path, pljson_null(), base);
+      put_internal(obj, path, pljson_null(), base);
     else
-        put_internal(obj, path, elem, base);
+      put_internal(obj, path, elem, base);
     end if;
   end;
 
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson_list, base number default 1) as
   begin
     if elem is null then
-        put_internal(obj, path, pljson_null(), base);
+      put_internal(obj, path, pljson_null(), base);
     else
-        put_internal(obj, path, elem, base);
+      put_internal(obj, path, elem, base);
     end if;
   end;
 
   procedure put(obj in out nocopy pljson, path varchar2, elem boolean, base number default 1) as
   begin
     if elem is null then
-        put_internal(obj, path, pljson_null(), base);
+      put_internal(obj, path, pljson_null(), base);
     else
-        put_internal(obj, path, pljson_bool(elem), base);
+      put_internal(obj, path, pljson_bool(elem), base);
     end if;
   end;
 
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson_element, base number default 1) as
   begin
     if elem is null then
-        put_internal(obj, path, pljson_null(), base);
+      put_internal(obj, path, pljson_null(), base);
     else
-        put_internal(obj, path, elem, base);
+      put_internal(obj, path, elem, base);
     end if;
   end;
 
   procedure put(obj in out nocopy pljson, path varchar2, elem date, base number default 1) as
   begin
     if elem is null then
-        put_internal(obj, path, pljson_null(), base);
+      put_internal(obj, path, pljson_null(), base);
     else
-        put_internal(obj, path, pljson_ext.to_json_string(elem), base);
+      put_internal(obj, path, pljson_ext.to_json_string(elem), base);
     end if;
   end;
 
@@ -645,7 +644,9 @@ create or replace package body pljson_ext as
     json_part pljson_element;
   begin
     json_part := pljson_ext.get_json_element(obj, v_path);
-    if (json_part is null) then htp.print; else
+    if (json_part is null) then
+      htp.print;
+    else
       htp.print(pljson_printer.pretty_print_any(json_part, false));
     end if;
   end pp_htp;
@@ -663,7 +664,7 @@ create or replace package body pljson_ext as
     v_amount := DBMS_LOB.GETLENGTH(c);
     v_clob_offset := 1;
     --dbms_output.put_line('V amount: '||v_amount);
-    while(v_clob_offset < v_amount) loop
+    while (v_clob_offset < v_amount) loop
       --dbms_output.put_line(v_offset);
       --temp := ;
       --dbms_output.put_line('size: '||length(temp));
@@ -686,7 +687,7 @@ create or replace package body pljson_ext as
   begin
     dbms_lob.createtemporary(c, false, dbms_lob.call);
     for i in 1 .. l.count loop
-      dbms_lob.append(c, l.get_string(i));
+      dbms_lob.append(c, l.get(i).get_string());
     end loop;
 --    v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);
@@ -726,9 +727,7 @@ create or replace package body pljson_ext as
 --    v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);
     b_ret := decodeBase64Clob2Blob(c);
-    /*
-    dbms_lob.freetemporary(c);
-    */
+    /*dbms_lob.freetemporary(c);*/
     return b_ret;
 
   end decode;

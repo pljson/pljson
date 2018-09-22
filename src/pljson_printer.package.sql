@@ -59,7 +59,7 @@ create or replace package body pljson_printer as
   
   function llcheck(str in varchar2) return varchar2 as
   begin
-    --dbms_output.put_line(cur_line_len || ' : '|| str);
+    --dbms_output.put_line(cur_line_len || ' : ' || str);
     if (max_line_len > 0 and length(str)+cur_line_len > max_line_len) then
       cur_line_len := length(str);
       return newline_char || str;
@@ -90,7 +90,7 @@ create or replace package body pljson_printer as
       when chr(47) then if (escape_solidus) then result := '\/'; end if;
       when chr(92) then result := '\\';
       else if (ascii(ch) < 32) then
-             result :=  '\u'||replace(substr(to_char(ascii(ch), 'XXXX'),2,4), ' ', '0');
+             result :=  '\u' || replace(substr(to_char(ascii(ch), 'XXXX'), 2, 4), ' ', '0');
         elsif (ascii_output) then
              result := replace(asciistr(ch), '\', '\u');
         end if;
@@ -195,7 +195,7 @@ create or replace package body pljson_printer as
     else
       add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
       if (elem.extended_str is not null) then --clob implementation
-        while(offset <= dbms_lob.getlength(elem.extended_str)) loop
+        while (offset <= dbms_lob.getlength(elem.extended_str)) loop
           dbms_lob.read(elem.extended_str, amount, offset, v_str);
           if (elem.num = 1) then
             add_to_clob(buf, buf_str, escapeString(v_str));
@@ -206,7 +206,7 @@ create or replace package body pljson_printer as
         end loop;
       else
         if (elem.num = 1) then
-          while(offset<=length(elem.str)) loop
+          while (offset <= length(elem.str)) loop
             v_str:=substr(elem.str, offset, amount);
             add_to_clob(buf, buf_str, escapeString(v_str));
             offset := offset + amount;
@@ -230,14 +230,14 @@ create or replace package body pljson_printer as
       case elem.typeval
         /* number */
         when 4 then
-          numbuf := treat(elem as pljson_number).number_toString;
+          numbuf := treat(elem as pljson_number).number_toString();
           add_to_clob(buf, buf_str, llcheck(numbuf));
         /* string */
         when 3 then
           ppString(treat(elem as pljson_string), buf, buf_str);
         /* bool */
         when 5 then
-          if (treat(elem as pljson_bool).get_bool()) then
+          if (elem.get_bool()) then
             add_to_clob(buf, buf_str, llcheck('true'));
           else
             add_to_clob(buf, buf_str, llcheck('false'));
@@ -268,14 +268,14 @@ create or replace package body pljson_printer as
     case mem.typeval
       /* number */
       when 4 then
-        numbuf := treat(mem as pljson_number).number_toString;
+        numbuf := treat(mem as pljson_number).number_toString();
         add_to_clob(buf, buf_str, llcheck(numbuf));
       /* string */
       when 3 then
         ppString(treat(mem as pljson_string), buf, buf_str);
       /* bool */
       when 5 then
-        if (treat(mem as pljson_bool).get_bool()) then
+        if (mem.get_bool()) then
           add_to_clob(buf, buf_str, llcheck('true'));
         else
           add_to_clob(buf, buf_str, llcheck('false'));
@@ -346,14 +346,14 @@ create or replace package body pljson_printer as
     case json_part.typeval
       /* number */
       when 4 then
-        numbuf := treat(json_part as pljson_number).number_toString;
+        numbuf := treat(json_part as pljson_number).number_toString();
         add_to_clob(buf, buf_str, numbuf);
       /* string */
       when 3 then
         ppString(treat(json_part as pljson_string), buf, buf_str);
       /* bool */
       when 5 then
-        if (treat(json_part as pljson_bool).get_bool()) then
+        if (json_part.get_bool()) then
           add_to_clob(buf, buf_str, 'true');
         else
           add_to_clob(buf, buf_str, 'false');
@@ -370,7 +370,7 @@ create or replace package body pljson_printer as
         pretty_print(pljson(json_part), spaces, buf, line_length);
         return;
       else
-        add_to_clob(buf, buf_str, 'unknown type:'|| json_part.get_type);
+        add_to_clob(buf, buf_str, 'unknown type:' || json_part.get_type);
     end case;
     flush_clob(buf, buf_str);
   end;
@@ -397,7 +397,7 @@ create or replace package body pljson_printer as
     else
       add_buf(buf, case when elem.num = 1 then '"' else '/**/' end);
       if (elem.extended_str is not null) then --clob implementation
-        while(offset <= dbms_lob.getlength(elem.extended_str)) loop
+        while (offset <= dbms_lob.getlength(elem.extended_str)) loop
           dbms_lob.read(elem.extended_str, amount, offset, v_str);
           if (elem.num = 1) then
             add_buf(buf, escapeString(v_str));
@@ -408,7 +408,7 @@ create or replace package body pljson_printer as
         end loop;
       else
         if (elem.num = 1) then
-          while(offset<=length(elem.str)) loop
+          while (offset <= length(elem.str)) loop
             v_str:=substr(elem.str, offset, amount);
             add_buf(buf, escapeString(v_str));
             offset := offset + amount;
@@ -434,14 +434,14 @@ create or replace package body pljson_printer as
       case elem.typeval
         /* number */
         when 4 then
-          str := treat(elem as pljson_number).number_toString;
+          str := treat(elem as pljson_number).number_toString();
           add_buf(buf, llcheck(str));
         /* string */
         when 3 then
           ppString(treat(elem as pljson_string), buf);
         /* bool */
         when 5 then
-          if (treat(elem as pljson_bool).get_bool()) then
+          if (elem.get_bool()) then
             add_buf (buf, llcheck('true'));
           else
             add_buf (buf, llcheck('false'));
@@ -472,14 +472,14 @@ create or replace package body pljson_printer as
     case mem.typeval
       /* number */
       when 4 then
-        str := treat(mem as pljson_number).number_toString;
+        str := treat(mem as pljson_number).number_toString();
         add_buf(buf, llcheck(str));
       /* string */
       when 3 then
         ppString(treat(mem as pljson_string), buf);
       /* bool */
       when 5 then
-        if (treat(mem as pljson_bool).get_bool()) then
+        if (mem.get_bool()) then
           add_buf(buf, llcheck('true'));
         else
           add_buf(buf, llcheck('false'));
@@ -505,8 +505,11 @@ create or replace package body pljson_printer as
     add_buf (buf, llcheck('{') || newline(spaces));
     for m in 1 .. obj.json_data.count loop
       ppMem(obj.json_data(m), indent+1, buf, spaces);
-      if (m != obj.json_data.count) then add_buf(buf, llcheck(',') || newline(spaces));
-      else add_buf(buf, newline(spaces)); end if;
+      if (m != obj.json_data.count) then
+        add_buf(buf, llcheck(',') || newline(spaces));
+      else
+        add_buf(buf, newline(spaces));
+      end if;
     end loop;
     add_buf(buf, llcheck(tab(indent, spaces)) || llcheck('}')); -- || chr(13);
   end ppObj;
@@ -537,13 +540,13 @@ create or replace package body pljson_printer as
     case json_part.typeval
       /* number */
       when 4 then
-        buf := treat(json_part as pljson_number).number_toString;
+        buf := treat(json_part as pljson_number).number_toString();
       /* string */
       when 3 then
         ppString(treat(json_part as pljson_string), buf);
       /* bool */
       when 5 then
-        if (treat(json_part as pljson_bool).get_bool()) then buf := 'true'; else buf := 'false'; end if;
+        if (json_part.get_bool()) then buf := 'true'; else buf := 'false'; end if;
       /* null */
       when 6 then
         buf := 'null';
@@ -554,7 +557,7 @@ create or replace package body pljson_printer as
       when 1 then
         buf := pretty_print(pljson(json_part), spaces, line_length);
       else
-        buf := 'weird error: '|| json_part.get_type;
+        buf := 'weird error: ' || json_part.get_type;
     end case;
     return buf;
   end;
@@ -567,7 +570,7 @@ create or replace package body pljson_printer as
     amount number := 8191; /* max unicode chars */
   begin
     if (jsonp is not null) then dbms_output.put_line(jsonp||'('); end if;
-    while(indx != 0) loop
+    while (indx != 0) loop
       --read every line
       indx := dbms_lob.instr(my_clob, delim, prev+1);
       --dbms_output.put_line(prev || ' to ' || indx);
@@ -692,7 +695,7 @@ create or replace package body pljson_printer as
     /*
     len := dbms_lob.getlength(my_clob);
     
-    while(pos < len) loop
+    while (pos < len) loop
       htp.prn(dbms_lob.substr(my_clob, amount, pos)); -- should I replace substr with dbms_lob.read?
       --dbms_output.put_line(dbms_lob.substr(my_clob, amount, pos));
       pos := pos + amount;

@@ -16,10 +16,10 @@ create or replace type pljson_number force under pljson_element
   overriding member function get_double return binary_double,
   
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers, is_number is still true, extra info */
-  /* return true if 'number' is representable by number */
+  /* return true if 'number' is representable by Oracle number */
   /** Private method for internal processing. */
   overriding member function is_number_repr_number return boolean,
-  /* return true if 'number' is representable by binary_double */
+  /* return true if 'number' is representable by Oracle binary_double */
   /** Private method for internal processing. */
   overriding member function is_number_repr_double return boolean,
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers */
@@ -93,13 +93,13 @@ create or replace type body pljson_number as
   end;
   
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers, is_number is still true, extra check */
-  /* return true if 'number' is representable by number */
+  /* return true if 'number' is representable by Oracle number */
   overriding member function is_number_repr_number return boolean is
   begin
     return (num_repr_number_p = 't');
   end;
   
-  /* return true if 'number' is representable by binary_double */
+  /* return true if 'number' is representable by Oracle binary_double */
   overriding member function is_number_repr_double return boolean is
   begin
     return (num_repr_double_p = 't');

@@ -318,3 +318,4 @@ begin
   
 end utplsql_pljson_unicode_test;
 /
+show err

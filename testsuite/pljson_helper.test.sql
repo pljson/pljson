@@ -208,8 +208,8 @@ begin
   -- equals(pljson, pljson)
   pljson_ut.testcase('Test equals(pljson, pljson)');
   begin
-    pljson_ut.assertTrue(pljson_helper.equals(pljson('{}'),pljson('{}')), 'pljson_helper.equals(pljson(''{}''), pljson(''{}''))');
-    pljson_ut.assertTrue(pljson_helper.equals(pljson('{"a":1}'),pljson('{"a":1}')), 'pljson_helper.equals(pljson(''{"a":1}''), pljson(''{"a":1}''))');
+    pljson_ut.assertTrue(pljson_helper.equals(pljson('{}'), pljson('{}')), 'pljson_helper.equals(pljson(''{}''), pljson(''{}''))');
+    pljson_ut.assertTrue(pljson_helper.equals(pljson('{"a":1}'), pljson('{"a":1}')), 'pljson_helper.equals(pljson(''{"a":1}''), pljson(''{"a":1}''))');
     pljson_ut.assertTrue(pljson_helper.equals(pljson('{"a":1,"b":{"b1":[1,2,3]}}'), pljson('{"a":1,"b":{"b1":[1,2,3]}}')), 'pljson_helper.equals(pljson(''{"a":1,"b":{"b1":[1,2,3]}}''), pljson(''{"a":1,"b":{"b1":[1,2,3]}}''))');
   end;
   
@@ -230,7 +230,7 @@ begin
   pljson_ut.testcase('Test equals(pljson_list, pljson_list) - order sensitive');
   begin
     pljson_ut.assertFalse(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,3,2]')), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,3,2]''))');
-    pljson_ut.assertFalse(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,3,2]'), true), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,3,2]''),true)');
+    pljson_ut.assertFalse(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,3,2]'), true), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,3,2]''), true)');
   end;
   
   -- contains(pljson, pljson)
@@ -300,7 +300,7 @@ begin
   -- contains(pljson_list, pljson)
   pljson_ut.testcase('Test contains(pljson_list, pljson)');
   begin
-    pljson_ut.assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,5],{"a":6}]') ,pljson('{"a":6}')), 'pljson_helper.contains(pljson_list(''[1,2,3,"xyz",[4,5],{"a":6}]''), pljson(''{"a":6}''))');
+    pljson_ut.assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,5],{"a":6}]'), pljson('{"a":6}')), 'pljson_helper.contains(pljson_list(''[1,2,3,"xyz",[4,5],{"a":6}]''), pljson(''{"a":6}''))');
   end;
   
   -- contains(pljson_list, pljson_list)

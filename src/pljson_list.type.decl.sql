@@ -55,22 +55,25 @@ create or replace type pljson_list force under pljson_element (
   
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_element),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem varchar2),
+  member procedure replace(self in out nocopy pljson_list, position pls_integer, elem clob),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem number),
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem binary_double),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem boolean),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_list),
   
-  member function count return number,
   member procedure remove(self in out nocopy pljson_list, position pls_integer),
   member procedure remove_first(self in out nocopy pljson_list),
   member procedure remove_last(self in out nocopy pljson_list),
+  
+  member function count return number,
   member function get(position pls_integer) return pljson_element,
   member function get_string(position pls_integer) return varchar2,
   member function get_clob(position pls_integer) return clob,
   member function get_number(position pls_integer) return number,
   member function get_double(position pls_integer) return binary_double,
   member function get_bool(position pls_integer) return boolean,
+  member function get_pljson_list(position pls_integer) return pljson_list,
   member function head return pljson_element,
   member function last return pljson_element,
   member function tail return pljson_list,
@@ -80,6 +83,7 @@ create or replace type pljson_list force under pljson_element (
   /* json path_put */
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem pljson_element, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem varchar2, base number default 1),
+  member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem clob, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem number, base number default 1),
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem binary_double, base number default 1),

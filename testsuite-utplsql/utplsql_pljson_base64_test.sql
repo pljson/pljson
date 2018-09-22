@@ -831,7 +831,7 @@ create or replace package body utplsql_pljson_base64_test is
     dbms_lob.writeappend(w_clob, length(w_tmp_string), w_tmp_string);
     w_tmp_string := 'IG4gCjAwMDAyMDI4NDIgMDAwMDAgbiAKMDAwMDI5MzI4MyAwMDAwMCBuIAowMDAwNDE4ODg1IDAwMDAwIG4gCjAwMDA0MTk5MTMgMDAwMDAgbiAKMDAwMDM5MTgzMSAwMDAwMCBuIAowMDAwMzkxODYzIDAwMDAwIG4gCjAwMDAzOTI1MDUgMDAwMDAgbiAKMDAwMDM5MjM1NiAwMDAwMCBuIAowMDAwMzkyMjAzIDAwMDAwIG4gCjAwMDAyOTMzMDUgMDAwMDAgbiAKMDAwMDM4NjgzNiAwMDAwMCBuIAowMDAwNDE1ODExIDAwMDAwIG4gCjAwMDA0MTc4NjEgMDAwMDAgbiAKMDAwMDM5MjI4MSAwMDAwMCBuIAowMDAwMzkyMzEzIDAwMDAwIG4gCjAwMDAzOTU4NjMgMDAwMDAgbiAKMDAwMDM5OTIxMiAwMDAwMCBuIAowMDAwNDA2MzMyIDAwMDAwIG4gCjAwMDA0MTA1MTYgMDAwMDAgbiAKMDAwMDQxNTc5MCAwMDAwMCBuIAowMDAwNDI0MTY3IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgOTUgL1Jvb3QgMSAwIFIgL0luZm8gMiAwIFIKPj4Kc3RhcnR4cmVmCjQzMjAxNAolJUVPRgo=';
     dbms_lob.writeappend(w_clob, length(w_tmp_string), w_tmp_string);
-
+    
     base64_check(w_clob);
     
     dbms_lob.freetemporary(w_clob);
@@ -896,3 +896,4 @@ create or replace package body utplsql_pljson_base64_test is
   
 end utplsql_pljson_base64_test;
 /
+show err

@@ -353,3 +353,4 @@ create or replace package body utplsql_pljson_test is
   
 end utplsql_pljson_test;
 /
+show err
