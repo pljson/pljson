@@ -62,7 +62,8 @@ begin
   -- put method with position
   pljson_ut.testcase('Test put method with position');
   declare
-    obj pljson; tester varchar2(4000);
+    obj pljson;
+    tester varchar2(4000);
   begin
     obj := pljson();
     obj.put('A', 'A', 1);
@@ -209,7 +210,7 @@ begin
         pljson_ut.fail(test_name);
     end;
     begin
-      test_name := 'x1 := obj.get(''X2'').get_string;';
+      test_name := 'x2 := obj.get(''X2'').get_string;';
       x2 := obj.get('X2').get_string;
       pljson_ut.pass(test_name);
     exception
@@ -263,7 +264,7 @@ begin
   begin
     obj.put('X', x);
     n := obj.get('X');
-    pljson_ut.assertFalse(n is null, 'n is null'); --may seem odd -- but initialized vars are best
+    pljson_ut.assertFalse(n is null, 'n is null'); --may seem odd -- but initialized vars are best!
   end;
   
   -- insert null pair name

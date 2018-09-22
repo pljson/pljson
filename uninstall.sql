@@ -64,10 +64,7 @@ declare begin
   begin execute immediate 'drop package pljson_ut'; exception when others then null; end;
   begin execute immediate 'drop table pljson_testsuite'; exception when others then null; end;
   
-  begin execute immediate 'drop public synonym pljson_element'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_narray'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_vtab'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_varray'; exception when others then null; end;
+  begin execute immediate 'drop synonym pljson_table'; exception when others then null; end;
   
   begin execute immediate 'drop public synonym pljson_parser'; exception when others then null; end;
   begin execute immediate 'drop public synonym pljson_printer'; exception when others then null; end;
@@ -82,9 +79,12 @@ declare begin
   begin execute immediate 'drop public synonym pljson_list'; exception when others then null; end;
   begin execute immediate 'drop public synonym pljson_value_array'; exception when others then null; end;
   begin execute immediate 'drop public synonym pljson_value'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_element'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_narray'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_vtab'; exception when others then null; end;
+  begin execute immediate 'drop public synonym pljson_varray'; exception when others then null; end;
   begin execute immediate 'drop public synonym pljson_table_impl'; exception when others then null; end;
   begin execute immediate 'drop public synonym pljson_table'; exception when others then null; end;
-  
   begin execute immediate 'drop public synonym pljson_ut'; exception when others then null; end;
   begin execute immediate 'drop public synonym pljson_testsuite'; exception when others then null; end;
   
@@ -103,7 +103,6 @@ declare begin
   begin execute immediate 'drop public synonym json_value'; exception when others then null; end;
   begin execute immediate 'drop public synonym json_table'; exception when others then null; end;
   
-  begin execute immediate 'drop synonym pljson_table'; exception when others then null; end;
   begin execute immediate 'drop synonym json_parser'; exception when others then null; end;
   begin execute immediate 'drop synonym json_printer'; exception when others then null; end;
   begin execute immediate 'drop synonym json_ext'; exception when others then null; end;
@@ -120,3 +119,4 @@ declare begin
   begin execute immediate 'drop synonym json_table'; exception when others then null; end;
 end;
 /
+show err

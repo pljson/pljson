@@ -114,7 +114,7 @@ begin
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
     l.append(2.718281828459e210d);
     l.append(pljson_value(false));
-    l.append(pljson_value.makenull);
+    l.append(pljson_value());
     l.append(pljson_list('[1,2,3]'));
     pljson_ut.assertTrue(l.count = 6, 'l.count = 6');
     l.append(l.head);
@@ -243,6 +243,21 @@ begin
     pljson_ut.assertTrue(1 = n.get_number, '1 = n.get_number');
     n := l.last;
     pljson_ut.assertTrue(2 = n.get_number, '2 = n.get_number');
+  end;
+  
+  -- get tail
+  pljson_ut.testcase('Test get tail');
+  declare
+    l1 pljson_list;
+    l2 pljson_list;
+  begin
+    l1 := pljson_list('[1, "2", 3]');
+    l2 := l1.tail();
+    pljson_ut.assertTrue(strip_eol(l1.to_char) = '[1, "2", 3]', 'strip_eol(l1.to_char) = ''[1, "2", 3]''');
+    pljson_ut.assertTrue(strip_eol(l2.to_char) = '["2", 3]', 'strip_eol(l2.to_char) = ''["2", 3]''');
+    l2 := l2.tail();
+    pljson_ut.assertTrue(strip_eol(l1.to_char) = '[1, "2", 3]', 'strip_eol(l1.to_char) = ''[1, "2", 3]''');
+    pljson_ut.assertTrue(strip_eol(l2.to_char) = '[3]', 'strip_eol(l2.to_char) = ''[3]''');
   end;
   
   -- insert null number

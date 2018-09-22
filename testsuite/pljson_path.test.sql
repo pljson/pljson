@@ -133,7 +133,7 @@ begin
   begin
     pljson_ext.put(obj, 'a', true);
     pljson_ut.assertTrue(pljson_ext.get_json_value(obj, 'a').get_bool, 'pljson_ext.get_json_value(obj, ''a'').get_bool');
-    pljson_ext.put(obj, 'a', pljson_value.makenull);
+    pljson_ext.put(obj, 'a', pljson_value());
     pljson_ut.assertTrue(pljson_ext.get_json_value(obj, 'a').is_null, 'pljson_ext.get_json_value(obj, ''a'').is_null');
     pljson_ext.put(obj, 'a', 'string');
     pljson_ut.assertTrue(nvl(pljson_ext.get_string(obj, 'a'),'a') = 'string', 'nvl(pljson_ext.get_string(obj, ''a''),''a'') = ''string''');

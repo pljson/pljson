@@ -65,7 +65,7 @@ create or replace package body utplsql_pljson_base64_test is
     end if;
   end;
   
-  procedure base64_check(w_clob in out clob) is
+  procedure base64_check(w_clob in clob) is
     obj_json pljson;
     tmp_json pljson;
     w_json_tag varchar2(32) := 'binaryFile';
@@ -74,6 +74,7 @@ create or replace package body utplsql_pljson_base64_test is
     w_hash1 varchar2(40);
     w_hash2 varchar2(40);
     
+    w_clob_new clob;
     w_clob1 clob;
     w_clob2 clob;
     w_char varchar2(1000);
@@ -120,30 +121,29 @@ create or replace package body utplsql_pljson_base64_test is
     dbms_output.put_line('---------------------------------------------------------------');
     
     --dbms_lob.createtemporary(w_clob, true);
-    dbms_lob.trim(w_clob, 0);
+    --dbms_lob.trim(w_clob, 0);
     
     -- JSON creation/parsing  
     obj_json := new pljson();
     obj_json.put(w_json_tag, pljson_ext.encode(w_blob));
     obj_value := pljson_ext.get_json_value(obj_json, w_json_tag);
-    --pljson_value.get_string(obj_value, w_clob);
-    obj_value.get_string(w_clob);
+    w_clob_new := obj_value.get_clob();
     
     /* debugging
     dbms_output.put_line('c2>>');
-    dbms_output.put_line(dbms_lob.substr(w_clob, 200, 1));
+    dbms_output.put_line(dbms_lob.substr(w_clob_new, 200, 1));
     dbms_output.put_line('===');
-    dbms_output.put_line(dbms_lob.substr(w_clob, 200, dbms_lob.getlength(w_clob) - 199));
+    dbms_output.put_line(dbms_lob.substr(w_clob_new, 200, dbms_lob.getlength(w_clob_new) - 199));
     dbms_output.put_line('<<c2');
-    dbms_lob.copy(w_clob2, w_clob, 2000000);
+    dbms_lob.copy(w_clob2, w_clob_new, 2000000);
     
-    select dump(dbms_lob.substr(w_clob, 150, 1), 16)
+    select dump(dbms_lob.substr(w_clob_new, 150, 1), 16)
     into w_char
     from dual;
     dbms_output.put_line('c2(dump)>>' || w_char || '<<c2(dump)');
     */
     
-    w_blob := pljson_ext.decode(new pljson_value(w_clob));
+    w_blob := pljson_ext.decode(new pljson_value(w_clob_new));
     
     /* debugging
     dbms_output.put_line('b2>>' || dbms_lob.substr(w_blob, 200, 1));
@@ -831,7 +831,7 @@ create or replace package body utplsql_pljson_base64_test is
     dbms_lob.writeappend(w_clob, length(w_tmp_string), w_tmp_string);
     w_tmp_string := 'IG4gCjAwMDAyMDI4NDIgMDAwMDAgbiAKMDAwMDI5MzI4MyAwMDAwMCBuIAowMDAwNDE4ODg1IDAwMDAwIG4gCjAwMDA0MTk5MTMgMDAwMDAgbiAKMDAwMDM5MTgzMSAwMDAwMCBuIAowMDAwMzkxODYzIDAwMDAwIG4gCjAwMDAzOTI1MDUgMDAwMDAgbiAKMDAwMDM5MjM1NiAwMDAwMCBuIAowMDAwMzkyMjAzIDAwMDAwIG4gCjAwMDAyOTMzMDUgMDAwMDAgbiAKMDAwMDM4NjgzNiAwMDAwMCBuIAowMDAwNDE1ODExIDAwMDAwIG4gCjAwMDA0MTc4NjEgMDAwMDAgbiAKMDAwMDM5MjI4MSAwMDAwMCBuIAowMDAwMzkyMzEzIDAwMDAwIG4gCjAwMDAzOTU4NjMgMDAwMDAgbiAKMDAwMDM5OTIxMiAwMDAwMCBuIAowMDAwNDA2MzMyIDAwMDAwIG4gCjAwMDA0MTA1MTYgMDAwMDAgbiAKMDAwMDQxNTc5MCAwMDAwMCBuIAowMDAwNDI0MTY3IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgOTUgL1Jvb3QgMSAwIFIgL0luZm8gMiAwIFIKPj4Kc3RhcnR4cmVmCjQzMjAxNAolJUVPRgo=';
     dbms_lob.writeappend(w_clob, length(w_tmp_string), w_tmp_string);
-
+    
     base64_check(w_clob);
     
     dbms_lob.freetemporary(w_clob);
@@ -896,3 +896,4 @@ create or replace package body utplsql_pljson_base64_test is
   
 end utplsql_pljson_base64_test;
 /
+show err

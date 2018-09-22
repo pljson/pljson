@@ -53,6 +53,7 @@ create or replace type pljson_list force under pljson_element (
   /** Private variable for internal processing. */
   list_data pljson_value_array,
 
+  /* constructors */
   /**
    * <p>Create an empty list.</p>
    *
@@ -127,66 +128,78 @@ create or replace type pljson_list force under pljson_element (
    * @return An instance of <code>pljson_list</code>.
    */
   constructor function pljson_list(elem pljson_value) return self as result,
-
+  
+  /* list management */
   member procedure append(self in out nocopy pljson_list, elem pljson_value, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem varchar2, position pls_integer default null),
+  member procedure append(self in out nocopy pljson_list, elem clob, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem number, position pls_integer default null),
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   member procedure append(self in out nocopy pljson_list, elem binary_double, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem boolean, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem pljson_list, position pls_integer default null),
-
+  
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_value),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem varchar2),
+  member procedure replace(self in out nocopy pljson_list, position pls_integer, elem clob),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem number),
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem binary_double),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem boolean),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_list),
-
-  member function count return number,
+  
   member procedure remove(self in out nocopy pljson_list, position pls_integer),
   member procedure remove_first(self in out nocopy pljson_list),
   member procedure remove_last(self in out nocopy pljson_list),
+  
+  member function count return number,
   member function get(position pls_integer) return pljson_value,
+  member function get_string(position pls_integer) return varchar2,
+  member function get_clob(position pls_integer) return clob,
+  member function get_number(position pls_integer) return number,
+  member function get_double(position pls_integer) return binary_double,
+  member function get_bool(position pls_integer) return boolean,
+  member function get_pljson_list(position pls_integer) return pljson_list,
   member function head return pljson_value,
   member function last return pljson_value,
   member function tail return pljson_list,
-
-  /* Output methods */
+  
+  member function to_json_value return pljson_value,
+  
+  /* output methods */
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
   member procedure to_clob(self in pljson_list, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),
   member procedure print(self in pljson_list, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null), --32512 is maximum
   member procedure htp(self in pljson_list, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
-
+  
   /* json path */
   member function path(json_path varchar2, base number default 1) return pljson_value,
   /* json path_put */
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem pljson_value, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem varchar2, base number default 1),
+  member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem clob, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem number, base number default 1),
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem binary_double, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem boolean, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem pljson_list, base number default 1),
-
+  
   /* json path_remove */
-  member procedure path_remove(self in out nocopy pljson_list, json_path varchar2, base number default 1),
-
-  member function to_json_value return pljson_value
+  member procedure path_remove(self in out nocopy pljson_list, json_path varchar2, base number default 1)
+  
   /* --backwards compatibility
   member procedure add_elem(self in out nocopy json_list, elem json_value, position pls_integer default null),
   member procedure add_elem(self in out nocopy json_list, elem varchar2, position pls_integer default null),
   member procedure add_elem(self in out nocopy json_list, elem number, position pls_integer default null),
   member procedure add_elem(self in out nocopy json_list, elem boolean, position pls_integer default null),
   member procedure add_elem(self in out nocopy json_list, elem json_list, position pls_integer default null),
-
+  
   member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_value),
   member procedure set_elem(self in out nocopy json_list, position pls_integer, elem varchar2),
   member procedure set_elem(self in out nocopy json_list, position pls_integer, elem number),
   member procedure set_elem(self in out nocopy json_list, position pls_integer, elem boolean),
   member procedure set_elem(self in out nocopy json_list, position pls_integer, elem json_list),
-
+  
   member procedure remove_elem(self in out nocopy json_list, position pls_integer),
   member function get_elem(position pls_integer) return json_value,
   member function get_first return json_value,
@@ -195,4 +208,4 @@ create or replace type pljson_list force under pljson_element (
 
 ) not final;
 /
-sho err
+show err

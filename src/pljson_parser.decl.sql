@@ -64,3 +64,4 @@ create or replace package pljson_parser as
 
 end pljson_parser;
 /
+show err

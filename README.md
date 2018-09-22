@@ -4,19 +4,25 @@
 General information about JSON is available at http://www.json.org.
 
 ## This is version 2.0
-It is the currently stable PLJSON version
+It is the currently stable PLJSON version.
 
 There is a new version 3.0 (which you can find in branch develop_v3)
-which is mainly a cleaner version but may break up existing code
+which is mainly a cleaner and a bit faster version but may break up existing code.
 
 PLJSON evolved from version 1.0 using sys.anydata and worked with early Oracle releases
 to version 2.0 where sys.anydata was removed and an object oriented design was used but
 the object design wasn't the most appropriate one and mirrored the objects of version 1.0 so that
-there was almost 100% compatibility with version 1.0 code
+there was almost 100% compatibility with version 1.0 code.
 
-both PLJSON version 3.0 and version 2.0 are to be maintained together for quite a long time
+Both PLJSON version 3.0 and version 2.0 are to be maintained together for quite a long time.
 
+## What's new (2018-09-22)
 
+- new api calls that match those of version 3.0
+(mainly get_string(), get_clob(), get_...() by pair_name for json objects and by position for json arrays)
+- minor code rewrite so code is cleaner, conforms better to today's accepted code standards and
+there is as much common code as possible between version 2.0 and version 3.0 (this is a continuing effort)
+- released 2.4.0
 
 ## A demo of things you can do with PL/JSON
 ```
@@ -189,7 +195,7 @@ returns
 | 3	| Middle| 9	| 5 |	extra_5 |
 | 3 |	Middle| 9	| 20|	extra_20|
 
-###### and many other (automatic support for Double numbers or Oracle numbers, base64 encode/decode, XML to json, etc.)
+##### and many other (automatic support for Double numbers or Oracle numbers, base64 encode/decode, XML to json, etc.)
 
 ## Install
 

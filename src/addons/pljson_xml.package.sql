@@ -25,7 +25,7 @@ create or replace package pljson_xml as
 
   /*
   declare
-    obj json := json('{a:1,b:[2,3,4],c:true}');
+    obj json := json('{a:1, b:[2, 3, 4], c:true}');
     x xmltype;
   begin
     obj.print;
@@ -38,6 +38,7 @@ create or replace package pljson_xml as
 
 end pljson_xml;
 /
+show err
 
 create or replace package body pljson_xml as
 
@@ -61,7 +62,7 @@ create or replace package body pljson_xml as
 /* Clob methods from printer */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
-    if(length(str) > 32767 - length(buf_str)) then
+    if (length(str) > 32767 - length(buf_str)) then
       dbms_lob.append(buf_lob, buf_str);
       buf_str := str;
     else
@@ -89,28 +90,28 @@ create or replace package body pljson_xml as
       v_keys := v_obj.get_keys();
       for i in 1 .. v_keys.count loop
         v_value := v_obj.get(i);
-        key_str := v_keys.get(i).str;
+        key_str := v_keys.get(i).get_string();
         
-        if(key_str = 'content') then
-          if(v_value.is_array()) then
+        if (key_str = 'content') then
+          if (v_value.is_array()) then
             declare
               v_l pljson_list := pljson_list(v_value);
             begin
               for j in 1 .. v_l.count loop
-                if(j > 1) then add_to_clob(xmlstr, xmlbuf, chr(13)||chr(10)); end if;
+                if (j > 1) then add_to_clob(xmlstr, xmlbuf, chr(13)||chr(10)); end if;
                 add_to_clob(xmlstr, xmlbuf, escapeStr(v_l.get(j).to_char()));
               end loop;
             end;
           else
             add_to_clob(xmlstr, xmlbuf, escapeStr(v_value.to_char()));
           end if;
-        elsif(v_value.is_array()) then
+        elsif (v_value.is_array()) then
           declare
             v_l pljson_list := pljson_list(v_value);
           begin
             for j in 1 .. v_l.count loop
               v_value := v_l.get(j);
-              if(v_value.is_array()) then
+              if (v_value.is_array()) then
                 add_to_clob(xmlstr, xmlbuf, '<' || key_str || '>');
                 add_to_clob(xmlstr, xmlbuf, escapeStr(v_value.to_char()));
                 add_to_clob(xmlstr, xmlbuf, '</' || key_str || '>');
@@ -119,7 +120,7 @@ create or replace package body pljson_xml as
               end if;
             end loop;
           end;
-        elsif(v_value.is_null() or (v_value.is_string and v_value.get_string = '')) then
+        elsif (v_value.is_null() or (v_value.is_string() and v_value.get_string() = '')) then
           add_to_clob(xmlstr, xmlbuf, '<' || key_str || '/>');
         else
           toString(v_value, key_str, xmlstr, xmlbuf);
@@ -145,7 +146,7 @@ create or replace package body pljson_xml as
   begin
     dbms_lob.createtemporary(xmlstr, true);
     
-    toString(obj.to_json_value(), tagname, xmlstr, xmlbuf);
+    toString(obj.to_json_value, tagname, xmlstr, xmlbuf);
     
     flush_clob(xmlstr, xmlbuf);
     returnValue := xmltype('<?xml version="1.0"?>'||xmlstr);
@@ -155,3 +156,4 @@ create or replace package body pljson_xml as
 
 end pljson_xml;
 /
+show err

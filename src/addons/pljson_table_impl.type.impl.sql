@@ -145,7 +145,7 @@ create or replace type body pljson_table_impl as
     --dbms_output.put_line('json_str='||json_str);
     -- json_obj := pljson(json_str);
     root_val := pljson_parser.parse_any(json_str);
-    --dbms_output.put_line('parsed: ' || root_val.get_type);
+    --dbms_output.put_line('parsed: ' || root_val.get_type());
     if root_val.typeval = 2 then
       root_list := pljson_list(root_val);
       root_array_size := root_list.count;
@@ -531,3 +531,4 @@ create or replace type body pljson_table_impl as
   end;
 end;
 /
+show err

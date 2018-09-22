@@ -137,6 +137,19 @@ create or replace type body pljson_value as
     end if;
   end get_string;
 
+  member function get_clob return clob as
+  begin
+    if(self.typeval = 3) then
+      if(extended_str is not null) then
+        --dbms_lob.copy(buf, extended_str, dbms_lob.getlength(extended_str));
+        return self.extended_str;
+      else
+        --dbms_lob.writeappend(buf, length(self.str), self.str);
+        return self.str;
+      end if;
+    end if;
+  end get_clob;
+
   member function get_number return number as
   begin
     if(self.typeval = 4) then
@@ -178,7 +191,7 @@ create or replace type body pljson_value as
   member function is_null return boolean as begin return self.typeval = 6; end;
 
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers, is_number is still true, extra check */
-  /* return true if 'number' is representable by number */
+  /* return true if 'number' is representable by Oracle number */
   member function is_number_repr_number return boolean is
   begin
     if self.typeval != 4 then
@@ -187,7 +200,7 @@ create or replace type body pljson_value as
     return (num_repr_number_p = 't');
   end;
 
-  /* return true if 'number' is representable by binary_double */
+  /* return true if 'number' is representable by Oracle binary_double */
   member function is_number_repr_double return boolean is
   begin
     if self.typeval != 4 then
