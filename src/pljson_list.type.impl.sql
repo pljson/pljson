@@ -51,7 +51,7 @@ create or replace type body pljson_list as
     end loop;
     return;
   end;
-  
+
   constructor function pljson_list(elem pljson_element) return self as result as
   begin
     self.typeval := 2;
@@ -208,7 +208,7 @@ create or replace type body pljson_list as
     if (elem is null) then
       replace(position, pljson_null());
     else
-      replace(position, elem);
+      replace(position, treat(elem as pljson_element));
     end if;
   end;
 
