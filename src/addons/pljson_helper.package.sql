@@ -14,19 +14,19 @@ create or replace package pljson_helper as
   */
   -- Recursive merge
   -- Courtesy of Matt Nolan - edited by Jonas Krogsboell
-  function merge( p_a_json pljson, p_b_json pljson) return pljson;
+  function merge(p_a_json pljson, p_b_json pljson) return pljson;
   
   -- Join two lists
   -- json_helper.join(json_list('[1,2,3]'),json_list('[4,5,6]')) -> [1,2,3,4,5,6]
-  function join( p_a_list pljson_list, p_b_list pljson_list) return pljson_list;
+  function join(p_a_list pljson_list, p_b_list pljson_list) return pljson_list;
   
   -- keep only specific keys in json object
   -- json_helper.keep(json('{a:1,b:2,c:3,d:4,e:5,f:6}'),json_list('["a","f","c"]')) -> {"a":1,"f":6,"c":3}
-  function keep( p_json pljson, p_keys pljson_list) return pljson;
+  function keep(p_json pljson, p_keys pljson_list) return pljson;
   
   -- remove specific keys in json object
   -- json_helper.remove(json('{a:1,b:2,c:3,d:4,e:5,f:6}'),json_list('["a","f","c"]')) -> {"b":2,"d":4,"e":5}
-  function remove( p_json pljson, p_keys pljson_list) return pljson;
+  function remove(p_json pljson, p_keys pljson_list) return pljson;
   
   --equals
   function equals(p_v1 pljson_element, p_v2 pljson_element, exact boolean default true) return boolean;
@@ -70,7 +70,7 @@ show err
 create or replace package body pljson_helper as
   
   --recursive merge
-  function merge( p_a_json pljson, p_b_json pljson) return pljson as
+  function merge(p_a_json pljson, p_b_json pljson) return pljson as
     l_json    pljson;
     l_jv      pljson_element;
     l_indx    number;
@@ -107,7 +107,7 @@ create or replace package body pljson_helper as
   end merge;
   
   -- join two lists
-  function join( p_a_list pljson_list, p_b_list pljson_list) return pljson_list as
+  function join(p_a_list pljson_list, p_b_list pljson_list) return pljson_list as
     l_json_list pljson_list := p_a_list;
   begin
     for indx in 1 .. p_b_list.count loop
@@ -119,12 +119,12 @@ create or replace package body pljson_helper as
   end join;
   
   -- keep keys.
-  function keep( p_json pljson, p_keys pljson_list) return pljson as
+  function keep(p_json pljson, p_keys pljson_list) return pljson as
     l_json pljson := pljson();
     mapname varchar2(4000);
   begin
     for i in 1 .. p_keys.count loop
-      mapname := p_keys.get_string(i);
+      mapname := p_keys.get(i).get_string();
       if (p_json.exist(mapname)) then
         l_json.put(mapname, p_json.get(mapname));
       end if;
@@ -134,11 +134,11 @@ create or replace package body pljson_helper as
   end keep;
   
   -- drop keys.
-  function remove( p_json pljson, p_keys pljson_list) return pljson as
+  function remove(p_json pljson, p_keys pljson_list) return pljson as
     l_json pljson := p_json;
   begin
     for i in 1 .. p_keys.count loop
-      l_json.remove(p_keys.get_string(i));
+      l_json.remove(p_keys.get(i).get_string());
     end loop;
     
     return l_json;
@@ -156,7 +156,7 @@ create or replace package body pljson_helper as
       return false;
     end if;
     
-    return p_v2 = treat(p_v1 as pljson_number).get_number();
+    return p_v2 = p_v1.get_number();
   end;
   
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
@@ -170,7 +170,7 @@ create or replace package body pljson_helper as
       return false;
     end if;
 
-    return p_v2 = treat(p_v1 as pljson_number).get_double();
+    return p_v2 = p_v1.get_double();
   end;
   
   function equals(p_v1 pljson_element, p_v2 boolean) return boolean as
@@ -183,20 +183,20 @@ create or replace package body pljson_helper as
       return false;
     end if;
     
-    return p_v2 = treat(p_v1 as pljson_bool).get_bool();
+    return p_v2 = p_v1.get_bool();
   end;
   
   function equals(p_v1 pljson_element, p_v2 varchar2) return boolean as
   begin
     if (p_v2 is null) then
-      return (p_v1.is_null or treat(p_v1 as pljson_string).get_string() is null);
+      return (p_v1.is_null or p_v1.get_string() is null);
     end if;
     
     if (not p_v1.is_string) then
       return false;
     end if;
     
-    return p_v2 = treat(p_v1 as pljson_string).get_string();
+    return p_v2 = p_v1.get_string();
   end;
   
   function equals(p_v1 pljson_element, p_v2 clob) return boolean as
@@ -214,9 +214,9 @@ create or replace package body pljson_helper as
     /*
     my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
-    treat(p_v1 as pljson_string).get_string(my_clob);
+    p_v1.get_string(my_clob);
     */
-    my_clob := treat(p_v1 as pljson_string).get_clob();
+    my_clob := p_v1.get_clob();
     res := dbms_lob.compare(p_v2, my_clob) = 0;
     /*dbms_lob.freetemporary(my_clob);*/
     return res;
@@ -228,13 +228,13 @@ create or replace package body pljson_helper as
       return (p_v1 is null or p_v1.is_null);
     end if;
     
-    if (p_v2.is_number) then return equals(p_v1, treat(p_v2 as pljson_number).get_number()); end if;
-    if (p_v2.is_bool) then return equals(p_v1, treat(p_v2 as pljson_bool).get_bool()); end if;
+    if (p_v2.is_number) then return equals(p_v1, p_v2.get_number); end if;
+    if (p_v2.is_bool) then return equals(p_v1, p_v2.get_bool); end if;
     if (p_v2.is_object) then return equals(p_v1, pljson(p_v2), exact); end if;
     if (p_v2.is_array) then return equals(p_v1, pljson_list(p_v2), exact); end if;
     if (p_v2.is_string) then
       if (treat(p_v2 as pljson_string).extended_str is null) then
-        return equals(p_v1, treat(p_v2 as pljson_string).get_string());
+        return equals(p_v1, p_v2.get_string);
       else
         declare
           my_clob clob; res boolean;
@@ -242,9 +242,9 @@ create or replace package body pljson_helper as
           /*
           my_clob := empty_clob();
           dbms_lob.createtemporary(my_clob, true);
-          treat(p_v2 as pljson_string).get_string(my_clob);
+          p_v2.get_string(my_clob);
           */
-          my_clob := treat(p_v2 as pljson_string).get_clob();
+          my_clob := p_v2.get_clob();
           res := equals(p_v1, my_clob);
           /*dbms_lob.freetemporary(my_clob);*/
           return res;
@@ -341,7 +341,7 @@ create or replace package body pljson_helper as
       key_index number;
     begin
       for i in 1 .. k1.count loop
-        key_index := cmp.index_of(k1.get_string(i));
+        key_index := cmp.index_of(k1.get(i).get_string());
         if (key_index = -1) then return false; end if;
         if (exact) then
           if (not equals(p_v2.get(i), cmp.get(key_index), true)) then return false; end if;

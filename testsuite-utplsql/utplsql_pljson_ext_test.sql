@@ -175,3 +175,4 @@ create or replace package body utplsql_pljson_ext_test is
   
 end utplsql_pljson_ext_test;
 /
+show err

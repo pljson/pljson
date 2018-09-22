@@ -38,12 +38,13 @@ create or replace type pljson force under pljson_element (
   constructor function pljson(str in blob, charset varchar2 default 'UTF8') return self as result,
   constructor function pljson(str_array pljson_varray) return self as result,
   constructor function pljson(elem pljson_element) return self as result,
-  constructor function pljson(l in out nocopy pljson_list) return self as result,
+  constructor function pljson(l pljson_list) return self as result,
   overriding member function is_object return boolean,
   overriding member function value_of(max_byte_size number default null, max_char_size number default null) return varchar2,
   
   /* member management */
   member procedure remove(pair_name varchar2),
+  
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson_element, position pls_integer default null),
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value varchar2, position pls_integer default null),
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value clob, position pls_integer default null),
@@ -52,44 +53,47 @@ create or replace type pljson force under pljson_element (
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value binary_double, position pls_integer default null),
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value boolean, position pls_integer default null),
   
-  member procedure check_duplicate(self in out nocopy pljson, v_set boolean),
-  member procedure remove_duplicates(self in out nocopy pljson),
-  
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson, position pls_integer default null),
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson_list, position pls_integer default null),
   
   member function count return number,
   member function get(pair_name varchar2) return pljson_element,
-  member function get_pljson(pair_name varchar2) return pljson,
-  member function get_pljson_list(pair_name varchar2) return pljson_list,
+  
   member function get_string(pair_name varchar2) return varchar2,
   member function get_clob(pair_name varchar2) return clob,
   member function get_number(pair_name varchar2) return number,
   member function get_double(pair_name varchar2) return binary_double,
   member function get_bool(pair_name varchar2) return boolean,
+  member function get_pljson(pair_name varchar2) return pljson,
+  member function get_pljson_list(pair_name varchar2) return pljson_list,
+  
   member function get(position pls_integer) return pljson_element,
   member function index_of(pair_name varchar2) return number,
   member function exist(pair_name varchar2) return boolean,
   
+  member procedure check_duplicate(self in out nocopy pljson, v_set boolean),
+  member procedure remove_duplicates(self in out nocopy pljson),
+  
   /* json path */
   member function path(json_path varchar2, base number default 1) return pljson_element,
-  
+
   /* json path_put */
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_element, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem varchar2, base number default 1),
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem clob, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem number, base number default 1),
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem binary_double, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem boolean, base number default 1),
-  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_list, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson, base number default 1),
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_list, base number default 1),
   
   /* json path_remove */
   member procedure path_remove(self in out nocopy pljson, json_path varchar2, base number default 1),
   
   /* map functions */
-  member function get_values return pljson_list,
-  member function get_keys return pljson_list
+  member function get_keys return pljson_list,
+  member function get_values return pljson_list
 ) not final;
 /
 show err

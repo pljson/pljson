@@ -28,10 +28,10 @@ create or replace type pljson_element force as object
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers */
   member function get_double return binary_double,
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers, is_number is still true, extra info */
-  /* return true if 'number' is representable by number */
+  /* return true if 'number' is representable by Oracle number */
   /** Private method for internal processing. */
   member function is_number_repr_number return boolean,
-  /* return true if 'number' is representable by binary_double */
+  /* return true if 'number' is representable by Oracle binary_double */
   /** Private method for internal processing. */
   member function is_number_repr_double return boolean,
   member function get_bool return boolean,

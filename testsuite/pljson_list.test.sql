@@ -245,6 +245,21 @@ begin
     pljson_ut.assertTrue(2 = n.get_number, '2 = n.get_number');
   end;
   
+  -- get tail
+  pljson_ut.testcase('Test get tail');
+  declare
+    l1 pljson_list;
+    l2 pljson_list;
+  begin
+    l1 := pljson_list('[1, "2", 3]');
+    l2 := l1.tail();
+    pljson_ut.assertTrue(strip_eol(l1.to_char) = '[1, "2", 3]', 'strip_eol(l1.to_char) = ''[1, "2", 3]''');
+    pljson_ut.assertTrue(strip_eol(l2.to_char) = '["2", 3]', 'strip_eol(l2.to_char) = ''["2", 3]''');
+    l2 := l2.tail();
+    pljson_ut.assertTrue(strip_eol(l1.to_char) = '[1, "2", 3]', 'strip_eol(l1.to_char) = ''[1, "2", 3]''');
+    pljson_ut.assertTrue(strip_eol(l2.to_char) = '[3]', 'strip_eol(l2.to_char) = ''[3]''');
+  end;
+  
   -- insert null number
   pljson_ut.testcase('Test insert null number');
   declare

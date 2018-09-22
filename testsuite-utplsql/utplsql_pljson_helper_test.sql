@@ -363,8 +363,8 @@ create or replace package body utplsql_pljson_helper_test is
   -- equals(pljson, pljson)
   procedure test_equals_pljson_order is
   begin
-    assertTrue(pljson_helper.equals(pljson('{}'),pljson('{}')), 'pljson_helper.equals(pljson(''{}''), pljson(''{}''))');
-    assertTrue(pljson_helper.equals(pljson('{"a":1}'),pljson('{"a":1}')), 'pljson_helper.equals(pljson(''{"a":1}''), pljson(''{"a":1}''))');
+    assertTrue(pljson_helper.equals(pljson('{}'), pljson('{}')), 'pljson_helper.equals(pljson(''{}''), pljson(''{}''))');
+    assertTrue(pljson_helper.equals(pljson('{"a":1}'), pljson('{"a":1}')), 'pljson_helper.equals(pljson(''{"a":1}''), pljson(''{"a":1}''))');
     assertTrue(pljson_helper.equals(pljson('{"a":1,"b":{"b1":[1,2,3]}}'), pljson('{"a":1,"b":{"b1":[1,2,3]}}')), 'pljson_helper.equals(pljson(''{"a":1,"b":{"b1":[1,2,3]}}''), pljson(''{"a":1,"b":{"b1":[1,2,3]}}''))');
   end;
   
@@ -385,7 +385,7 @@ create or replace package body utplsql_pljson_helper_test is
   procedure test_equals_list_list_no_order is
   begin
     assertFalse(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,3,2]')), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,3,2]''))');
-    assertFalse(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,3,2]'), true), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,3,2]''),true)');
+    assertFalse(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,3,2]'), true), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,3,2]''), true)');
   end;
   
   -- contains(pljson, pljson)
@@ -461,7 +461,7 @@ create or replace package body utplsql_pljson_helper_test is
   procedure test_contains_list_list is
   begin
     assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,5],{"a":6}]'), pljson_list('[4,5]')), 'pljson_helper.contains(pljson_list(''[1,2,3,"xyz",[4,5],{"a":6}]''), pljson_list(''[4,5]''))');
-    assertFalse(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,7],{"a":6}]') ,pljson_list('[4,5]')), 'pljson_helper.contains(pljson_list(''[1,2,3,"xyz",[4,7],{"a":6}]''), pljson_list(''[4,5]''))');
+    assertFalse(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,7],{"a":6}]'), pljson_list('[4,5]')), 'pljson_helper.contains(pljson_list(''[1,2,3,"xyz",[4,7],{"a":6}]''), pljson_list(''[4,5]''))');
   end;
   
   -- contains(pljson_list, pljson_list) - sublist match exact
@@ -476,7 +476,7 @@ create or replace package body utplsql_pljson_helper_test is
   -- contains(pljson_list, number)
   procedure test_contains_list_number is
   begin
-    assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,5],{"a":6}]'), 3), 'pljson_helper.contains(pljson_list(''[1,2,3,"xyz",[4,5],{"a":6}]''),3 )');
+    assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,5],{"a":6}]'), 3), 'pljson_helper.contains(pljson_list(''[1,2,3,"xyz",[4,5],{"a":6}]''), 3)');
     assertFalse(pljson_helper.contains(pljson_list('[1,2,7,"xyz",[4,5],{"a":6}]'), 3), 'pljson_helper.contains(pljson_list(''[1,2,7,"xyz",[4,5],{"a":6}]''), 3)');
   end;
   
@@ -506,9 +506,10 @@ create or replace package body utplsql_pljson_helper_test is
   procedure test_contains_list_clob is
     lob clob := 'a long string';
   begin
-    assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"a long string",[4,5],{"a":6}]'), lob), 'pljson_helper.contains(pljson_list(''[1,2,3,"a long string",[4,5],{"a":6}]'') ,lob)');
+    assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"a long string",[4,5],{"a":6}]'), lob), 'pljson_helper.contains(pljson_list(''[1,2,3,"a long string",[4,5],{"a":6}]''), lob)');
     assertFalse(pljson_helper.contains(pljson_list('[1,2,3,"not a long string",[4,5],{"a":6}]'), lob), 'pljson_helper.contains(pljson_list(''[1,2,3,"not a long string",[4,5],{"a":6}]''), lob)');
   end;
   
 end utplsql_pljson_helper_test;
 /
+show err

@@ -296,3 +296,4 @@ create or replace package body utplsql_pljson_parser_test is
   
 end utplsql_pljson_parser_test;
 /
+show err

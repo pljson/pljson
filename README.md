@@ -6,37 +6,51 @@ General information about JSON is available at http://www.json.org.
 ## This is version 3.0 RC
 It passes the tests (except the test for helper package and I work on this)
 but needs some more polishing and testing and
-hopefuly by the end of November 2018 it will be ready
+hopefuly by the end of November 2018 it will be announced as ready.
 
-The main difference with version 2.0 is in that now there is an object type for each json element
-they are
+The main difference with version 2.0 is in that now there is an object type for each json element.
+The types are
 
 | | |
 |:---|:---|
-|pljson | for json object|
-|pljson_list | for json array|
-|pljson_string | for json string|
-|pljson_number | for json number|
-|pljson_bool | for json true/false|
-|pljson_null | for json null|
+|**pljson** | for json object|
+|**pljson_list** | for json array|
+|**pljson_string** | for json string|
+|**pljson_number** | for json number|
+|**pljson_bool** | for json true/false|
+|**pljson_null** | for json null|
 
-and all these object descend from pljson_element
+and all these types descend from type **pljson_element**
 
-while in version 2.0 the object type pljson_value holds json string, number, boolean true/false, null and pljson or pljson_list objects
+while in version 2.0 the object type pljson_value is a container that contains one of
+string, number, boolean true/false, null, pljson or pljson_list
 
-this is mainly a cleaner version and I hope to cleanup old code as well
+This is a cleaner design and the benefit is easier coding and faster and more memory efficient code.
+
+In JSON description, a document consists of "value(s)"
+so we should name the parent of all objects pljson_value
+however this name has been so much ingrained with version 1.0 and version 2.0
+that it is felt that a new name should be used and so the parent is now named pljson_element.
+Old code uses a lot pljson_value() constructors while new code has no such constructors
+but instead has specific constructors for string, number, etc.
+and so code compatibility could not be maintained even if the name of pljson_value was kept.
 
 PLJSON evolved from version 1.0 using sys.anydata and worked with early Oracle releases
 to version 2.0 where sys.anydata was removed and an object oriented design was used but
 the object design wasn't the most appropriate one and mirrored the objects of version 1.0 so that
 there was almost 100% compatibility with version 1.0 code
 
-the code changes for version 3.0 are very few, mainly
-1. use new cosntructors instead of pljson_value()
+the code changes for version 3.0 are few, mainly
+1. use new constructors instead of pljson_value()
 2. remove the need to call the 'to_json_value()' method
-3. optionally use new helpful methods
+3. optionally use many new helpful methods that make for easier code
 
-both PLJSON version 3.0 and version 2.0 are to be maintained together for quite a long time
+Both PLJSON version 3.0 and version 2.0 will be maintained together for quite a long time.
+
+## What's new (2018-09-22)
+
+- minor code rewrite so code is cleaner, conforms better to today's accepted code standards and
+there is as much common code as possible between version 2.0 and version 3.0 (this is a continuing effort)
 
 ## A demo of things you can do with PL/JSON
 ```
@@ -208,7 +222,7 @@ returns
 | 3	| Middle| 9	| 5 |	extra_5 |
 | 3 |	Middle| 9	| 20|	extra_20|
 
-###### and many other (automatic support for Double numbers or Oracle numbers, base64 encode/decode, XML to json, etc.)
+##### and many other (automatic support for Double numbers or Oracle numbers, base64 encode/decode, XML to json, etc.)
 
 ## Install
 
@@ -237,9 +251,9 @@ but the differences are minor (see the initial description)
 
 ## Documentation
 
-see the version 2 documentation and study the main type specifications first,
-later you can study the package specifications
-and I will update this README for more information
+See the version 2.0 documentation and study the main type specifications first.
+Later you can study the package specifications
+and I will update this README for more information.
 
 ## Project folders and files
 

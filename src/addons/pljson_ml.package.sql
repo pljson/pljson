@@ -56,7 +56,7 @@ create or replace package body pljson_ml as
 
   function get_jsonml_stylesheet return xmltype as
   begin
-    if(jsonml_stylesheet is null) then
+    if (jsonml_stylesheet is null) then
     jsonml_stylesheet := xmltype('<?xml version="1.0" encoding="UTF-8"?>
 <!--
 		JsonML.xslt
