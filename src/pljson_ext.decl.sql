@@ -98,6 +98,6 @@ create or replace package pljson_ext as
     implemented as a procedure to force you to declare the CLOB so you can free it later
   */
   procedure blob2clob(b blob, c out clob, charset varchar2 default 'UTF8');
-
 end pljson_ext;
 /
+show err

@@ -22,6 +22,7 @@
 
 create or replace type body pljson_list as
 
+  /* constructors */
   constructor function pljson_list return self as result as
   begin
     self.list_data := pljson_value_array();
@@ -66,27 +67,27 @@ create or replace type body pljson_list as
     end loop;
     return;
   end;
-  
+
   constructor function pljson_list(elem pljson_value) return self as result as
   begin
     self := treat(elem.object_or_array as pljson_list);
     return;
   end;
 
-
+  /* list management */
   member procedure append(self in out nocopy pljson_list, elem pljson_value, position pls_integer default null) as
     indx pls_integer;
     insert_value pljson_value;
   begin
     insert_value := elem;
     if insert_value is null then
-      insert_value := pljson_value;
+      insert_value := pljson_value();
     end if;
-    if(position is null or position > self.count) then --end of list
+    if (position is null or position > self.count) then --end of list
       indx := self.count + 1;
       self.list_data.extend(1);
       self.list_data(indx) := insert_value;
-    elsif(position < 1) then --new first
+    elsif (position < 1) then --new first
       indx := self.count;
       self.list_data.extend(1);
       for x in reverse 1 .. indx loop
@@ -101,7 +102,6 @@ create or replace type body pljson_list as
       end loop;
       self.list_data(position) := insert_value;
     end if;
-
   end;
 
   member procedure append(self in out nocopy pljson_list, elem varchar2, position pls_integer default null) as
@@ -109,9 +109,14 @@ create or replace type body pljson_list as
     append(pljson_value(elem), position);
   end;
 
+  member procedure append(self in out nocopy pljson_list, elem clob, position pls_integer default null) as
+  begin
+    append(pljson_value(elem), position);
+  end;
+
   member procedure append(self in out nocopy pljson_list, elem number, position pls_integer default null) as
   begin
-    if(elem is null) then
+    if (elem is null) then
       append(pljson_value(), position);
     else
       append(pljson_value(elem), position);
@@ -121,7 +126,7 @@ create or replace type body pljson_list as
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   member procedure append(self in out nocopy pljson_list, elem binary_double, position pls_integer default null) as
   begin
-    if(elem is null) then
+    if (elem is null) then
       append(pljson_value(), position);
     else
       append(pljson_value(elem), position);
@@ -130,7 +135,7 @@ create or replace type body pljson_list as
 
   member procedure append(self in out nocopy pljson_list, elem boolean, position pls_integer default null) as
   begin
-    if(elem is null) then
+    if (elem is null) then
       append(pljson_value(), position);
     else
       append(pljson_value(elem), position);
@@ -139,7 +144,7 @@ create or replace type body pljson_list as
 
   member procedure append(self in out nocopy pljson_list, elem pljson_list, position pls_integer default null) as
   begin
-    if(elem is null) then
+    if (elem is null) then
       append(pljson_value(), position);
     else
       append(elem.to_json_value, position);
@@ -152,13 +157,13 @@ create or replace type body pljson_list as
   begin
     insert_value := elem;
     if insert_value is null then
-      insert_value := pljson_value;
+      insert_value := pljson_value();
     end if;
-    if(position > self.count) then --end of list
+    if (position > self.count) then --end of list
       indx := self.count + 1;
       self.list_data.extend(1);
       self.list_data(indx) := insert_value;
-    elsif(position < 1) then --maybe an error message here
+    elsif (position < 1) then --maybe an error message here
       null;
     else
       self.list_data(position) := insert_value;
@@ -170,9 +175,14 @@ create or replace type body pljson_list as
     replace(position, pljson_value(elem));
   end;
 
+  member procedure replace(self in out nocopy pljson_list, position pls_integer, elem clob) as
+  begin
+    replace(position, pljson_value(elem));
+  end;
+
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem number) as
   begin
-    if(elem is null) then
+    if (elem is null) then
       replace(position, pljson_value());
     else
       replace(position, pljson_value(elem));
@@ -182,7 +192,7 @@ create or replace type body pljson_list as
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem binary_double) as
   begin
-    if(elem is null) then
+    if (elem is null) then
       replace(position, pljson_value());
     else
       replace(position, pljson_value(elem));
@@ -191,7 +201,7 @@ create or replace type body pljson_list as
 
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem boolean) as
   begin
-    if(elem is null) then
+    if (elem is null) then
       replace(position, pljson_value());
     else
       replace(position, pljson_value(elem));
@@ -200,21 +210,16 @@ create or replace type body pljson_list as
 
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_list) as
   begin
-    if(elem is null) then
+    if (elem is null) then
       replace(position, pljson_value());
     else
       replace(position, elem.to_json_value);
     end if;
   end;
 
-  member function count return number as
-  begin
-    return self.list_data.count;
-  end;
-
   member procedure remove(self in out nocopy pljson_list, position pls_integer) as
   begin
-    if(position is null or position < 1 or position > self.count) then return; end if;
+    if (position is null or position < 1 or position > self.count) then return; end if;
     for x in (position+1) .. self.count loop
       self.list_data(x-1) := self.list_data(x);
     end loop;
@@ -226,29 +231,106 @@ create or replace type body pljson_list as
     for x in 2 .. self.count loop
       self.list_data(x-1) := self.list_data(x);
     end loop;
-    if(self.count > 0) then
+    if (self.count > 0) then
       self.list_data.trim(1);
     end if;
   end;
 
   member procedure remove_last(self in out nocopy pljson_list) as
   begin
-    if(self.count > 0) then
+    if (self.count > 0) then
       self.list_data.trim(1);
     end if;
   end;
 
+  member function count return number as
+  begin
+    return self.list_data.count;
+  end;
+
   member function get(position pls_integer) return pljson_value as
   begin
-    if(self.count >= position and position > 0) then
+    if (self.count >= position and position > 0) then
       return self.list_data(position);
     end if;
     return null; -- do not throw error, just return null
   end;
 
+  member function get_string(position pls_integer) return varchar2 as
+    elem pljson_value := get(position);
+  begin
+    /*
+    if elem is not null and elem is of (pljson_string) then
+      return elem.get_string();
+    end if;
+    return null;
+    */
+    return elem.get_string();
+  end;
+
+  member function get_clob(position pls_integer) return clob as
+    elem pljson_value := get(position);
+  begin
+    /*
+    if elem is not null and elem is of (pljson_string) then
+      return elem.get_clob();
+    end if;
+    return null;
+    */
+    return elem.get_clob();
+  end;
+
+  member function get_number(position pls_integer) return number as
+    elem pljson_value := get(position);
+  begin
+    /*
+    if elem is not null and elem is of (pljson_number) then
+      return elem.get_number();
+    end if;
+    return null;
+    */
+    return elem.get_number();
+  end;
+
+  member function get_double(position pls_integer) return binary_double as
+    elem pljson_value := get(position);
+  begin
+    /*
+    if elem is not null and elem is of (pljson_number) then
+      return elem.get_double();
+    end if;
+    return null;
+    */
+    return elem.get_double();
+  end;
+
+  member function get_bool(position pls_integer) return boolean as
+    elem pljson_value := get(position);
+  begin
+    /*
+    if elem is not null and elem is of (pljson_bool) then
+      return elem.get_bool();
+    end if;
+    return null;
+    */
+    return elem.get_bool();
+  end;
+
+  member function get_pljson_list(position pls_integer) return pljson_list as
+    elem pljson_value := get(position);
+  begin
+    /*
+    if elem is not null and elem is of (pljson_list) then
+      return treat(elem as pljson_list);
+    end if;
+    return null;
+    */
+    return treat(elem.object_or_array as pljson_list);
+  end;
+
   member function head return pljson_value as
   begin
-    if(self.count > 0) then
+    if (self.count > 0) then
       return self.list_data(self.list_data.first);
     end if;
     return null; -- do not throw error, just return null
@@ -256,7 +338,7 @@ create or replace type body pljson_list as
 
   member function last return pljson_value as
   begin
-    if(self.count > 0) then
+    if (self.count > 0) then
       return self.list_data(self.list_data.last);
     end if;
     return null; -- do not throw error, just return null
@@ -265,16 +347,23 @@ create or replace type body pljson_list as
   member function tail return pljson_list as
     t pljson_list;
   begin
-    if(self.count > 0) then
-      t := pljson_list(self.to_json_value);
+    if (self.count > 0) then
+      t := self; --pljson_list(self.to_json_value);
       t.remove(1);
       return t;
-    else return pljson_list(); end if;
+    else
+      return pljson_list();
+    end if;
+  end;
+
+  member function to_json_value return pljson_value as
+  begin
+    return pljson_value(self);
   end;
 
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2 as
   begin
-    if(spaces is null) then
+    if (spaces is null) then
       return pljson_printer.pretty_print_list(self, line_length => chars_per_line);
     else
       return pljson_printer.pretty_print_list(self, spaces, line_length => chars_per_line);
@@ -283,7 +372,7 @@ create or replace type body pljson_list as
 
   member procedure to_clob(self in pljson_list, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true) as
   begin
-    if(spaces is null) then
+    if (spaces is null) then
       pljson_printer.pretty_print_list(self, false, buf, line_length => chars_per_line, erase_clob => erase_clob);
     else
       pljson_printer.pretty_print_list(self, spaces, buf, line_length => chars_per_line, erase_clob => erase_clob);
@@ -323,7 +412,7 @@ create or replace type body pljson_list as
     objlist pljson;
     jp pljson_list := pljson_ext.parsePath(json_path, base);
   begin
-    while(jp.head().get_number() > self.count) loop
+    while (jp.head().get_number() > self.count) loop
       self.append(pljson_value());
     end loop;
 
@@ -336,7 +425,20 @@ create or replace type body pljson_list as
     objlist pljson;
     jp pljson_list := pljson_ext.parsePath(json_path, base);
   begin
-    while(jp.head().get_number() > self.count) loop
+    while (jp.head().get_number() > self.count) loop
+      self.append(pljson_value());
+    end loop;
+
+    objlist := pljson(self);
+    pljson_ext.put(objlist, json_path, elem, base);
+    self := objlist.get_values;
+  end path_put;
+
+  member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem clob, base number default 1) as
+    objlist pljson;
+    jp pljson_list := pljson_ext.parsePath(json_path, base);
+  begin
+    while (jp.head().get_number() > self.count) loop
       self.append(pljson_value());
     end loop;
 
@@ -349,14 +451,13 @@ create or replace type body pljson_list as
     objlist pljson;
     jp pljson_list := pljson_ext.parsePath(json_path, base);
   begin
-    while(jp.head().get_number() > self.count) loop
+    while (jp.head().get_number() > self.count) loop
       self.append(pljson_value());
     end loop;
 
     objlist := pljson(self);
-
-    if(elem is null) then
-      pljson_ext.put(objlist, json_path, pljson_value, base);
+    if (elem is null) then
+      pljson_ext.put(objlist, json_path, pljson_value(), base);
     else
       pljson_ext.put(objlist, json_path, elem, base);
     end if;
@@ -368,14 +469,13 @@ create or replace type body pljson_list as
     objlist pljson;
     jp pljson_list := pljson_ext.parsePath(json_path, base);
   begin
-    while(jp.head().get_number() > self.count) loop
+    while (jp.head().get_number() > self.count) loop
       self.append(pljson_value());
     end loop;
 
     objlist := pljson(self);
-
-    if(elem is null) then
-      pljson_ext.put(objlist, json_path, pljson_value, base);
+    if (elem is null) then
+      pljson_ext.put(objlist, json_path, pljson_value(), base);
     else
       pljson_ext.put(objlist, json_path, elem, base);
     end if;
@@ -386,13 +486,13 @@ create or replace type body pljson_list as
     objlist pljson;
     jp pljson_list := pljson_ext.parsePath(json_path, base);
   begin
-    while(jp.head().get_number() > self.count) loop
+    while (jp.head().get_number() > self.count) loop
       self.append(pljson_value());
     end loop;
 
     objlist := pljson(self);
-    if(elem is null) then
-      pljson_ext.put(objlist, json_path, pljson_value, base);
+    if (elem is null) then
+      pljson_ext.put(objlist, json_path, pljson_value(), base);
     else
       pljson_ext.put(objlist, json_path, elem, base);
     end if;
@@ -403,13 +503,13 @@ create or replace type body pljson_list as
     objlist pljson;
     jp pljson_list := pljson_ext.parsePath(json_path, base);
   begin
-    while(jp.head().get_number() > self.count) loop
+    while (jp.head().get_number() > self.count) loop
       self.append(pljson_value());
     end loop;
 
     objlist := pljson(self);
-    if(elem is null) then
-      pljson_ext.put(objlist, json_path, pljson_value, base);
+    if (elem is null) then
+      pljson_ext.put(objlist, json_path, pljson_value(), base);
     else
       pljson_ext.put(objlist, json_path, elem, base);
     end if;
@@ -423,12 +523,6 @@ create or replace type body pljson_list as
     pljson_ext.remove(objlist, json_path, base);
     self := objlist.get_values;
   end path_remove;
-
-
-  member function to_json_value return pljson_value as
-  begin
-    return pljson_value(self);
-  end;
 
   /* --backwards compatibility
   member procedure add_elem(self in out nocopy json_list, elem json_value, position pls_integer default null) as begin append(elem,position); end;
@@ -451,4 +545,4 @@ create or replace type body pljson_list as
 
 end;
 /
-sho err
+show err

@@ -228,3 +228,4 @@ create or replace package body utplsql_pljson_simple_test is
   
 end utplsql_pljson_simple_test;
 /
+show err

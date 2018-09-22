@@ -179,7 +179,8 @@ begin
     dbms_lob.freetemporary(test_clob);
     pljson_ut.pass(test_name);
   exception
-    when others then pljson_ut.fail(test_name);
+    when others then
+      pljson_ut.fail(test_name);
   end;
   
   pljson_ut.testsuite_report;

@@ -285,7 +285,7 @@ create or replace package body utplsql_pljson_test is
         fail(test_name);
     end;
     begin
-      test_name := 'x1 := obj.get(''X2'').get_string;';
+      test_name := 'x2 := obj.get(''X2'').get_string;';
       x2 := obj.get('X2').get_string;
       pass(test_name);
     exception
@@ -353,3 +353,4 @@ create or replace package body utplsql_pljson_test is
   
 end utplsql_pljson_test;
 /
+show err

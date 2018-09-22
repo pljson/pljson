@@ -39,14 +39,14 @@ PROMPT -----------------------------------;
 @@src/pljson_value.type.decl.sql
 @@src/pljson_list.type.decl.sql
 @@src/pljson.type.decl.sql
+@@src/pljson_ext.decl.sql --extra helper functions
 @@src/pljson_parser.decl.sql
 @@src/pljson_parser.impl.sql
 @@src/pljson_printer.package.sql
-@@src/pljson_value.type.impl.sql
-@@src/pljson_ext.decl.sql --extra helper functions
 @@src/pljson_ext.impl.sql
-@@src/pljson.type.impl.sql
+@@src/pljson_value.type.impl.sql
 @@src/pljson_list.type.impl.sql
+@@src/pljson.type.impl.sql
 
 @@src/pljson_ac.package.sql --Wrapper to enhance autocompletion
 
@@ -60,6 +60,7 @@ PROMPT ------------------------------------------;
 @@src/addons/pljson_helper.package.sql --Set operations on JSON and JSON_LIST
 @@src/addons/pljson_table_impl.type.decl.sql -- dynamic table from json document
 @@src/addons/pljson_table_impl.type.impl.sql -- dynamic table from json document
+
 @@testsuite/pljson_ut.package.sql -- pljson unit test mini framework
 
 -- uncomment this and comment the block following if you want access by public

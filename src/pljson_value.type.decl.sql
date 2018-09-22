@@ -113,9 +113,9 @@ create or replace type pljson_value force as object (
   /**
    * <p>Retrieve the value as a string (<code>varchar2</code>).</p>
    *
-   * @param max_byte_size Retreive the value up to a specific number of bytes. Default: <code>null</code>.
-   * @param max_char_size Retrieve the value up to a specific number of characters. Default: <code>null</code>.
-   * @return An instance of <code>varchar2</code> or <code>null</code> value is not a string.
+   * @param max_byte_size Retrieve the value up to a specific number of bytes, max = bytes for 5000 characters. Default: <code>null</code>.
+   * @param max_char_size Retrieve the value up to a specific number of characters, max = 5000. Default: <code>null</code>.
+   * @return An instance of <code>varchar2</code> or <code>null</code> if the value is not a string.
    */
   member function get_string(max_byte_size number default null, max_char_size number default null) return varchar2,
 
@@ -127,9 +127,16 @@ create or replace type pljson_value force as object (
   member procedure get_string(self in pljson_value, buf in out nocopy clob),
 
   /**
+   * <p>Retrieve the value as a string of clob type (<code>clob</code>).</p>
+   *
+   * @return the internal <code>clob</code> or <code>null</code> if the value is not a string.
+   */
+  member function get_clob return clob,
+
+  /**
    * <p>Retrieve the value as a <code>number</code>.</p>
    *
-   * @return An instance of <code>number</code> or <code>null</code> if the value isn't a number.
+   * @return An instance of <code>number</code> or <code>null</code> if the value is not a number.
    */
   member function get_number return number,
 
@@ -137,14 +144,14 @@ create or replace type pljson_value force as object (
   /**
    * <p>Retrieve the value as a <code>binary_double</code>.</p>
    *
-   * @return An instance of <code>binary_double</code> or <code>null</code> if the value isn't a number.
+   * @return An instance of <code>binary_double</code> or <code>null</code> if the value is not a number.
    */
   member function get_double return binary_double,
 
   /**
    * <p>Retrieve the value as a <code>boolean</code>.</p>
    *
-   * @return An instance of <code>boolean</code> or <code>null</code> if the value isn't a boolean.
+   * @return An instance of <code>boolean</code> or <code>null</code> if the value is not a boolean.
    */
   member function get_bool return boolean,
 
@@ -199,10 +206,10 @@ create or replace type pljson_value force as object (
   member function is_null return boolean,
 
   /* E.I.Sarmas (github.com/dsnz)   2016-11-03   support for binary_double numbers, is_number is still true, extra info */
-  /* return true if 'number' is representable by number */
+  /* return true if 'number' is representable by Oracle number */
   /** Private method for internal processing. */
   member function is_number_repr_number return boolean,
-  /* return true if 'number' is representable by binary_double */
+  /* return true if 'number' is representable by Oracle binary_double */
   /** Private method for internal processing. */
   member function is_number_repr_double return boolean,
 

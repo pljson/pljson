@@ -43,6 +43,9 @@ create or replace package utplsql_pljson_list_test is
   --%test(Test get first and last)
   procedure test_get_first_last;
   
+  --%test(Test get tail)
+  procedure test_get_tail;
+  
   --%test(Test insert null number)
   procedure test_insert_null_number;
   
@@ -202,7 +205,7 @@ create or replace package body utplsql_pljson_list_test is
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
     l.append(2.718281828459e210d);
     l.append(pljson_value(false));
-    l.append(pljson_value.makenull);
+    l.append(pljson_value());
     l.append(pljson_list('[1,2,3]'));
     assertTrue(l.count = 6, 'l.count = 6');
     l.append(l.head);
@@ -327,6 +330,20 @@ create or replace package body utplsql_pljson_list_test is
     assertTrue(2 = n.get_number, '2 = n.get_number');
   end;
   
+  -- get tail
+  procedure test_get_tail is
+    l1 pljson_list;
+    l2 pljson_list;
+  begin
+    l1 := pljson_list('[1, "2", 3]');
+    l2 := l1.tail();
+    pljson_ut.assertTrue(strip_eol(l1.to_char) = '[1, "2", 3]', 'strip_eol(l1.to_char) = ''[1, "2", 3]''');
+    pljson_ut.assertTrue(strip_eol(l2.to_char) = '["2", 3]', 'strip_eol(l2.to_char) = ''["2", 3]''');
+    l2 := l2.tail();
+    pljson_ut.assertTrue(strip_eol(l1.to_char) = '[1, "2", 3]', 'strip_eol(l1.to_char) = ''[1, "2", 3]''');
+    pljson_ut.assertTrue(strip_eol(l2.to_char) = '[3]', 'strip_eol(l2.to_char) = ''[3]''');
+  end;
+  
   -- insert null number
   procedure test_insert_null_number is
     obj pljson_list := pljson_list();
@@ -410,3 +427,4 @@ create or replace package body utplsql_pljson_list_test is
   end;
 end utplsql_pljson_list_test;
 /
+show err

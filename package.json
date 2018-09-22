@@ -1,6 +1,6 @@
 {
   "name": "pljson",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "A PL/SQL object for handling JSON data in Oracle stored procedures and tables.",
   "main": "index.js",
   "directories": {

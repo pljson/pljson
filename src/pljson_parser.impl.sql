@@ -39,11 +39,11 @@ create or replace package body pljson_parser as
   */
   function next_char(indx number, s in out nocopy json_src) return varchar2 as
   begin
-    if(indx > s.len) then return null; end if;
+    if (indx > s.len) then return null; end if;
     --right offset?
-    /*  if(indx > 4000 + s.offset or indx < s.offset) then */
+    /* if (indx > 4000 + s.offset or indx < s.offset) then */
     /* fix for issue #37 */
-    if(indx > 4000 + s.offset or indx <= s.offset) then
+    if (indx > 4000 + s.offset or indx <= s.offset) then
     --load right offset
       s.offset := indx - (indx mod 4000);
       /* addon fix for issue #37 */
@@ -60,7 +60,7 @@ create or replace package body pljson_parser as
     buf varchar2(32767) := '';
   begin
     for i in 1..amount loop
-      buf := buf || next_char(indx-1+i,s);
+      buf := buf || next_char(indx-1+i, s);
     end loop;
     return buf;
   end;
@@ -122,50 +122,50 @@ create or replace package body pljson_parser as
     checkLoop boolean;
   begin
     buf := next_char(indx, jsrc);
-    if(buf = '-') then numbuf := '-'; indx := indx + 1; end if;
+    if (buf = '-') then numbuf := '-'; indx := indx + 1; end if;
     buf := next_char(indx, jsrc);
     --0 or [1-9]([0-9])*
-    if(buf = '0') then
+    if (buf = '0') then
       numbuf := numbuf || '0'; indx := indx + 1;
       buf := next_char(indx, jsrc);
-    elsif(buf >= '1' and buf <= '9') then
+    elsif (buf >= '1' and buf <= '9') then
       numbuf := numbuf || buf; indx := indx + 1;
       --read digits
       buf := next_char(indx, jsrc);
-      while(buf >= '0' and buf <= '9') loop
+      while (buf >= '0' and buf <= '9') loop
         numbuf := numbuf || buf; indx := indx + 1;
         buf := next_char(indx, jsrc);
       end loop;
     end if;
     --fraction
-    if(buf = '.') then
+    if (buf = '.') then
       numbuf := numbuf || buf; indx := indx + 1;
       buf := next_char(indx, jsrc);
       checkLoop := FALSE;
-      while(buf >= '0' and buf <= '9') loop
+      while (buf >= '0' and buf <= '9') loop
         checkLoop := TRUE;
         numbuf := numbuf || buf; indx := indx + 1;
         buf := next_char(indx, jsrc);
       end loop;
-      if(not checkLoop) then
+      if (not checkLoop) then
         s_error('Expected: digits in fraction', tok);
       end if;
     end if;
     --exp part
-    if(buf in ('e', 'E')) then
+    if (buf in ('e', 'E')) then
       numbuf := numbuf || buf; indx := indx + 1;
       buf := next_char(indx, jsrc);
-      if(buf = '+' or buf = '-') then
+      if (buf = '+' or buf = '-') then
         numbuf := numbuf || buf; indx := indx + 1;
         buf := next_char(indx, jsrc);
       end if;
       checkLoop := FALSE;
-      while(buf >= '0' and buf <= '9') loop
+      while (buf >= '0' and buf <= '9') loop
         checkLoop := TRUE;
         numbuf := numbuf || buf; indx := indx + 1;
         buf := next_char(indx, jsrc);
       end loop;
-      if(not checkLoop) then
+      if (not checkLoop) then
         s_error('Expected: digits in exp', tok);
       end if;
     end if;
@@ -181,7 +181,7 @@ create or replace package body pljson_parser as
     num number;
   begin
     buf := next_char(indx, jsrc);
-    while(REGEXP_LIKE(buf, '^[[:alnum:]\_]$', 'i')) loop
+    while (REGEXP_LIKE(buf, '^[[:alnum:]\_]$', 'i')) loop
       varbuf := varbuf || buf;
       indx := indx + 1;
       buf := next_char(indx, jsrc);
@@ -210,20 +210,20 @@ create or replace package body pljson_parser as
   begin
     indx := indx +1;
     buf := next_char(indx, jsrc);
-    while(buf != endChar) loop
+    while (buf != endChar) loop
       --clob control
-      if(v_count > 8191) then --crazy oracle error (16383 is the highest working length with unistr - 8192 choosen to be safe)
-        if(v_extended is null) then
+      if (v_count > 8191) then --crazy oracle error (16383 is the highest working length with unistr - 8192 choosen to be safe)
+        if (v_extended is null) then
           v_extended := empty_clob();
           dbms_lob.createtemporary(v_extended, true);
         end if;
         updateClob(v_extended, unistr(varbuf));
         varbuf := ''; v_count := 0;
       end if;
-      if(buf = Chr(13) or buf = CHR(9) or buf = CHR(10)) then
-        s_error('Control characters not allowed (CHR(9),CHR(10)CHR(13))', tok);
+      if (buf = Chr(13) or buf = CHR(9) or buf = CHR(10)) then
+        s_error('Control characters not allowed (CHR(9),CHR(10),CHR(13))', tok);
       end if;
-      if(buf = '\') then
+      if (buf = '\') then
         --varbuf := varbuf || buf;
         indx := indx + 1;
         buf := next_char(indx, jsrc);
@@ -237,7 +237,7 @@ create or replace package body pljson_parser as
             indx := indx + 1;
             buf := next_char(indx, jsrc);
           when buf = '''' then
-            if(json_strict = false) then
+            if (json_strict = false) then
               varbuf := varbuf || buf; v_count := v_count + 1;
               indx := indx + 1;
               buf := next_char(indx, jsrc);
@@ -262,17 +262,17 @@ create or replace package body pljson_parser as
             indx := indx + 1;
             buf := next_char(indx, jsrc);
           when buf = 'u' then
-            --four hexidecimal chars
+            --four hexadecimal chars
             declare
               four varchar2(4);
             begin
               four := next_char2(indx+1, jsrc, 4);
               wrong := FALSE;
-              if(upper(substr(four, 1,1)) not in ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f')) then wrong := TRUE; end if;
-              if(upper(substr(four, 2,1)) not in ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f')) then wrong := TRUE; end if;
-              if(upper(substr(four, 3,1)) not in ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f')) then wrong := TRUE; end if;
-              if(upper(substr(four, 4,1)) not in ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f')) then wrong := TRUE; end if;
-              if(wrong) then
+              if (upper(substr(four, 1, 1)) not in ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f')) then wrong := TRUE; end if;
+              if (upper(substr(four, 2, 1)) not in ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f')) then wrong := TRUE; end if;
+              if (upper(substr(four, 3, 1)) not in ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f')) then wrong := TRUE; end if;
+              if (upper(substr(four, 4, 1)) not in ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f')) then wrong := TRUE; end if;
+              if (wrong) then
                 s_error('expected: " \u([0-9][A-F]){4}', tok);
               end if;
 --              varbuf := varbuf || buf || four;
@@ -298,7 +298,7 @@ create or replace package body pljson_parser as
 
     --debug(varbuf);
     --dbms_output.put_line(varbuf);
-    if(v_extended is not null) then
+    if (v_extended is not null) then
       updateClob(v_extended, unistr(varbuf));
       tok.data_overflow := v_extended;
       tok.data := dbms_lob.substr(v_extended, 1, 32767);
@@ -332,8 +332,8 @@ create or replace package body pljson_parser as
         when buf = '[' then tokens(tok_indx) := mt('[', lin_no, col_no, null); tok_indx := tok_indx + 1;
         when buf = ']' then tokens(tok_indx) := mt(']', lin_no, col_no, null); tok_indx := tok_indx + 1;
         when buf = 't' then
-          if(next_char2(indx, jsrc, 4) != 'true') then
-            if(json_strict = false and REGEXP_LIKE(buf, '^[[:alpha:]]$', 'i')) then
+          if (next_char2(indx, jsrc, 4) != 'true') then
+            if (json_strict = false and REGEXP_LIKE(buf, '^[[:alpha:]]$', 'i')) then
               tokens(tok_indx) := mt('STRING', lin_no, col_no, null);
               indx := lexName(jsrc, tokens(tok_indx), indx);
               col_no := col_no + length(tokens(tok_indx).data) + 1;
@@ -347,8 +347,8 @@ create or replace package body pljson_parser as
             col_no := col_no + 3;
           end if;
         when buf = 'n' then
-          if(next_char2(indx, jsrc, 4) != 'null') then
-            if(json_strict = false and REGEXP_LIKE(buf, '^[[:alpha:]]$', 'i')) then
+          if (next_char2(indx, jsrc, 4) != 'null') then
+            if (json_strict = false and REGEXP_LIKE(buf, '^[[:alpha:]]$', 'i')) then
               tokens(tok_indx) := mt('STRING', lin_no, col_no, null);
               indx := lexName(jsrc, tokens(tok_indx), indx);
               col_no := col_no + length(tokens(tok_indx).data) + 1;
@@ -362,8 +362,8 @@ create or replace package body pljson_parser as
             col_no := col_no + 3;
           end if;
         when buf = 'f' then
-          if(next_char2(indx, jsrc, 5) != 'false') then
-            if(json_strict = false and REGEXP_LIKE(buf, '^[[:alpha:]]$', 'i')) then
+          if (next_char2(indx, jsrc, 5) != 'false') then
+            if (json_strict = false and REGEXP_LIKE(buf, '^[[:alpha:]]$', 'i')) then
               tokens(tok_indx) := mt('STRING', lin_no, col_no, null);
               indx := lexName(jsrc, tokens(tok_indx), indx);
               col_no := col_no + length(tokens(tok_indx).data) + 1;
@@ -384,9 +384,9 @@ create or replace package body pljson_parser as
         when (buf = Chr(13)) then --Windows or Mac way
           lin_no := lin_no + 1;
           col_no := 0;
-          if(jsrc.len >= indx +1) then -- better safe than sorry
+          if (jsrc.len >= indx +1) then -- better safe than sorry
             buf := next_char(indx+1, jsrc);
-            if(buf = Chr(10)) then --\r\n
+            if (buf = Chr(10)) then --\r\n
               indx := indx + 1;
             end if;
           end if;
@@ -410,7 +410,7 @@ create or replace package body pljson_parser as
         when json_strict = false and REGEXP_LIKE(buf, '^[[:alpha:]]$', 'i') then
           tokens(tok_indx) := mt('STRING', lin_no, col_no, null);
           indx := lexName(jsrc, tokens(tok_indx), indx);
-          if(tokens(tok_indx).data_overflow is not null) then
+          if (tokens(tok_indx).data_overflow is not null) then
             col_no := col_no + dbms_lob.getlength(tokens(tok_indx).data_overflow) + 1;
           else
             col_no := col_no + length(tokens(tok_indx).data) + 1;
@@ -429,7 +429,7 @@ create or replace package body pljson_parser as
               exit when buf is null;
             end loop;
 
-            if(indx = saveindx+2) then
+            if (indx = saveindx+2) then
               --enter unescaped mode
               --dbms_output.put_line('Entering unescaped mode');
               un_esc := empty_clob();
@@ -481,15 +481,15 @@ create or replace package body pljson_parser as
     pv pljson_value;
   begin
     --value, value, value ]
-    if(indx > tokens.count) then p_error('more elements in array was excepted', tok); end if;
+    if (indx > tokens.count) then p_error('more elements in array was excepted', tok); end if;
     tok := tokens(indx);
-    while(tok.type_name != ']') loop
+    while (tok.type_name != ']') loop
       e_arr.extend;
       v_count := v_count + 1;
       case tok.type_name
         when 'TRUE' then e_arr(v_count) := pljson_value(true);
         when 'FALSE' then e_arr(v_count) := pljson_value(false);
-        when 'NULL' then e_arr(v_count) := pljson_value;
+        when 'NULL' then e_arr(v_count) := pljson_value();
         when 'STRING' then e_arr(v_count) := case when tok.data_overflow is not null then pljson_value(tok.data_overflow) else pljson_value(tok.data) end;
         when 'ESTRING' then e_arr(v_count) := pljson_value(tok.data_overflow, false);
         /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
@@ -511,16 +511,16 @@ create or replace package body pljson_parser as
           p_error('Expected a value', tok);
       end case;
       indx := indx + 1;
-      if(indx > tokens.count) then p_error('] not found', tok); end if;
+      if (indx > tokens.count) then p_error('] not found', tok); end if;
       tok := tokens(indx);
-      if(tok.type_name = ',') then --advance
+      if (tok.type_name = ',') then --advance
         indx := indx + 1;
-        if(indx > tokens.count) then p_error('more elements in array was excepted', tok); end if;
+        if (indx > tokens.count) then p_error('more elements in array was excepted', tok); end if;
         tok := tokens(indx);
-        if(tok.type_name = ']') then --premature exit
+        if (tok.type_name = ']') then --premature exit
           p_error('Premature exit in array', tok);
         end if;
-      elsif(tok.type_name != ']') then --error
+      elsif (tok.type_name != ']') then --error
         p_error('Expected , or ]', tok);
       end if;
 
@@ -538,7 +538,7 @@ create or replace package body pljson_parser as
     case tok.type_name
       when 'TRUE' then mem := pljson_value(true);
       when 'FALSE' then mem := pljson_value(false);
-      when 'NULL' then mem := pljson_value;
+      when 'NULL' then mem := pljson_value();
       when 'STRING' then mem := case when tok.data_overflow is not null then pljson_value(tok.data_overflow) else pljson_value(tok.data) end;
       when 'ESTRING' then mem := pljson_value(tok.data_overflow, false);
       /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
@@ -571,7 +571,7 @@ create or replace package body pljson_parser as
   /*procedure test_duplicate_members(arr in json_member_array, mem_name in varchar2, wheretok rToken) as
   begin
     for i in 1 .. arr.count loop
-      if(arr(i).member_name = mem_name) then
+      if (arr(i).member_name = mem_name) then
         p_error('Duplicate member name', wheretok);
       end if;
     end loop;
@@ -588,7 +588,7 @@ create or replace package body pljson_parser as
     arr pljson_value_array := pljson_value_array();
   begin
     --what to expect?
-    while(indx <= tokens.count) loop
+    while (indx <= tokens.count) loop
       tok := tokens(indx);
       --debug('E: '||tok.type_name);
       case tok.type_name
@@ -596,13 +596,13 @@ create or replace package body pljson_parser as
         --member
         mem_name := substr(tok.data, 1, 4000);
         begin
-          if(mem_name is null) then
-            if(nullelemfound) then
+          if (mem_name is null) then
+            if (nullelemfound) then
               p_error('Duplicate empty member: ', tok);
             else
               nullelemfound := true;
             end if;
-          elsif(mymap(mem_name) is not null) then
+          elsif (mymap(mem_name) is not null) then
             p_error('Duplicate member name: '||mem_name, tok);
           end if;
         exception
@@ -610,11 +610,11 @@ create or replace package body pljson_parser as
         end;
 
         indx := indx + 1;
-        if(indx > tokens.count) then p_error('Unexpected end of input', tok); end if;
+        if (indx > tokens.count) then p_error('Unexpected end of input', tok); end if;
         tok := tokens(indx);
         indx := indx + 1;
-        if(indx > tokens.count) then p_error('Unexpected end of input', tok); end if;
-        if(tok.type_name = ':') then
+        if (indx > tokens.count) then p_error('Unexpected end of input', tok); end if;
+        if (tok.type_name = ':') then
           --parse
           declare
             jmb pljson_value;
@@ -629,17 +629,17 @@ create or replace package body pljson_parser as
           p_error('Expected '':''', tok);
         end if;
         --move indx forward if ',' is found
-        if(indx > tokens.count) then p_error('Unexpected end of input', tok); end if;
+        if (indx > tokens.count) then p_error('Unexpected end of input', tok); end if;
 
         tok := tokens(indx);
-        if(tok.type_name = ',') then
+        if (tok.type_name = ',') then
           --debug('found ,');
           indx := indx + 1;
           tok := tokens(indx);
-          if(tok.type_name = '}') then --premature exit
+          if (tok.type_name = '}') then --premature exit
             p_error('Premature exit in json object', tok);
           end if;
-        elsif(tok.type_name != '}') then
+        elsif (tok.type_name != '}') then
            p_error('A comma seperator is probably missing', tok);
         end if;
       when '}' then
@@ -666,13 +666,13 @@ create or replace package body pljson_parser as
     update_decimalpoint();
     jsrc := prepareVarchar2(str);
     tokens := lexer(jsrc);
-    if(tokens(indx).type_name = '{') then
+    if (tokens(indx).type_name = '{') then
       indx := indx + 1;
       obj := parseObj(tokens, indx);
     else
       raise_application_error(-20101, 'JSON Parser exception - no { start found');
     end if;
-    if(tokens.count != indx) then
+    if (tokens.count != indx) then
       p_error('} should end the JSON object', tokens(indx));
     end if;
 
@@ -688,13 +688,13 @@ create or replace package body pljson_parser as
     update_decimalpoint();
     jsrc := prepareVarchar2(str);
     tokens := lexer(jsrc);
-    if(tokens(indx).type_name = '[') then
+    if (tokens(indx).type_name = '[') then
       indx := indx + 1;
       obj := parseArr(tokens, indx);
     else
       raise_application_error(-20101, 'JSON List Parser exception - no [ start found');
     end if;
-    if(tokens.count != indx) then
+    if (tokens.count != indx) then
       p_error('] should end the JSON List object', tokens(indx));
     end if;
 
@@ -710,13 +710,13 @@ create or replace package body pljson_parser as
     update_decimalpoint();
     jsrc := prepareClob(str);
     tokens := lexer(jsrc);
-    if(tokens(indx).type_name = '[') then
+    if (tokens(indx).type_name = '[') then
       indx := indx + 1;
       obj := parseArr(tokens, indx);
     else
       raise_application_error(-20101, 'JSON List Parser exception - no [ start found');
     end if;
-    if(tokens.count != indx) then
+    if (tokens.count != indx) then
       p_error('] should end the JSON List object', tokens(indx));
     end if;
 
@@ -733,13 +733,13 @@ create or replace package body pljson_parser as
     --dbms_output.put_line('Using clob');
     jsrc := prepareClob(str);
     tokens := lexer(jsrc);
-    if(tokens(indx).type_name = '{') then
+    if (tokens(indx).type_name = '{') then
       indx := indx + 1;
       obj := parseObj(tokens, indx);
     else
       raise_application_error(-20101, 'JSON Parser exception - no { start found');
     end if;
-    if(tokens.count != indx) then
+    if (tokens.count != indx) then
       p_error('} should end the JSON object', tokens(indx));
     end if;
 
@@ -758,7 +758,7 @@ create or replace package body pljson_parser as
     tokens := lexer(jsrc);
     tokens(tokens.count+1).type_name := ']';
     obj := parseArr(tokens, indx);
-    if(tokens.count != indx) then
+    if (tokens.count != indx) then
       p_error('] should end the JSON List object', tokens(indx));
     end if;
 
@@ -776,7 +776,7 @@ create or replace package body pljson_parser as
     tokens := lexer(jsrc);
     tokens(tokens.count+1).type_name := ']';
     obj := parseArr(tokens, indx);
-    if(tokens.count != indx) then
+    if (tokens.count != indx) then
       p_error('] should end the JSON List object', tokens(indx));
     end if;
 
@@ -792,7 +792,7 @@ create or replace package body pljson_parser as
     indx varchar2(4000);
   begin
     for i in 1 .. obj.count loop
-      if(obj.get(i).mapname is null) then
+      if (obj.get(i).mapname is null) then
         nulljsonvalue := obj.get(i);
       else
         members(obj.get(i).mapname) := obj.get(i);
@@ -806,7 +806,7 @@ create or replace package body pljson_parser as
       validated.put(indx, members(indx));
       indx := members.next(indx);
     end loop;
-    if(nulljsonvalue is not null) then
+    if (nulljsonvalue is not null) then
       validated.put('', nulljsonvalue);
     end if;
 
@@ -822,3 +822,4 @@ create or replace package body pljson_parser as
 
 end pljson_parser;
 /
+show err

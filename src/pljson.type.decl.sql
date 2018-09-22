@@ -61,8 +61,7 @@ create or replace type pljson force under pljson_element (
   /** Private variable for internal processing. */
   check_for_duplicate number,
 
-  /* Constructors */
-
+  /* constructors */
   /**
    * <p>Primary constructor that creates an empty object.</p>
    *
@@ -131,7 +130,7 @@ create or replace type pljson force under pljson_element (
    *    myjson pljson := pljson('{"foo": {"bar": "baz"}}');
    *    newjson pljson;
    *   begin
-   *    newjson := pljson(myjson.get('foo').to_json_value())
+   *    newjson := pljson(myjson.get('foo').to_json_value)
    *   end;
    * </pre>
    *
@@ -148,7 +147,7 @@ create or replace type pljson force under pljson_element (
    */
   constructor function pljson(l in out nocopy pljson_list) return self as result,
 
-  /* Member setter methods */
+  /* member management */
   /**
    * <p>Remove a key and value from an object.</p>
    *
@@ -183,6 +182,15 @@ create or replace type pljson force under pljson_element (
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value varchar2, position pls_integer default null),
 
   /**
+   * <p>Add a <code>clob</code> instance into the current instance under a
+   * given key name.</p>
+   *
+   * @param pair_name Name of the key to add/update.
+   * @param pair_value The value to associate with the key.
+   */
+  member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value clob, position pls_integer default null),
+
+  /**
    * <p>Add a <code>number</code> instance into the current instance under a
    * given key name.</p>
    *
@@ -209,9 +217,6 @@ create or replace type pljson force under pljson_element (
    * @param pair_value The value to associate with the key.
    */
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value boolean, position pls_integer default null),
-
-  member procedure check_duplicate(self in out nocopy pljson, v_set boolean),
-  member procedure remove_duplicates(self in out nocopy pljson),
 
   /*
    * had been marked as deprecated in favor of the overloaded method with pljson_value
@@ -242,7 +247,6 @@ create or replace type pljson force under pljson_element (
    */
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value pljson_list, position pls_integer default null),
 
-  /* Member getter methods */
   /**
    * <p>Return the number values in the object. Essentially, the number of keys
    * in the object.</p>
@@ -259,6 +263,14 @@ create or replace type pljson force under pljson_element (
    * if it could not be found.
    */
   member function get(pair_name varchar2) return pljson_value,
+
+  member function get_string(pair_name varchar2) return varchar2,
+  member function get_clob(pair_name varchar2) return clob,
+  member function get_number(pair_name varchar2) return number,
+  member function get_double(pair_name varchar2) return binary_double,
+  member function get_bool(pair_name varchar2) return boolean,
+  member function get_pljson(pair_name varchar2) return pljson,
+  member function get_pljson_list(pair_name varchar2) return pljson_list,
 
   /**
    * <p>Retrieve a value based on its position in the internal storage array.
@@ -287,7 +299,18 @@ create or replace type pljson force under pljson_element (
    */
   member function exist(pair_name varchar2) return boolean,
 
-  /* Output methods */
+  /**
+   * <p>Convert the object to a <code>pljson_value</code> for use in other methods
+   * of the PL/JSON API.</p>
+   *
+   * @returns An instance of <code>pljson_value</code>.
+   */
+  member function to_json_value return pljson_value,
+
+  member procedure check_duplicate(self in out nocopy pljson, v_set boolean),
+  member procedure remove_duplicates(self in out nocopy pljson),
+
+  /* output methods */
   /**
    * <p>Serialize the object to a JSON representation string.</p>
    *
@@ -328,14 +351,6 @@ create or replace type pljson force under pljson_element (
    */
   member procedure htp(self in pljson, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
 
-  /**
-   * <p>Convert the object to a <code>pljson_value</code> for use in other methods
-   * of the PL/JSON API.</p>
-   *
-   * @returns An instance of <code>pljson_value</code>.
-   */
-  member function to_json_value return pljson_value,
-
   /* json path */
   /**
    * <p>Retrieve a value from the internal storage array based on a path string
@@ -351,29 +366,18 @@ create or replace type pljson force under pljson_element (
   /* json path_put */
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_value, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem varchar2, base number default 1),
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem clob, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem number, base number default 1),
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem binary_double, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem boolean, base number default 1),
-  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_list, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson, base number default 1),
+  member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_list, base number default 1),
 
   /* json path_remove */
   member procedure path_remove(self in out nocopy pljson, json_path varchar2, base number default 1),
 
   /* map functions */
-  /**
-   * <p>Retrieve all of the values within the object as a <code>pljson_list</code>.</p>
-   *
-   * <pre>
-   * myjson := pljson('{"foo": "bar"}');
-   * myjson.get_values(); // ['bar']
-   * </pre>
-   *
-   * @return An instance of <code>pljson_list</code>.
-   */
-  member function get_values return pljson_list,
-
   /**
    * <p>Retrieve all of the keys within the object as a <code>pljson_list</code>.</p>
    *
@@ -384,8 +388,20 @@ create or replace type pljson force under pljson_element (
    *
    * @return An instance of <code>pljson_list</code>.
    */
-  member function get_keys return pljson_list
+  member function get_keys return pljson_list,
+
+  /**
+   * <p>Retrieve all of the values within the object as a <code>pljson_list</code>.</p>
+   *
+   * <pre>
+   * myjson := pljson('{"foo": "bar"}');
+   * myjson.get_values(); // ['bar']
+   * </pre>
+   *
+   * @return An instance of <code>pljson_list</code>.
+   */
+  member function get_values return pljson_list
 
 ) not final;
 /
-sho err
+show err
