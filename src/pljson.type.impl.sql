@@ -174,7 +174,7 @@ create or replace type body pljson as
   begin
     put(pair_name, pljson_string(pair_value), position);
   end;
-  
+
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value clob, position pls_integer default null) as
   begin
     put(pair_name, pljson_string(pair_value), position);
@@ -243,7 +243,7 @@ create or replace type body pljson as
     end loop;
     return null;
   end;
-  
+
   member function get_string(pair_name varchar2) return varchar2 as
     elem pljson_element := get(pair_name);
   begin
@@ -267,7 +267,7 @@ create or replace type body pljson as
     */
     return elem.get_clob();
   end;
-  
+
   member function get_number(pair_name varchar2) return number as
     elem pljson_element := get(pair_name);
   begin
@@ -291,7 +291,7 @@ create or replace type body pljson as
     */
     return elem.get_double();
   end;
-  
+
   member function get_bool(pair_name varchar2) return boolean as
     elem pljson_element := get(pair_name);
   begin
