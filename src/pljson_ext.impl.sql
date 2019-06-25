@@ -268,7 +268,7 @@ create or replace package body pljson_ext as
     end loop;
 
     build_path := build_path || ']';
-    build_path := replace(replace(replace(replace(replace(build_path, chr(9), '\t'), chr(10), '\n'), chr(13), '\f'), chr(8), '\b'), chr(14), '\r');
+    build_path := replace(replace(replace(replace(replace(build_path, chr(9), '\t'), chr(10), '\n'), chr(13), '\r'), chr(8), '\b'), chr(14), '\r');
 
     ret := pljson_list(build_path);
     if (base != 1) then
