@@ -21,6 +21,9 @@ create or replace package body pljson_parser as
   THE SOFTWARE.
   */
 
+  ucs2_exception EXCEPTION;
+  pragma exception_init(ucs2_exception, -22831);
+  
   decimalpoint varchar2(1 char) := '.';
 
   procedure update_decimalpoint as
@@ -40,13 +43,14 @@ create or replace package body pljson_parser as
   function next_char(indx number, s in out nocopy json_src) return varchar2 as
   begin
     if (indx > s.len) then return null; end if;
+    
     --right offset?
     /* if (indx > 4000 + s.offset or indx < s.offset) then */
     /* fix for issue #37 */
+    /* code before fix for issue #169
     if (indx > 4000 + s.offset or indx <= s.offset) then
-    --load right offset
       s.offset := indx - (indx mod 4000);
-      /* addon fix for issue #37 */
+      -- addon fix for issue #37
       if s.offset = indx then
         s.offset := s.offset - 4000;
       end if;
@@ -54,6 +58,47 @@ create or replace package body pljson_parser as
     end if;
     --read from s.src
     return substr(s.src, indx-s.offset, 1);
+    */
+    
+    /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
+    /* lengthc is for emphasis, length would work too */
+    if (indx > lengthc(s.src) + s.offset_chars) then
+      while (indx > lengthc(s.src) + s.offset_chars) loop
+        s.offset_chars := s.offset_chars + lengthc(s.src);
+        s.offset := s.offset + length2(s.src);
+        /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
+        begin
+          s.src := dbms_lob.substr(s.s_clob, 4000, s.offset+1);
+        exception
+        when ucs2_exception then
+          s.src := dbms_lob.substr(s.s_clob, 3999, s.offset+1);
+        end;
+      end loop;
+    elsif (indx <= s.offset_chars) then
+      s.offset_chars := 0;
+      s.offset := 0;
+      /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
+      begin
+        s.src := dbms_lob.substr(s.s_clob, 4000, s.offset+1);
+      exception
+      when ucs2_exception then
+        s.src := dbms_lob.substr(s.s_clob, 3999, s.offset+1);
+      end;
+      while (indx > lengthc(s.src) + s.offset_chars) loop
+        s.offset_chars := s.offset_chars + lengthc(s.src);
+        s.offset := s.offset + length2(s.src);
+        /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
+        begin
+          s.src := dbms_lob.substr(s.s_clob, 4000, s.offset+1);
+        exception
+        when ucs2_exception then
+          s.src := dbms_lob.substr(s.s_clob, 3999, s.offset+1);
+        end;
+      end loop;
+    end if;
+    --dbms_output.put_line('indx: ' || indx || ' offset: ' || s.offset || ' (chars: ' || s.offset_chars || ') src chars: ' || lengthc(s.src));
+    --read from s.src
+    return substr(s.src, indx-s.offset_chars, 1);
   end;
 
   function next_char2(indx number, s in out nocopy json_src, amount number default 1) return varchar2 as
@@ -69,9 +114,17 @@ create or replace package body pljson_parser as
     temp pljson_parser.json_src;
   begin
     temp.s_clob := buf;
+    temp.offset_chars := 0;
     temp.offset := 0;
-    temp.src := dbms_lob.substr(buf, 4000, temp.offset+1);
-    temp.len := dbms_lob.getlength(buf);
+    /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
+    begin
+      temp.src := dbms_lob.substr(buf, 4000, temp.offset+1);
+    exception
+    when ucs2_exception then
+      temp.src := dbms_lob.substr(buf, 3999, temp.offset+1);
+    end;
+    /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
+    temp.len := lengthc(buf); --dbms_lob.getlength(buf);
     return temp;
   end;
 
@@ -79,6 +132,7 @@ create or replace package body pljson_parser as
     temp pljson_parser.json_src;
   begin
     temp.s_clob := buf;
+    temp.offset_chars := 0;
     temp.offset := 0;
     temp.src := substr(buf, 1, 4000);
     temp.len := length(buf);
@@ -199,7 +253,8 @@ create or replace package body pljson_parser as
 
   procedure updateClob(v_extended in out nocopy clob, v_str varchar2) as
   begin
-    dbms_lob.writeappend(v_extended, length(v_str), v_str);
+    /* use of length2, so works correctly for 4-byte unicode characters (issue #169) */
+    dbms_lob.writeappend(v_extended, length2(v_str), v_str);
   end updateClob;
 
   function lexString(jsrc in out nocopy json_src, tok in out nocopy rToken, indx in out nocopy pls_integer, endChar char) return pls_integer as
@@ -208,7 +263,7 @@ create or replace package body pljson_parser as
     buf varchar(4);
     wrong boolean;
   begin
-    indx := indx +1;
+    indx := indx + 1;
     buf := next_char(indx, jsrc);
     while (buf != endChar) loop
       --clob control
@@ -384,7 +439,7 @@ create or replace package body pljson_parser as
         when (buf = Chr(13)) then --Windows or Mac way
           lin_no := lin_no + 1;
           col_no := 0;
-          if (jsrc.len >= indx +1) then -- better safe than sorry
+          if (jsrc.len >= indx+1) then -- better safe than sorry
             buf := next_char(indx+1, jsrc);
             if (buf = Chr(10)) then --\r\n
               indx := indx + 1;
@@ -411,7 +466,8 @@ create or replace package body pljson_parser as
           tokens(tok_indx) := mt('STRING', lin_no, col_no, null);
           indx := lexName(jsrc, tokens(tok_indx), indx);
           if (tokens(tok_indx).data_overflow is not null) then
-            col_no := col_no + dbms_lob.getlength(tokens(tok_indx).data_overflow) + 1;
+            /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
+            col_no := col_no + lengthc(tokens(tok_indx).data_overflow) + 1; --dbms_lob.getlength(tokens(tok_indx).data_overflow) + 1;
           else
             col_no := col_no + length(tokens(tok_indx).data) + 1;
           end if;
@@ -443,11 +499,13 @@ create or replace package body pljson_parser as
                   s_error('Unexpected sequence /**/ to end unescaped data: '||buf, lin_no, col_no);
                 end if;
                 buf := next_char(indx, jsrc);
-                dbms_lob.writeappend(un_esc, length(buf), buf);
+                /* use of length2, so works correctly for 4-byte unicode characters (issue #169) */
+                dbms_lob.writeappend(un_esc, length2(buf), buf);
               end loop;
               tokens(tok_indx) := mt('ESTRING', lin_no, col_no, null);
               tokens(tok_indx).data_overflow := un_esc;
-              col_no := col_no + dbms_lob.getlength(un_esc) + 1; --note: line count won't work properly
+              /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
+              col_no := col_no + lengthc(un_esc) + 1; --dbms_lob.getlength(un_esc) + 1; --note: line count won't work properly
               tok_indx := tok_indx + 1;
               indx := indx + 2;
             end if;
