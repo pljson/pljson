@@ -5,7 +5,7 @@ create or replace type pljson_element force as object
   mapname varchar2(4000),
   mapindx number(32),
   
-  /* not instatiable */
+  /* not instantiable */
   constructor function pljson_element return self as result,
   
   member function is_object return boolean,
