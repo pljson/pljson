@@ -71,6 +71,7 @@ create or replace type body pljson as
     self.json_data := pljson_element_array();
     for i in 1 .. l.list_data.count loop
       self.json_data.extend(1);
+      self.json_data(i) := l.list_data(i);
       if (l.list_data(i).mapname is null or l.list_data(i).mapname like 'row%') then
         self.json_data(i).mapname := 'row'||i;
       end if;
