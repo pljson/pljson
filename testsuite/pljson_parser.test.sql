@@ -173,11 +173,15 @@ begin
     for i in reverse 3995..4005 loop
       --dbms_output.put_line('issue #37: ' || i || ' ' ||
       --  substr(test_buff, i-3995+1, 1) || ' - ' || pljson_parser.next_char(i, src));
-      pljson_ut.assertTrue(substr(test_buff, i-3995+1, 1) = pljson_parser.next_char(i, src));
+      pljson_ut.assertTrue(substr(test_buff, i-3995+1, 1) = pljson_parser.next_char(i, src), to_char(i-3995+1));
     end loop;
     
     dbms_lob.freetemporary(test_clob);
-    pljson_ut.pass(test_name);
+    if pljson_ut.case_fail = 0 then
+      pljson_ut.pass(test_name);
+    else
+      pljson_ut.fail(test_name);
+    end if;
   exception
     when others then
       pljson_ut.fail(test_name);
