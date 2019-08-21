@@ -33,7 +33,7 @@ create or replace package pljson_parser as
     data_overflow clob); -- max_string_size
 
   type lTokens is table of rToken index by pls_integer;
-  type json_src is record (len number, offset number, src varchar2(32767), s_clob clob);
+  type json_src is record (len number, offset number, offset_chars number, src varchar2(32767), s_clob clob);
 
   json_strict boolean not null := false;
 
