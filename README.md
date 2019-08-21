@@ -3,10 +3,9 @@
 **PL/JSON** provides packages and APIs for dealing with JSON formatted data within PL/SQL code.
 General information about JSON is available at http://www.json.org.
 
-## This is version 3.0 RC
-It passes the tests (except the test for helper package and I work on this)
-but needs some more polishing and testing and
-hopefuly by the end of November 2018 it will be announced as ready.
+## This is version 3.0
+You should move to version 3.0. It's cleaner and faster.
+(note: that it fails the test for helper package and I will work on this)
 
 The main difference with version 2.0 is in that now there is an object type for each json element.
 The types are
