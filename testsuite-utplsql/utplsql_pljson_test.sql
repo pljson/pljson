@@ -8,7 +8,10 @@ create or replace package utplsql_pljson_test is
   procedure test_empty;
   
   --%test(Test constructor with pljson_varray)
-  procedure test_blob;
+  procedure test_varray;
+
+  --%test(Test constructor with pljson_list)
+  procedure test_list;
   
   --%test(Test put method)  
   procedure test_put_method;
@@ -108,13 +111,23 @@ create or replace package body utplsql_pljson_test is
   end;
   
   -- constructor with pljson_varray
-  procedure test_blob is
+  procedure test_varray is
     obj pljson;
   begin
     obj := pljson(pljson_varray('key1', 'val1', 'key2', 'val2', 'key3', 'val3'));
     assertTrue(nvl(pljson_ext.get_string(obj, 'key1'), 'x1') = 'val1', 'nvl(pljson_ext.get_string(obj, ''key1''), ''x1'') = ''val1''');
     assertTrue(nvl(pljson_ext.get_string(obj, 'key2'), 'x2') = 'val2', 'nvl(pljson_ext.get_string(obj, ''key2''), ''x2'') = ''val2''');
     assertTrue(nvl(pljson_ext.get_string(obj, 'key3'), 'x3') = 'val3', 'nvl(pljson_ext.get_string(obj, ''key3''), ''x3'') = ''val3''');
+  end;
+  
+  -- constructor with pljson_list
+  procedure test_list is
+    obj pljson;
+  begin
+    obj := pljson(pljson_list('["1","2",3]'));
+    assertTrue(pljson_ext.get_string(obj, 'row1') = '1', 'pljson_ext.get_string(obj, ''row1'') = ''1''');
+    assertTrue(pljson_ext.get_string(obj, 'row2') = '2', 'pljson_ext.get_string(obj, ''row2'') = ''2''');
+    assertTrue(pljson_ext.get_number(obj, 'row3') = 3,   'pljson_ext.get_number(obj, ''row3'') = 3');
   end;
   
   -- put method 
