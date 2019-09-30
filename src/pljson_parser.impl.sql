@@ -21,11 +21,32 @@ create or replace package body pljson_parser as
   THE SOFTWARE.
   */
 
+  decimalpoint varchar2(1 char) := '.';
+  
   ucs2_exception EXCEPTION;
   pragma exception_init(ucs2_exception, -22831);
   
-  decimalpoint varchar2(1 char) := '.';
-
+  function lengthcc(buf clob) return number as
+   offset number := 0;
+   len number := 0;
+   src varchar2(32767);
+   src_len number;
+  begin
+    while true loop
+      begin
+        src := dbms_lob.substr(buf, 4000, offset+1);
+      exception
+      when ucs2_exception then
+        src := dbms_lob.substr(buf, 3999, offset+1);
+      end;
+      exit when src is null;
+      len := len + lengthc(src);
+      offset := offset + length2(src);
+      --dbms_output.put_line('offset = ' || offset || ' len = ' || len);
+    end loop;
+    return len;
+  end;
+  
   procedure update_decimalpoint as
   begin
     select substr(value, 1, 1)
@@ -124,7 +145,7 @@ create or replace package body pljson_parser as
       temp.src := dbms_lob.substr(buf, 3999, temp.offset+1);
     end;
     /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
-    temp.len := lengthc(buf); --dbms_lob.getlength(buf);
+    temp.len := lengthcc(buf); --dbms_lob.getlength(buf);
     return temp;
   end;
 
@@ -467,7 +488,7 @@ create or replace package body pljson_parser as
           indx := lexName(jsrc, tokens(tok_indx), indx);
           if (tokens(tok_indx).data_overflow is not null) then
             /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
-            col_no := col_no + lengthc(tokens(tok_indx).data_overflow) + 1; --dbms_lob.getlength(tokens(tok_indx).data_overflow) + 1;
+            col_no := col_no + lengthcc(tokens(tok_indx).data_overflow) + 1; --dbms_lob.getlength(tokens(tok_indx).data_overflow) + 1;
           else
             col_no := col_no + length(tokens(tok_indx).data) + 1;
           end if;
@@ -505,7 +526,7 @@ create or replace package body pljson_parser as
               tokens(tok_indx) := mt('ESTRING', lin_no, col_no, null);
               tokens(tok_indx).data_overflow := un_esc;
               /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
-              col_no := col_no + lengthc(un_esc) + 1; --dbms_lob.getlength(un_esc) + 1; --note: line count won't work properly
+              col_no := col_no + lengthcc(un_esc) + 1; --dbms_lob.getlength(un_esc) + 1; --note: line count won't work properly
               tok_indx := tok_indx + 1;
               indx := indx + 2;
             end if;
