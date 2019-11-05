@@ -8,7 +8,6 @@ as
   l_Result_json_clob clob;
 begin
   -- Test statements here
-  tstjson_list := pljson_list();
   dbms_lob.createtemporary(l_Result_json_clob, true);
 
   tstjson_list := pljson_util_pkg.sql_to_json(i_sql);
