@@ -22,10 +22,10 @@ create or replace package body pljson_parser as
   */
 
   decimalpoint varchar2(1 char) := '.';
-  
+
   ucs2_exception EXCEPTION;
   pragma exception_init(ucs2_exception, -22831);
-  
+
   function lengthcc(buf clob) return number as
    offset number := 0;
    len number := 0;
@@ -40,13 +40,13 @@ create or replace package body pljson_parser as
         src := dbms_lob.substr(buf, 3999, offset+1);
       end;
       exit when src is null;
-      len := len + lengthc(src);
+      len := len + length(src);
       offset := offset + length2(src);
       --dbms_output.put_line('offset = ' || offset || ' len = ' || len);
     end loop;
     return len;
   end;
-  
+
   procedure update_decimalpoint as
   begin
     select substr(value, 1, 1)
@@ -64,7 +64,7 @@ create or replace package body pljson_parser as
   function next_char(indx number, s in out nocopy json_src) return varchar2 as
   begin
     if (indx > s.len) then return null; end if;
-    
+
     --right offset?
     /* if (indx > 4000 + s.offset or indx < s.offset) then */
     /* fix for issue #37 */
@@ -80,12 +80,12 @@ create or replace package body pljson_parser as
     --read from s.src
     return substr(s.src, indx-s.offset, 1);
     */
-    
-    /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
-    /* lengthc is for emphasis, length would work too */
-    if (indx > lengthc(s.src) + s.offset_chars) then
-      while (indx > lengthc(s.src) + s.offset_chars) loop
-        s.offset_chars := s.offset_chars + lengthc(s.src);
+
+    /* use of length, so works correctly for 4-byte unicode characters (issue #169) */
+    /* lengthc does not work (issue #190) */
+    if (indx > length(s.src) + s.offset_chars) then
+      while (indx > length(s.src) + s.offset_chars) loop
+        s.offset_chars := s.offset_chars + length(s.src);
         s.offset := s.offset + length2(s.src);
         /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
         begin
@@ -105,8 +105,8 @@ create or replace package body pljson_parser as
       when ucs2_exception then
         s.src := dbms_lob.substr(s.s_clob, 3999, s.offset+1);
       end;
-      while (indx > lengthc(s.src) + s.offset_chars) loop
-        s.offset_chars := s.offset_chars + lengthc(s.src);
+      while (indx > length(s.src) + s.offset_chars) loop
+        s.offset_chars := s.offset_chars + length(s.src);
         s.offset := s.offset + length2(s.src);
         /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
         begin
@@ -117,7 +117,7 @@ create or replace package body pljson_parser as
         end;
       end loop;
     end if;
-    --dbms_output.put_line('indx: ' || indx || ' offset: ' || s.offset || ' (chars: ' || s.offset_chars || ') src chars: ' || lengthc(s.src));
+    --dbms_output.put_line('indx: ' || indx || ' offset: ' || s.offset || ' (chars: ' || s.offset_chars || ') src chars: ' || length(s.src));
     --read from s.src
     return substr(s.src, indx-s.offset_chars, 1);
   end;
@@ -144,7 +144,7 @@ create or replace package body pljson_parser as
     when ucs2_exception then
       temp.src := dbms_lob.substr(buf, 3999, temp.offset+1);
     end;
-    /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
+    /* use of lengthcc, so works correctly for 4-byte unicode characters (issue #169) */
     temp.len := lengthcc(buf); --dbms_lob.getlength(buf);
     return temp;
   end;
@@ -473,12 +473,12 @@ create or replace package body pljson_parser as
           indx := lexNumber(jsrc, tokens(tok_indx), indx)-1;
           col_no := col_no + length(tokens(tok_indx).data);
           tok_indx := tok_indx + 1;
-        when buf = '"' then --number
+        when buf = '"' then --string
           tokens(tok_indx) := mt('STRING', lin_no, col_no, null);
           indx := lexString(jsrc, tokens(tok_indx), indx, '"');
           col_no := col_no + length(tokens(tok_indx).data) + 1;
           tok_indx := tok_indx + 1;
-        when buf = '''' and json_strict = false then --number
+        when buf = '''' and json_strict = false then --string
           tokens(tok_indx) := mt('STRING', lin_no, col_no, null);
           indx := lexString(jsrc, tokens(tok_indx), indx, '''');
           col_no := col_no + length(tokens(tok_indx).data) + 1; --hovsa her
@@ -487,7 +487,7 @@ create or replace package body pljson_parser as
           tokens(tok_indx) := mt('STRING', lin_no, col_no, null);
           indx := lexName(jsrc, tokens(tok_indx), indx);
           if (tokens(tok_indx).data_overflow is not null) then
-            /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
+            /* use of lengthcc, so works correctly for 4-byte unicode characters (issue #169) */
             col_no := col_no + lengthcc(tokens(tok_indx).data_overflow) + 1; --dbms_lob.getlength(tokens(tok_indx).data_overflow) + 1;
           else
             col_no := col_no + length(tokens(tok_indx).data) + 1;
@@ -525,7 +525,7 @@ create or replace package body pljson_parser as
               end loop;
               tokens(tok_indx) := mt('ESTRING', lin_no, col_no, null);
               tokens(tok_indx).data_overflow := un_esc;
-              /* use of lengthc, so works correctly for 4-byte unicode characters (issue #169) */
+              /* use of lengthcc, so works correctly for 4-byte unicode characters (issue #169) */
               col_no := col_no + lengthcc(un_esc) + 1; --dbms_lob.getlength(un_esc) + 1; --note: line count won't work properly
               tok_indx := tok_indx + 1;
               indx := indx + 2;

@@ -237,7 +237,7 @@ create or replace package body utplsql_pljson_base64_test is
     dbms_output.put_line('SHA1 base64: ' || utl_raw.cast_to_varchar2(utl_encode.base64_encode((dbms_crypto.hash(w_blob, dbms_crypto.hash_sh1)))));
     dbms_output.put_line('---------------------------------------------------------------');
     
-    pljson_ut.assertTrue(w_hash1 = w_hash2);
+    assertTrue(w_hash1 = w_hash2);
   exception
     when others then
       fail(test_name);
