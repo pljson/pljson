@@ -34,7 +34,7 @@ exec pljson_ut.startup;
 @@pljson_simple.test.sql
 @@pljson_ext.test.sql
 @@pljson_path.test.sql
-@@pljson_helper.test.sql
+REM @@pljson_helper.test.sql
 @@pljson_unicode.test.sql
 @@pljson_base64.test.sql
 

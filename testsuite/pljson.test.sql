@@ -38,8 +38,10 @@ begin
   pljson_ut.testcase('Test constructor with pljson_list');
   declare
     obj pljson;
+    obj_list pljson_list;
   begin
-    obj := pljson(pljson_list('["1","2",3]'));
+    obj_list := pljson_list('["1","2",3]');
+    obj := pljson(obj_list);
     pljson_ut.assertTrue(pljson_ext.get_string(obj, 'row1') = '1', 'pljson_ext.get_string(obj, ''row1'') = ''1''');
     pljson_ut.assertTrue(pljson_ext.get_string(obj, 'row2') = '2', 'pljson_ext.get_string(obj, ''row2'') = ''2''');
     pljson_ut.assertTrue(pljson_ext.get_number(obj, 'row3') = 3,   'pljson_ext.get_number(obj, ''row3'') = 3');
