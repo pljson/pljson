@@ -3,59 +3,65 @@ create or replace type body pljson_list as
   /* constructors */
   constructor function pljson_list return self as result as
   begin
-    self.typeval := 2;
     self.list_data := pljson_element_array();
+    self.typeval := 2;
+
+    --self.object_id := pljson_object_cache.next_id;
     return;
   end;
 
   constructor function pljson_list(str varchar2) return self as result as
   begin
-    self.typeval := 2;
     self := pljson_parser.parse_list(str);
+    --self.typeval := 2;
     return;
   end;
 
   constructor function pljson_list(str clob) return self as result as
   begin
-    self.typeval := 2;
     self := pljson_parser.parse_list(str);
+    --self.typeval := 2;
     return;
   end;
 
   constructor function pljson_list(str blob, charset varchar2 default 'UTF8') return self as result as
     c_str clob;
   begin
-    self.typeval := 2;
     pljson_ext.blob2clob(str, c_str, charset);
     self := pljson_parser.parse_list(c_str);
     dbms_lob.freetemporary(c_str);
+    --self.typeval := 2;
     return;
   end;
 
   constructor function pljson_list(str_array pljson_varray) return self as result as
   begin
-    self.typeval := 2;
     self.list_data := pljson_element_array();
+    self.typeval := 2;
     for i in str_array.FIRST .. str_array.LAST loop
       append(str_array(i));
     end loop;
+    
+    --self.object_id := pljson_object_cache.next_id;
     return;
   end;
 
   constructor function pljson_list(num_array pljson_narray) return self as result as
   begin
-    self.typeval := 2;
     self.list_data := pljson_element_array();
+    self.typeval := 2;
     for i in num_array.FIRST .. num_array.LAST loop
       append(num_array(i));
     end loop;
+    
+    --self.object_id := pljson_object_cache.next_id;
     return;
   end;
 
   constructor function pljson_list(elem pljson_element) return self as result as
   begin
-    self.typeval := 2;
     self := treat(elem as pljson_list);
+    --self.typeval := 2;
     return;
   end;
 
@@ -238,12 +244,12 @@ create or replace type body pljson_list as
     end if;
   end;
 
-  member function count return number as
+  overriding member function count return number as
   begin
     return self.list_data.count;
   end;
 
-  member function get(position pls_integer) return pljson_element as
+  overriding member function get(position pls_integer) return pljson_element as
   begin
     if (self.count >= position and position > 0) then
       return self.list_data(position);
@@ -352,7 +358,7 @@ create or replace type body pljson_list as
   end;
 
   /* json path */
-  member function path(json_path varchar2, base number default 1) return pljson_element as
+  overriding member function path(json_path varchar2, base number default 1) return pljson_element as
     cp pljson_list := self;
   begin
     return pljson_ext.get_json_element(pljson(cp), json_path, base);

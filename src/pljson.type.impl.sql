@@ -3,24 +3,26 @@ create or replace type body pljson as
   /* constructors */
   constructor function pljson return self as result as
   begin
-    self.typeval := 1;
     self.json_data := pljson_element_array();
+    self.typeval := 1;
     self.check_for_duplicate := 1;
+    
+    --self.object_id := pljson_object_cache.next_id;
     return;
   end;
 
   constructor function pljson(str varchar2) return self as result as
   begin
-    self.typeval := 1;
     self := pljson_parser.parser(str);
+    --self.typeval := 1;
     self.check_for_duplicate := 1;
     return;
   end;
 
   constructor function pljson(str in clob) return self as result as
   begin
-    self.typeval := 1;
     self := pljson_parser.parser(str);
+    --self.typeval := 1;
     self.check_for_duplicate := 1;
     return;
   end;
@@ -28,11 +30,11 @@ create or replace type body pljson as
   constructor function pljson(str in blob, charset varchar2 default 'UTF8') return self as result as
     c_str clob;
   begin
-    self.typeval := 1;
     pljson_ext.blob2clob(str, c_str, charset);
     self := pljson_parser.parser(c_str);
-    self.check_for_duplicate := 1;
     dbms_lob.freetemporary(c_str);
+    --self.typeval := 1;
+    self.check_for_duplicate := 1;
     return;
   end;
 
@@ -42,8 +44,8 @@ create or replace type body pljson as
     pair_value varchar2(32767);
   begin
     self.typeval := 1;
-    self.json_data := pljson_element_array();
     self.check_for_duplicate := 1;
+    self.json_data := pljson_element_array();
     for i in str_array.FIRST .. str_array.LAST loop
       if new_pair then
         pair_name := str_array(i);
@@ -54,13 +56,15 @@ create or replace type body pljson as
         new_pair := True;
       end if;
     end loop;
+    
+    --self.object_id := pljson_object_cache.next_id;
     return;
   end;
 
   constructor function pljson(elem pljson_element) return self as result as
   begin
-    self.typeval := 1;
     self := treat(elem as pljson);
+    --self.typeval := 1;
     self.check_for_duplicate := 1;
     return;
   end;
@@ -68,6 +72,7 @@ create or replace type body pljson as
   constructor function pljson(l pljson_list) return self as result as
   begin
     self.typeval := 1;
+    self.check_for_duplicate := 1;
     self.json_data := pljson_element_array();
     for i in 1 .. l.list_data.count loop
       self.json_data.extend(1);
@@ -77,7 +82,8 @@ create or replace type body pljson as
       end if;
       self.json_data(i).mapindx := i;
     end loop;
-    self.check_for_duplicate := 1;
+    
+    --self.object_id := pljson_object_cache.next_id;
     return;
   end;
 
@@ -227,12 +233,12 @@ create or replace type body pljson as
     end if;
   end;
 
-  member function count return number as
+  overriding member function count return number as
   begin
     return self.json_data.count;
   end;
 
-  member function get(pair_name varchar2) return pljson_element as
+  overriding member function get(pair_name varchar2) return pljson_element as
     indx pls_integer;
   begin
     indx := json_data.first;
@@ -329,7 +335,7 @@ create or replace type body pljson as
     return treat(elem as pljson_list);
   end;
 
-  member function get(position pls_integer) return pljson_element as
+  overriding member function get(position pls_integer) return pljson_element as
   begin
     if (self.count >= position and position > 0) then
       return self.json_data(position);
@@ -370,7 +376,7 @@ create or replace type body pljson as
   end remove_duplicates;
 
   /* json path */
-  member function path(json_path varchar2, base number default 1) return pljson_element as
+  overriding member function path(json_path varchar2, base number default 1) return pljson_element as
   begin
     return pljson_ext.get_json_element(self, json_path, base);
   end path;

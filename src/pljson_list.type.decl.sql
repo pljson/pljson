@@ -28,10 +28,10 @@ create or replace type pljson_list force under pljson_element (
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
   */
-  
+
   /* variables */
   list_data pljson_element_array,
-  
+
   /* constructors */
   constructor function pljson_list return self as result,
   constructor function pljson_list(str varchar2) return self as result,
@@ -42,7 +42,7 @@ create or replace type pljson_list force under pljson_element (
   constructor function pljson_list(elem pljson_element) return self as result,
   overriding member function is_array return boolean,
   overriding member function value_of(max_byte_size number default null, max_char_size number default null) return varchar2,
-  
+
   /* list management */
   member procedure append(self in out nocopy pljson_list, elem pljson_element, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem varchar2, position pls_integer default null),
@@ -52,7 +52,7 @@ create or replace type pljson_list force under pljson_element (
   member procedure append(self in out nocopy pljson_list, elem binary_double, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem boolean, position pls_integer default null),
   member procedure append(self in out nocopy pljson_list, elem pljson_list, position pls_integer default null),
-  
+
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_element),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem varchar2),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem clob),
@@ -61,13 +61,13 @@ create or replace type pljson_list force under pljson_element (
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem binary_double),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem boolean),
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem pljson_list),
-  
+
   member procedure remove(self in out nocopy pljson_list, position pls_integer),
   member procedure remove_first(self in out nocopy pljson_list),
   member procedure remove_last(self in out nocopy pljson_list),
-  
-  member function count return number,
-  member function get(position pls_integer) return pljson_element,
+
+  overriding member function count return number,
+  overriding member function get(position pls_integer) return pljson_element,
   member function get_string(position pls_integer) return varchar2,
   member function get_clob(position pls_integer) return clob,
   member function get_number(position pls_integer) return number,
@@ -77,9 +77,9 @@ create or replace type pljson_list force under pljson_element (
   member function head return pljson_element,
   member function last return pljson_element,
   member function tail return pljson_list,
-  
+
   /* json path */
-  member function path(json_path varchar2, base number default 1) return pljson_element,
+  overriding member function path(json_path varchar2, base number default 1) return pljson_element,
   /* json path_put */
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem pljson_element, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem varchar2, base number default 1),
@@ -89,7 +89,7 @@ create or replace type pljson_list force under pljson_element (
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem binary_double, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem boolean, base number default 1),
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem pljson_list, base number default 1),
-  
+
   /* json path_remove */
   member procedure path_remove(self in out nocopy pljson_list, json_path varchar2, base number default 1)
 ) not final;
