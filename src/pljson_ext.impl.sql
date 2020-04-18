@@ -133,7 +133,7 @@ create or replace package body pljson_ext as
     end if;
     --dbms_output.put_line('decoding in multiples of ' || v_line_size);
     v_read_size := floor(32767/v_line_size)*v_line_size;
-    
+
     pos := 1;
     while (pos < clob_size) loop
       dbms_lob.read(p_clob, v_read_size, pos, c_buf);
@@ -287,7 +287,7 @@ create or replace package body pljson_ext as
 
     return ret;
   end parsePath;
-
+  
   --JSON Path getters
   function get_json_element(obj pljson, v_path varchar2, base number default 1) return pljson_element as
     path pljson_list;
@@ -301,17 +301,29 @@ create or replace package body pljson_ext as
     for i in 1 .. path.count loop
       if (path.get(i).is_string()) then
         --string fetch only on json
-        o := pljson(ret);
-        ret := o.get(path.get(i).get_string());
+        ------o := pljson(ret);
+        ------ret := o.get(path.get(i).get_string());
+        /* E.I.Sarmas (github.com/dsnz)   2020-04-18   use inheritance and avoid treat() */
+        ret := ret.get(path.get(i).get_string());
+        --experimental, ignore
+        --ret := get_piece(o, path.get(i).get_string());
       else
         --number fetch on json and json_list
         if (ret.is_array()) then
-          l := pljson_list(ret);
-          ret := l.get(path.get(i).get_number());
+          ------l := pljson_list(ret);
+          ------ret := l.get(path.get(i).get_number());
+          /* E.I.Sarmas (github.com/dsnz)   2020-04-18   use inheritance and avoid treat() */
+          ret := ret.get(path.get(i).get_number());
+          --experimental, ignore
+          --ret := get_piece(l, path.get(i).get_number());
         else
-          o := pljson(ret);
-          l := o.get_values();
-          ret := l.get(path.get(i).get_number());
+          ------o := pljson(ret);
+          ------l := o.get_values();
+          ------ret := l.get(path.get(i).get_number());
+          /* E.I.Sarmas (github.com/dsnz)   2020-04-18   use inheritance and avoid treat() */
+          ret := ret.get(path.get(i).get_number());
+          --experimental, ignore
+          --ret := get_piece(l, path.get(i).get_number());
         end if;
       end if;
     end loop;

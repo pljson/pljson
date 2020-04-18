@@ -311,6 +311,7 @@ create or replace type body pljson_table_impl as
         sctx.column_val.extend();
         sctx.column_val(sctx.column_val.LAST) := '';
       end loop;
+      pljson_object_cache.reset;
     end if;
     
     return odciconst.success;
@@ -378,6 +379,56 @@ create or replace type body pljson_table_impl as
       end if;
       nested_path_literal(k) := temp_path || row_ind(k) || ']';
     end;
+    
+    /* assumes it is always called with same root object = 'json_obj' */
+    function get_json_element_with_cache(json_obj pljson, temp_path varchar2) return pljson_element is
+      bra_index number;
+      dot_index number;
+      prefix varchar2(250);
+      piece varchar2(250);
+      piece_index number;
+      prefix_val pljson_element;
+      piece_val pljson_element;
+    begin
+      prefix := null;
+      piece := null;
+      bra_index := instr(temp_path, '[', -1);
+      dot_index := instr(temp_path, '.', -1);
+      /* yyy.xxx */
+      if dot_index > bra_index then
+        prefix := substr(temp_path, 1, dot_index-1);
+        piece := substr(temp_path, dot_index+1);
+        prefix_val := pljson_object_cache.get(prefix);
+        if prefix_val is null then
+          prefix_val := pljson_ext.get_json_element(json_obj, prefix);
+          pljson_object_cache.set(prefix, prefix_val);
+        end if;
+        --dbms_output.put_line(temp_path ||' dot=> '|| prefix ||' ('|| prefix_val.typeval ||') + '|| piece);
+        --piece_val := prefix_val.path(piece); --pljson_ext.get_json_element(treat(prefix_val as pljson), piece);
+        piece_val := prefix_val.get(piece); 
+        return piece_val;
+      /* yyy.xxx[...] */
+      elsif dot_index < bra_index then
+        prefix := substr(temp_path, 1, bra_index-1);
+        piece := substr(temp_path, bra_index);
+        prefix_val := pljson_object_cache.get(prefix);
+        if prefix_val is null then
+          prefix_val := pljson_ext.get_json_element(json_obj, prefix);
+          pljson_object_cache.set(prefix, prefix_val);
+        end if;
+        --dbms_output.put_line(temp_path ||' bra=> '|| prefix ||' ('|| prefix_val.typeval ||') + '|| piece);
+        --piece_val := prefix_val.path(piece); --pljson_ext.get_json_element(treat(prefix_val as ...), piece);
+        piece_index := to_number(substr(piece, 2, length(piece)-2));
+        piece_val := prefix_val.get(piece_index);
+        return piece_val;
+      /* xxx, both must be zero */
+      else
+        --dbms_output.put_line(temp_path ||' => ...');
+        piece_val := pljson_ext.get_json_element(json_obj, temp_path);
+        return piece_val;
+      end if;
+    end;
+  
   begin
     --dbms_output.put_line('>>Fetch, nrows = ' || nrows);
     
@@ -478,8 +529,10 @@ create or replace type body pljson_table_impl as
             set_nested_path_literal(k);
           end if;
           temp_path := nested_path_literal(k) || column_path_part(i);
+          --dbms_output.put_line(i || ' lit: ' || nested_path_literal(k) || ' part: ' || column_path_part(i));
           --dbms_output.put_line(i || ', path = ' || temp_path);
-          json_val := pljson_ext.get_json_element(json_obj, temp_path);
+          ---json_val := pljson_ext.get_json_element(json_obj, temp_path);
+          json_val := get_json_element_with_cache(json_obj, temp_path);
           --dbms_output.put_line('type='||json_val.get_type());
           case json_val.typeval
             --when 1 then 'object';
@@ -527,6 +580,7 @@ create or replace type body pljson_table_impl as
   member function ODCITableClose(self in pljson_table_impl) return number is
   begin
     --dbms_output.put_line('>>Close');
+    pljson_object_cache.reset;
     return odciconst.success;
   end;
 end;

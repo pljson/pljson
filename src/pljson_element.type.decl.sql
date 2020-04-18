@@ -4,10 +4,11 @@ create or replace type pljson_element force as object
   typeval number(1),
   mapname varchar2(4000),
   mapindx number(32),
-  
+  object_id number,
+
   /* not instantiable */
   constructor function pljson_element return self as result,
-  
+
   member function is_object return boolean,
   member function is_array return boolean,
   member function is_string return boolean,
@@ -17,10 +18,9 @@ create or replace type pljson_element force as object
   member function get_type return varchar2,
   /* should be overriden */
   member function value_of(max_byte_size number default null, max_char_size number default null) return varchar2,
-  
+
   /*
-    member methods to remove need for treat(),
-    treat() should be explicit if there is a "is_" method for more explicit code
+    member methods to remove need for treat()
   */
   member function get_string(max_byte_size number default null, max_char_size number default null) return varchar2,
   member function get_clob return clob,
@@ -35,7 +35,13 @@ create or replace type pljson_element force as object
   /** Private method for internal processing. */
   member function is_number_repr_double return boolean,
   member function get_bool return boolean,
-  
+
+  member function count return number,
+  member function get(pair_name varchar2) return pljson_element,
+  member function get(position pls_integer) return pljson_element,
+
+  member function path(json_path varchar2, base number default 1) return pljson_element,
+
   /* output methods */
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
   member procedure to_clob(self in pljson_element, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),

@@ -3,11 +3,13 @@
 **PL/JSON** provides packages and APIs for dealing with JSON formatted data within PL/SQL code.
 General information about JSON is available at http://www.json.org.
 
-## This is version 3.0
-You should move to version 3.0. It's cleaner and faster.
+## Latest release 3.2.0 (2020-04-18)
+
+## This is version 3
+You should move to version 3. It's cleaner and faster.
 (note: that it fails the test for helper package and I will work on this)
 
-The main difference with version 2.0 is in that now there is an object type for each json element.
+The main difference with version 2 is in that now there is an object type for each json element.
 The types are
 
 | | |
@@ -21,35 +23,32 @@ The types are
 
 and all these types descend from type **pljson_element**
 
-while in version 2.0 the object type pljson_value is a container that contains one of
+while in version 2 the object type pljson_value is a container that contains one of
 string, number, boolean true/false, null, pljson or pljson_list
 
 This is a cleaner design and the benefit is easier coding and faster and more memory efficient code.
 
-In JSON description, a document consists of "value(s)"
+In the JSON standard, a document consists of "value(s)"
 so we should name the parent of all objects pljson_value
-however this name has been so much ingrained with version 1.0 and version 2.0
+however this name has been so much ingrained with version 1 and version 2
 that it is felt that a new name should be used and so the parent is now named pljson_element.
 Old code uses a lot pljson_value() constructors while new code has no such constructors
 but instead has specific constructors for string, number, etc.
 and so code compatibility could not be maintained even if the name of pljson_value was kept.
 
-PLJSON evolved from version 1.0 using sys.anydata and worked with early Oracle releases
-to version 2.0 where sys.anydata was removed and an object oriented design was used but
-the object design wasn't the most appropriate one and mirrored the objects of version 1.0 so that
-there was almost 100% compatibility with version 1.0 code
+PLJSON evolved from version 1 using sys.anydata and worked with early Oracle releases
+to version 2 where sys.anydata was removed and an object oriented design was used but
+the object design wasn't the most appropriate one and mirrored the objects of version 1 so that
+there was almost 100% compatibility with version 1 code.
 
-the code changes for version 3.0 are few, mainly
+The api changes for version 3 are few, mainly
 1. use new constructors instead of pljson_value()
 2. remove the need to call the 'to_json_value()' method
-3. optionally use many new helpful methods that make for easier code
+3. optionally use many new helpful methods for easier coding
 
-Both PLJSON version 3.0 and version 2.0 will be maintained together for quite a long time.
-
-## What's new (2018-09-22)
-
-- minor code rewrite so code is cleaner, conforms better to today's accepted code standards and
-there is as much common code as possible between version 2.0 and version 3.0 (this is a continuing effort)
+Both PLJSON version 3 and version 2 will be maintained together for quite a long time
+and there will be effort that there is as much common code as possible between the two versions
+but new features and improvements will be delivered first to version 3.
 
 ## A demo of things you can do with PL/JSON
 ```
@@ -233,26 +232,29 @@ returns
  
 Warning:
 
-this installation currently works in the installation schema only, but
-soon there will be an installation option to work for other schemas too
+This installation currently works in the installation schema only (ie. you can't use it from other schema).
 
+If you used version 2 in past and want to use the new version 3 in the same schema then
+you must first uninstall version 2 (use uninstall.sql of version 2) and then install version 3.
 
 **NOTICE:**
 
 All pljson types and packages start with 'PLJSON'.
 In earlier releases they started with 'JSON', but this conflicted with new
-native json support in Oracle 12c so they were renamed to start with PLJSON,
+native json support in Oracle 12c so they were renamed to start with PLJSON.
+For backwards compatibility in version 2 there are created corresponding synonyms
+starting with 'JSON'. In version 3 no such synonyms are created.
 
 Most of the examples use the old naming starting with 'JSON'.
-When you try the examples, and in your code, to use `PLJSON_...` instead of `JSON_...`.
-also the examples work with version 2.0 and have not been updated yet to version 3.0
-but the differences are minor (see the initial description)
+When you try the examples, and in your code, use `PLJSON_...` instead of `JSON_...`.
+Also, the example code was made with version 2 api and has not been updated to version 3 api yet
+but the differences are minor (see the initial description) and most code should work without change.
 
 ## Documentation
 
-See the version 2.0 documentation and study the main type specifications first.
+See the version 2 documentation and study the main type specifications first.
 Later you can study the package specifications
-and I will update this README for more information.
+and I will also keep updating this README for more information.
 
 ## Project folders and files
 
@@ -262,6 +264,9 @@ and I will update this README for more information.
 + **examples/** useful examples to learn how to use pljson
 + **testsuite/** a set of testsuites to verify installation, just run **testall.sql**
 + **testsuite-utplsql/** the same set of testsuites but utilizing the utplsql framework (which you must install separately), just run ut_testall.sql
+
+## Support
+To report bugs, suggest improvements, or ask questions, please create a new issue.
 
 ## Contributing
 

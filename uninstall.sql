@@ -21,16 +21,18 @@
   THE SOFTWARE.
   */
 
-declare begin
+begin
   begin execute immediate 'drop package pljson_parser'; exception when others then null; end;
   begin execute immediate 'drop package pljson_printer'; exception when others then null; end;
   begin execute immediate 'drop package pljson_ext'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_object_cache'; exception when others then null; end;
   begin execute immediate 'drop package pljson_dyn'; exception when others then null; end;
   begin execute immediate 'drop package pljson_ml'; exception when others then null; end;
   begin execute immediate 'drop package pljson_xml'; exception when others then null; end;
   begin execute immediate 'drop package pljson_util_pkg'; exception when others then null; end;
   begin execute immediate 'drop package pljson_helper'; exception when others then null; end;
-  begin execute immediate 'drop package pljson_ac'; exception when others then null; end;
+  begin execute immediate 'drop package pljson_ut'; exception when others then null; end;
+  
   begin execute immediate 'drop type pljson force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_list force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_string force'; exception when others then null; end;
@@ -43,35 +45,12 @@ declare begin
   begin execute immediate 'drop type pljson_vtab force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_varray force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_table_impl force'; exception when others then null; end;
-  begin execute immediate 'drop package pljson_ut'; exception when others then null; end;
-  begin execute immediate 'drop table pljson_testsuite'; exception when others then null; end;
+  
+  begin execute immediate 'drop package pljson_ac'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_value_array force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_value force'; exception when others then null; end;
   
   begin execute immediate 'drop synonym pljson_table'; exception when others then null; end;
-  
-  begin execute immediate 'drop public synonym pljson_parser'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_printer'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_ext'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_dyn'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_ml'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_xml'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_util_pkg'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_helper'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_ac'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_list'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_string'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_number'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_bool'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_null'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_element_array'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_element'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_narray'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_vtab'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_varray'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_table_impl'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_table'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_ut'; exception when others then null; end;
-  begin execute immediate 'drop public synonym pljson_testsuite'; exception when others then null; end;
 end;
 /
 show err
