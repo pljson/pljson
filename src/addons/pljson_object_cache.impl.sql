@@ -1,15 +1,31 @@
 create or replace package body pljson_object_cache as
-  
+
   /* E.I.Sarmas (github.com/dsnz)   2020-04-18   object cache to speed up internal operations */
-  
+
   /* !!! NOTE: this package is used internally by pljson and it's not part of the api !!! */
+
+  procedure set_names_set(names pljson_varray) is
+  begin
+    for i in names.FIRST .. names.LAST loop
+      names_set(names(i)) := '1';
+    end loop;
+  end;
+  
+  function in_names_set(a_name varchar2) return boolean is
+  begin
+    if names_set.exists(a_name) then
+      return true;
+    else
+      return false;
+    end if;
+  end;
   
   procedure reset is
   begin
     last_id := 0;
     flush;
   end;
-  
+
   procedure flush is
   begin
     pljson_element_cache.delete;
@@ -17,7 +33,7 @@ create or replace package body pljson_object_cache as
     cache_hits := 0;
     cache_invalid_reqs := 0;
   end;
-  
+
   procedure print_stats is
   begin
     dbms_output.put_line('reqs = ' || cache_reqs);
@@ -26,13 +42,13 @@ create or replace package body pljson_object_cache as
     dbms_output.put_line('cache count = ' || pljson_element_cache.count);
     dbms_output.put_line('id count = ' || last_id);
   end;
-  
+
   function next_id return number is
   begin
     last_id := last_id + 1;
     return last_id;
   end;
-  
+
   function object_key(elem pljson_element, piece varchar2) return varchar2 is
     key varchar2(250);
   begin
@@ -43,7 +59,7 @@ create or replace package body pljson_object_cache as
     key := to_char(elem.object_id)||'.'||piece;
     return key;
   end;
-  
+
   function get(key varchar2) return pljson_element is
   begin
     cache_reqs := cache_reqs + 1;
@@ -54,16 +70,17 @@ create or replace package body pljson_object_cache as
       return null;
     end if;
   end;
-  
+
   procedure set(key varchar2, val pljson_element) is
   begin
+    --dbms_output.put_line('caching: ' || key);
     pljson_element_cache(key) := val;
   end;
 
   /*
   -- experimental, ignore
   -- to use with 'get_json_element'
-  
+
   function get_piece(elem pljson, piece varchar2) return pljson_element is
     key varchar2(250);
     val pljson_element;
@@ -81,7 +98,7 @@ create or replace package body pljson_object_cache as
       return val;
     end if;
   end;
-  
+
   function get_piece(elem pljson_list, piece varchar2) return pljson_element is
     key varchar2(250);
     val pljson_element;
