@@ -1,12 +1,12 @@
 #!/bin/bash
 
-type jq 2>&1 1>/dev/null
-if [ 1 -eq $? ]; then
-  echo 'Please install jq -- https://stedolan.github.io/jq/'
-  exit 1
-fi
+#type jq 2>&1 1>/dev/null
+#if [ 1 -eq $? ]; then
+#  echo 'Please install jq -- https://stedolan.github.io/jq/'
+#  exit 1
+#fi
 
-version=$(cat package.json | jq -r '.version')
+version=$(cat package.json | ./jq.exe -r '.version')
 
 rm -rf target pljson-*.zip 2>&1 1>/dev/null
 mkdir target
