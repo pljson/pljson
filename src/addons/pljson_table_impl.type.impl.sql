@@ -39,7 +39,7 @@ create or replace type body pljson_table_impl as
     and for this reason it cannot work with cursor_sharing=force
     this is not a limitation of PLJSON but rather a result of how Oracle Data Cartridge works currently
   */
-  
+
   static function ODCITableDescribe(
     rtype out anytype,
     json_str clob, column_paths pljson_varray, column_names pljson_varray := null,
@@ -173,7 +173,7 @@ create or replace type body pljson_table_impl as
     sctx.json_obj := json_obj;
     sctx.root_array_size := root_array_size;
     sctx.data_tab.delete;
-    
+
     if table_mode = 'cartesian' then
       for i in column_paths.FIRST .. column_paths.LAST loop
         --dbms_output.put_line('path='||column_paths(i));
@@ -356,12 +356,12 @@ create or replace type body pljson_table_impl as
     json_arr pljson_list;
     json_elem pljson_element;
     value_array pljson_varray := pljson_varray();
-    
+
     /* E.I.Sarmas (github.com/dsnz)   2020-05-12   optimization for json structure of issue #197 */
     /* extra caching as get on associative table is slow because of large object copying */
     last_prefix_array varchar2(250);
     last_prefix_array_val pljson_element;
-    
+
     /* nested mode */
     temp_path varchar(32767);
     start_index number;
@@ -420,6 +420,7 @@ create or replace type body pljson_table_impl as
       prefix_array varchar2(250);
       prefix_index number;
       prefix_lbra_index number;
+      cache_key varchar2(32767);
       cached_piece varchar2(250);
       cached_piece_val pljson_element;
       cached_piece_path varchar2(250);
@@ -441,12 +442,14 @@ create or replace type body pljson_table_impl as
           return piece_val;
         end if;
         */
+        /* inline expansion (begin) */
         pljson_object_cache.cache_reqs := pljson_object_cache.cache_reqs + 1;
         if pljson_object_cache.pljson_element_cache.exists(temp_path) then
           pljson_object_cache.cache_hits := pljson_object_cache.cache_hits + 1;
           return pljson_object_cache.pljson_element_cache(temp_path);
         end if;
-        
+        /* inline expansion (end) */
+
         /* normal processing */
         prefix := substr(temp_path, 1, dot_index-1);
         piece := substr(temp_path, dot_index+1);
@@ -463,17 +466,23 @@ create or replace type body pljson_table_impl as
             last_prefix_array := prefix_array;
             last_prefix_array_val := null;
             --prefix_val := pljson_object_cache.get(prefix);
+            /* inline expansion (begin) */
+            cache_key := last_prefix_array;
+            if cache_key is null then
+              cache_key := '$';
+            end if;
             pljson_object_cache.cache_reqs := pljson_object_cache.cache_reqs + 1;
-            if pljson_object_cache.pljson_element_cache.exists(last_prefix_array) then
+            if pljson_object_cache.pljson_element_cache.exists(cache_key) then
               pljson_object_cache.cache_hits := pljson_object_cache.cache_hits + 1;
-              last_prefix_array_val := pljson_object_cache.pljson_element_cache(last_prefix_array);
+              last_prefix_array_val := pljson_object_cache.pljson_element_cache(cache_key);
             end if;
             if last_prefix_array_val is null then
               --dbms_output.put_line(temp_path ||' dot(smart)=> '|| prefix_array ||','|| to_char(prefix_index) ||' + '|| piece);
               last_prefix_array_val := pljson_ext.get_json_element(json_obj, last_prefix_array);
               --pljson_object_cache.set(prefix_array, prefix_val);
-              pljson_object_cache.pljson_element_cache(last_prefix_array) := last_prefix_array_val;
+              pljson_object_cache.pljson_element_cache(cache_key) := last_prefix_array_val;
             end if;
+            /* inline expansion (end) */
           end if;
           --dbms_output.put_line(temp_path ||' dot(smart)=> '|| prefix ||' ('|| prefix_val.typeval ||'),'||
           --                      to_char(prefix_index) ||' + '|| piece);
@@ -481,6 +490,7 @@ create or replace type body pljson_table_impl as
           prefix_val := last_prefix_array_val.get(prefix_index);
         else
           --prefix_val := pljson_object_cache.get(prefix);
+          /* inline expansion (begin) */
           pljson_object_cache.cache_reqs := pljson_object_cache.cache_reqs + 1;
           prefix_val := null;
           if pljson_object_cache.pljson_element_cache.exists(prefix) then
@@ -493,9 +503,10 @@ create or replace type body pljson_table_impl as
             --pljson_object_cache.set(prefix, prefix_val);
             pljson_object_cache.pljson_element_cache(prefix) := prefix_val;
           end if;
+          /* inline expansion (end) */
           --dbms_output.put_line(temp_path ||' dot=> '|| prefix ||' ('|| prefix_val.typeval ||') + '|| piece);
         end if;
-        
+
         /* E.I.Sarmas (github.com/dsnz)   2020-05-12   optimization for json structure of issue #197 */
         /* cache pieces for all cached_names, except current name */
         cached_piece_count := 1;
@@ -510,12 +521,14 @@ create or replace type body pljson_table_impl as
             --dbms_output.put_line('cache piece: ' || cached_piece_path);
             cached_piece_val := prefix_val.get(cached_piece);
             --pljson_object_cache.set(cached_piece_path, cached_piece_val);
+            /* inline expansion (begin) */
             pljson_object_cache.pljson_element_cache(cached_piece_path) := cached_piece_val;
+            /* inline expansion (end) */
           end if;
           exit when cached_piece_count = cached_names.count;
         end loop;
         --dbms_output.put_line('scanned elements#: ' || to_char(scan_count));
-        
+
         --piece_val := prefix_val.path(piece); --pljson_ext.get_json_element(treat(prefix_val as pljson), piece);
         piece_val := prefix_val.get(piece);
         return piece_val;
@@ -533,22 +546,27 @@ create or replace type body pljson_table_impl as
           last_prefix_array := prefix_array;
           last_prefix_array_val := null;
           --prefix_val := pljson_object_cache.get(prefix);
+          /* inline expansion (begin) */
+          cache_key := last_prefix_array;
+          if cache_key is null then
+            cache_key := '$';
+          end if;
           pljson_object_cache.cache_reqs := pljson_object_cache.cache_reqs + 1;
-          last_prefix_array_val := null;
-          if pljson_object_cache.pljson_element_cache.exists(last_prefix_array) then
+          if pljson_object_cache.pljson_element_cache.exists(cache_key) then
             pljson_object_cache.cache_hits := pljson_object_cache.cache_hits + 1;
-            last_prefix_array_val := pljson_object_cache.pljson_element_cache(last_prefix_array);
+            last_prefix_array_val := pljson_object_cache.pljson_element_cache(cache_key);
           end if;
           if last_prefix_array_val is null then
             --dbms_output.put_line(temp_path ||' bra=> '|| prefix_array ||' + '|| piece);
             last_prefix_array_val := pljson_ext.get_json_element(json_obj, last_prefix_array);
             --pljson_object_cache.set(prefix, prefix_val);
-            pljson_object_cache.pljson_element_cache(last_prefix_array) := last_prefix_array_val;
+            pljson_object_cache.pljson_element_cache(cache_key) := last_prefix_array_val;
           end if;
+          /* inline expansion (end) */
         end if;
         --dbms_output.put_line(temp_path ||' bra=> '|| prefix ||' ('|| prefix_val.typeval ||') + '|| piece);
         --piece_val := prefix_val.path(piece); --pljson_ext.get_json_element(treat(prefix_val as ...), piece);
-        
+
         piece_val := last_prefix_array_val.get(piece_index);
         return piece_val;
       /* xxx, both must be zero */

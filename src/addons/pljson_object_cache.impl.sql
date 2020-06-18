@@ -10,7 +10,7 @@ create or replace package body pljson_object_cache as
       names_set(names(i)) := '1';
     end loop;
   end;
-  
+
   function in_names_set(a_name varchar2) return boolean is
   begin
     if names_set.exists(a_name) then
@@ -19,7 +19,7 @@ create or replace package body pljson_object_cache as
       return false;
     end if;
   end;
-  
+
   procedure reset is
   begin
     last_id := 0;
@@ -61,20 +61,30 @@ create or replace package body pljson_object_cache as
   end;
 
   function get(key varchar2) return pljson_element is
+    cache_key varchar2(32767);
   begin
+    cache_key := key;
+    if cache_key is null then
+      cache_key := '$';
+    end if;
     cache_reqs := cache_reqs + 1;
-    if pljson_element_cache.exists(key) then
+    if pljson_element_cache.exists(cache_key) then
       cache_hits := cache_hits + 1;
-      return pljson_element_cache(key);
+      return pljson_element_cache(cache_key);
     else
       return null;
     end if;
   end;
 
   procedure set(key varchar2, val pljson_element) is
+    cache_key varchar2(32767);
   begin
-    --dbms_output.put_line('caching: ' || key);
-    pljson_element_cache(key) := val;
+    cache_key := key;
+    if cache_key is null then
+      cache_key := '$';
+    end if;
+    --dbms_output.put_line('caching: ' || cache_key);
+    pljson_element_cache(cache_key) := val;
   end;
 
   /*
