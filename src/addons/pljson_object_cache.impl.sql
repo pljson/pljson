@@ -6,6 +6,9 @@ create or replace package body pljson_object_cache as
 
   procedure set_names_set(names pljson_varray) is
   begin
+    if names.COUNT = 0 then
+      return;
+    end if;
     for i in names.FIRST .. names.LAST loop
       names_set(names(i)) := '1';
     end loop;
