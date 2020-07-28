@@ -25,6 +25,16 @@ create or replace package pljson_ext as
      an easy way of adding date values in json - without changing the structure */
   function parsePath(json_path varchar2, base number default 1) return pljson_list;
 
+  --JSON pre-parsed path getters
+  function get_json_element(obj pljson, path pljson_list) return pljson_element;
+  function get_string(obj pljson, path pljson_list) return varchar2;
+  function get_number(obj pljson, path pljson_list) return number;
+  function get_double(obj pljson, path pljson_list) return binary_double;
+  function get_json(obj pljson, path pljson_list) return pljson;
+  function get_json_list(obj pljson, path pljson_list) return pljson_list;
+  function get_bool(obj pljson, path pljson_list) return boolean;
+  function get_date(obj pljson, path pljson_list) return date;
+
   --JSON Path getters
   function get_json_element(obj pljson, v_path varchar2, base number default 1) return pljson_element;
   function get_string(obj pljson, path varchar2,       base number default 1) return varchar2;
