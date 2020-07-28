@@ -787,6 +787,11 @@ create or replace package body pljson_ext as
     end if;
   end;
 
+  procedure remove(obj in out nocopy pljson, path pljson_list) as
+  begin
+    pljson_ext.put_internal_preparsed(obj, path, null);
+  end remove;
+
   procedure remove(obj in out nocopy pljson, path varchar2, base number default 1) as
   begin
     pljson_ext.put_internal(obj, path, null, base);

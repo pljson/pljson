@@ -63,6 +63,7 @@ create or replace package pljson_ext as
   procedure put(obj in out nocopy pljson, path varchar2, elem boolean,    base number default 1);
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson_element, base number default 1);
 
+  procedure remove(obj in out nocopy pljson, path pljson_list);
   procedure remove(obj in out nocopy pljson, path varchar2, base number default 1);
 
   --Pretty print with JSON Path - obsolete in 0.9.4 - obj.path(v_path).(to_char,print,htp)
