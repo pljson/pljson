@@ -500,7 +500,7 @@ create or replace package body pljson_ext as
   /* JSON pre-parsed path putter internal function */
   procedure put_internal_preparsed(obj in out nocopy pljson, path pljson_list, elem pljson_element) as
     val pljson_element := elem;
-    backreference pljson_list := pljson_list();
+    backreference pljson_element_array := pljson_element_array();
 
     keyval pljson_element; keynum number; keystring varchar2(4000);
     temp pljson_element := obj;
@@ -519,9 +519,11 @@ create or replace package body pljson_ext as
         keynum := keyval.get_number();
         if ((not temp.is_object()) and (not temp.is_array())) then
           if (val is null) then return; end if;
-          backreference.remove_last;
           temp := pljson_list();
-          backreference.append(temp);
+          if (backreference.count = 0) then
+            backreference.extend;
+          end if;
+          backreference(backreference.count) := temp;
         end if;
 
         if (temp.is_object()) then
@@ -539,8 +541,10 @@ create or replace package body pljson_ext as
             for i in list_temp.count+1 .. keynum loop
               list_temp.append(pljson_null());
             end loop;
-            backreference.remove_last;
-            backreference.append(list_temp);
+            if (backreference.count = 0) then
+              backreference.extend;
+            end if;
+            backreference(backreference.count) := list_temp;
           end if;
 
           temp := list_temp.get(keynum);
@@ -551,9 +555,11 @@ create or replace package body pljson_ext as
         if (not temp.is_object()) then
           --backreference.print;
           if (val is null) then return; end if;
-          backreference.remove_last;
           temp := pljson();
-          backreference.append(temp);
+          if (backreference.count = 0) then
+            backreference.extend;
+          end if;
+          backreference(backreference.count) := temp;
           --raise_application_error(-20110, 'PLJSON_EXT put error: trying to access a non object with a string.');
         end if;
         obj_temp := pljson(temp);
@@ -570,7 +576,8 @@ create or replace package body pljson_ext as
           temp := pljson();
         end if;
       end if;
-      backreference.append(temp);
+      backreference.extend;
+      backreference(backreference.count) := temp;
     end loop;
 
     --  backreference.print(false);
@@ -594,7 +601,7 @@ create or replace package body pljson_ext as
         end if;
         if (inserter is null) then obj.remove(keystring); else obj.put(keystring, inserter); end if;
       else
-        temp := backreference.get(i-1);
+        temp := backreference(i-1);
         if (temp.is_object()) then
           keyval := path.get(i);
           obj_temp := pljson(temp);
