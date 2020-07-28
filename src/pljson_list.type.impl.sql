@@ -85,30 +85,30 @@ create or replace type body pljson_list as
   /* list management */
   member procedure append(self in out nocopy pljson_list, elem pljson_element, position pls_integer default null) as
     indx pls_integer;
-    insert_value pljson_element;
   begin
-    insert_value := elem;
-    if insert_value is null then
-      insert_value := pljson_null();
-    end if;
     if (position is null or position > self.count) then --end of list
       indx := self.count + 1;
       self.list_data.extend(1);
-      self.list_data(indx) := insert_value;
     elsif (position < 1) then --new first
       indx := self.count;
       self.list_data.extend(1);
       for x in reverse 1 .. indx loop
         self.list_data(x+1) := self.list_data(x);
       end loop;
-      self.list_data(1) := insert_value;
+      indx := 1;
     else
       indx := self.count;
       self.list_data.extend(1);
       for x in reverse position .. indx loop
         self.list_data(x+1) := self.list_data(x);
       end loop;
-      self.list_data(position) := insert_value;
+      indx := position;
+    end if;
+
+    if elem is not null then
+      self.list_data(indx) := elem;
+    else
+      self.list_data(indx) := pljson_null();
     end if;
   end;
 

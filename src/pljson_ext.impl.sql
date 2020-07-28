@@ -499,9 +499,7 @@ create or replace package body pljson_ext as
 
   /* JSON pre-parsed path putter internal function */
   procedure put_internal_preparsed(obj in out nocopy pljson, path pljson_list, elem pljson_element) as
-    val pljson_element := elem;
     backreference pljson_element_array := pljson_element_array();
-
     keyval pljson_element; keynum number; keystring varchar2(4000);
     temp pljson_element := obj;
     obj_temp  pljson;
@@ -518,7 +516,7 @@ create or replace package body pljson_ext as
         --number index
         keynum := keyval.get_number();
         if ((not temp.is_object()) and (not temp.is_array())) then
-          if (val is null) then return; end if;
+          if (elem is null) then return; end if;
           temp := pljson_list();
           if (backreference.count = 0) then
             backreference.extend;
@@ -529,15 +527,15 @@ create or replace package body pljson_ext as
         if (temp.is_object()) then
           obj_temp := pljson(temp);
           if (obj_temp.count < keynum) then
-            if (val is null) then return; end if;
+            if (elem is null) then return; end if;
             raise_application_error(-20110, 'PLJSON_EXT put error: access object with too few members.');
           end if;
           temp := obj_temp.get(keynum);
         else
           list_temp := pljson_list(temp);
           if (list_temp.count < keynum) then
-            if (val is null) then return; end if;
-            --raise error or quit if val is null
+            if (elem is null) then return; end if;
+            --raise error or quit if elem is null
             for i in list_temp.count+1 .. keynum loop
               list_temp.append(pljson_null());
             end loop;
@@ -554,7 +552,7 @@ create or replace package body pljson_ext as
         keystring := keyval.get_string();
         if (not temp.is_object()) then
           --backreference.print;
-          if (val is null) then return; end if;
+          if (elem is null) then return; end if;
           temp := pljson();
           if (backreference.count = 0) then
             backreference.extend;
@@ -567,7 +565,7 @@ create or replace package body pljson_ext as
       end if;
 
       if (temp is null) then
-        if (val is null) then return; end if;
+        if (elem is null) then return; end if;
         --what to expect?
         keyval := path.get(i+1);
         if (keyval is not null and keyval.is_number()) then
@@ -584,59 +582,48 @@ create or replace package body pljson_ext as
     --  path.print(false);
 
     --use backreference and path together
-    inserter := val;
-    for i in reverse 1 .. backreference.count loop
+    inserter := elem;
+    for i in reverse 2 .. backreference.count loop
       -- inserter.print(false);
-      if ( i = 1 ) then
-        keyval := path.get(1);
+      temp := backreference(i-1);
+      if (temp.is_object()) then
+        keyval := path.get(i);
+        obj_temp := pljson(temp);
         if (keyval.is_string()) then
           keystring := keyval.get_string();
         else
           keynum := keyval.get_number();
-          declare
-            t1 pljson_element := obj.get(keynum);
-          begin
-            keystring := t1.mapname;
-          end;
+          keystring := obj_temp.get(keynum).mapname;
         end if;
-        if (inserter is null) then obj.remove(keystring); else obj.put(keystring, inserter); end if;
-      else
-        temp := backreference(i-1);
-        if (temp.is_object()) then
-          keyval := path.get(i);
-          obj_temp := pljson(temp);
-          if (keyval.is_string()) then
-            keystring := keyval.get_string();
-          else
-            keynum := keyval.get_number();
-            declare
-              t1 pljson_element := obj_temp.get(keynum);
-            begin
-              keystring := t1.mapname;
-            end;
-          end if;
-          if (inserter is null) then
-            obj_temp.remove(keystring);
-            if (obj_temp.count > 0) then inserter := obj_temp; end if;
-          else
-            obj_temp.put(keystring, inserter);
-            inserter := obj_temp;
-          end if;
+        if (inserter is null) then
+          obj_temp.remove(keystring);
+          if (obj_temp.count > 0) then inserter := obj_temp; end if;
         else
-          --array only number
-          keynum := path.get(i).get_number();
-          list_temp := pljson_list(temp);
-          list_temp.remove(keynum);
-          if (not inserter is null) then
-            list_temp.append(inserter, keynum);
-            inserter := list_temp;
-          else
-            if (list_temp.count > 0) then inserter := list_temp; end if;
-          end if;
+          obj_temp.put(keystring, inserter);
+          inserter := obj_temp;
+        end if;
+      else
+        --array only number
+        keynum := path.get(i).get_number();
+        list_temp := pljson_list(temp);
+        list_temp.remove(keynum);
+        if (not inserter is null) then
+          list_temp.append(inserter, keynum);
+          inserter := list_temp;
+        else
+          if (list_temp.count > 0) then inserter := list_temp; end if;
         end if;
       end if;
-
     end loop;
+
+    keyval := path.get(1);
+    if (keyval.is_string()) then
+      keystring := keyval.get_string();
+    else
+      keynum := keyval.get_number();
+      keystring := obj.get(keynum).mapname;
+    end if;
+    if (inserter is null) then obj.remove(keystring); else obj.put(keystring, inserter); end if;
   end;
 
   /* JSON Path putter internal function */
