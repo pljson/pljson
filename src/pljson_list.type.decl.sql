@@ -40,6 +40,7 @@ create or replace type pljson_list force under pljson_element (
   constructor function pljson_list(str_array pljson_varray) return self as result,
   constructor function pljson_list(num_array pljson_narray) return self as result,
   constructor function pljson_list(elem pljson_element) return self as result,
+  constructor function pljson_list(elem_array pljson_element_array) return self as result,
   overriding member function is_array return boolean,
   overriding member function value_of(max_byte_size number default null, max_char_size number default null) return varchar2,
 

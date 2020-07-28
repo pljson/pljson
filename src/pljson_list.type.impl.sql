@@ -65,6 +65,13 @@ create or replace type body pljson_list as
     return;
   end;
 
+  constructor function pljson_list(elem_array pljson_element_array) return self as result as
+  begin
+    self.list_data := elem_array;
+    self.typeval := 2;
+    return;
+  end;
+
   overriding member function is_array return boolean as
   begin
     return true;
