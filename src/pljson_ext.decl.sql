@@ -34,6 +34,16 @@ create or replace package pljson_ext as
   function get_json_list(obj pljson, path varchar2,    base number default 1) return pljson_list;
   function get_bool(obj pljson, path varchar2,         base number default 1) return boolean;
 
+  --JSON pre-parsed path putters
+  procedure put(obj in out nocopy pljson, path pljson_list, elem varchar2);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem number);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem binary_double);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem pljson);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem pljson_list);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem boolean);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem pljson_element);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem date);
+
   --JSON Path putters
   procedure put(obj in out nocopy pljson, path varchar2, elem varchar2,   base number default 1);
   procedure put(obj in out nocopy pljson, path varchar2, elem number,     base number default 1);
