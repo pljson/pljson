@@ -25,6 +25,16 @@ create or replace package pljson_ext as
      an easy way of adding date values in json - without changing the structure */
   function parsePath(json_path varchar2, base number default 1) return pljson_list;
 
+  --JSON pre-parsed path getters
+  function get_json_element(obj pljson, path pljson_list) return pljson_element;
+  function get_string(obj pljson, path pljson_list) return varchar2;
+  function get_number(obj pljson, path pljson_list) return number;
+  function get_double(obj pljson, path pljson_list) return binary_double;
+  function get_json(obj pljson, path pljson_list) return pljson;
+  function get_json_list(obj pljson, path pljson_list) return pljson_list;
+  function get_bool(obj pljson, path pljson_list) return boolean;
+  function get_date(obj pljson, path pljson_list) return date;
+
   --JSON Path getters
   function get_json_element(obj pljson, v_path varchar2, base number default 1) return pljson_element;
   function get_string(obj pljson, path varchar2,       base number default 1) return varchar2;
@@ -33,6 +43,16 @@ create or replace package pljson_ext as
   function get_json(obj pljson, path varchar2,         base number default 1) return pljson;
   function get_json_list(obj pljson, path varchar2,    base number default 1) return pljson_list;
   function get_bool(obj pljson, path varchar2,         base number default 1) return boolean;
+
+  --JSON pre-parsed path putters
+  procedure put(obj in out nocopy pljson, path pljson_list, elem varchar2);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem number);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem binary_double);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem pljson);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem pljson_list);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem boolean);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem pljson_element);
+  procedure put(obj in out nocopy pljson, path pljson_list, elem date);
 
   --JSON Path putters
   procedure put(obj in out nocopy pljson, path varchar2, elem varchar2,   base number default 1);
@@ -43,6 +63,7 @@ create or replace package pljson_ext as
   procedure put(obj in out nocopy pljson, path varchar2, elem boolean,    base number default 1);
   procedure put(obj in out nocopy pljson, path varchar2, elem pljson_element, base number default 1);
 
+  procedure remove(obj in out nocopy pljson, path pljson_list);
   procedure remove(obj in out nocopy pljson, path varchar2, base number default 1);
 
   --Pretty print with JSON Path - obsolete in 0.9.4 - obj.path(v_path).(to_char,print,htp)

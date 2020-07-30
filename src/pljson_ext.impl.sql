@@ -287,14 +287,12 @@ create or replace package body pljson_ext as
 
     return ret;
   end parsePath;
-  
-  --JSON Path getters
-  function get_json_element(obj pljson, v_path varchar2, base number default 1) return pljson_element as
-    path pljson_list;
+
+  --JSON pre-parsed path getters
+  function get_json_element(obj pljson, path pljson_list) return pljson_element as
     ret pljson_element;
     o pljson; l pljson_list;
   begin
-    path := parsePath(v_path, base);
     ret := obj;
     if (path.count = 0) then return ret; end if;
 
@@ -336,7 +334,91 @@ create or replace package body pljson_ext as
     when others then return null;
   end get_json_element;
 
+  function get_string(obj pljson, path pljson_list) return varchar2 as
+    temp pljson_element;
+  begin
+    temp := get_json_element(obj, path);
+    if (temp is null or not temp.is_string()) then
+      return null;
+    else
+      return temp.get_string();
+    end if;
+  end;
+
+  function get_number(obj pljson, path pljson_list) return number as
+    temp pljson_element;
+  begin
+    temp := get_json_element(obj, path);
+    if (temp is null or not temp.is_number()) then
+      return null;
+    else
+      return temp.get_number();
+    end if;
+  end;
+
+  function get_double(obj pljson, path pljson_list) return binary_double as
+    temp pljson_element;
+  begin
+    temp := get_json_element(obj, path);
+    if (temp is null or not temp.is_number()) then
+      return null;
+    else
+      return temp.get_double();
+    end if;
+  end;
+
+  function get_json(obj pljson, path pljson_list) return pljson as
+    temp pljson_element;
+  begin
+    temp := get_json_element(obj, path);
+    if (temp is null or not temp.is_object()) then
+      return null;
+    else
+      return treat(temp as pljson);
+    end if;
+  end;
+
+  function get_json_list(obj pljson, path pljson_list) return pljson_list as
+    temp pljson_element;
+  begin
+    temp := get_json_element(obj, path);
+    if (temp is null or not temp.is_array()) then
+      return null;
+    else
+      return treat(temp as pljson_list);
+    end if;
+  end;
+
+  function get_bool(obj pljson, path pljson_list) return boolean as
+    temp pljson_element;
+  begin
+    temp := get_json_element(obj, path);
+    if (temp is null or not temp.is_bool()) then
+      return null;
+    else
+      return temp.get_bool();
+    end if;
+  end;
+
+  function get_date(obj pljson, path pljson_list) return date as
+    temp pljson_element;
+  begin
+    temp := get_json_element(obj, path);
+    if (temp is null or not is_date(temp)) then
+      return null;
+    else
+      return pljson_ext.to_date(temp);
+    end if;
+  end;
+
   --JSON Path getters
+  function get_json_element(obj pljson, v_path varchar2, base number default 1) return pljson_element as
+    path pljson_list;
+  begin
+    path := parsePath(v_path, base);
+    return get_json_element(obj, path);
+  end get_json_element;
+
   function get_string(obj pljson, path varchar2, base number default 1) return varchar2 as
     temp pljson_element;
   begin
@@ -413,6 +495,26 @@ create or replace package body pljson_ext as
     else
       return pljson_ext.to_date(temp);
     end if;
+  end;
+
+  /* JSON pre-parsed path putter internal function */
+  procedure put_internal_preparsed(obj in out nocopy pljson, path pljson_list, elem pljson_element) as
+    path_segments pljson_path := pljson_path();
+    dummy boolean;
+  begin
+    if (path.count = 0) then raise_application_error(-20110, 'PLJSON_EXT put error: cannot put with empty string.'); end if;
+
+    for i in 1 .. path.count loop
+      path_segments.extend;
+
+      if (path.get(i).is_number()) then
+        path_segments(path_segments.count) := pljson_path_segment(path.get(i).get_number(), null);
+      else
+        path_segments(path_segments.count) := pljson_path_segment(null, path.get(i).get_string());
+      end if;
+    end loop;
+
+    dummy := obj.put_internal_path(path_segments, elem, 1);
   end;
 
   /* JSON Path putter internal function */
@@ -553,6 +655,79 @@ create or replace package body pljson_ext as
 
   end put_internal;
 
+  /* JSON pre-parsed path putters */
+  procedure put(obj in out nocopy pljson, path pljson_list, elem varchar2) as
+  begin
+    if elem is null then
+      put_internal_preparsed(obj, path, pljson_null());
+    else
+      put_internal_preparsed(obj, path, pljson_string(elem));
+    end if;
+  end;
+
+  procedure put(obj in out nocopy pljson, path pljson_list, elem number) as
+  begin
+    if elem is null then
+      put_internal_preparsed(obj, path, pljson_null());
+    else
+      put_internal_preparsed(obj, path, pljson_number(elem));
+    end if;
+  end;
+
+  procedure put(obj in out nocopy pljson, path pljson_list, elem binary_double) as
+  begin
+    if elem is null then
+      put_internal_preparsed(obj, path, pljson_null());
+    else
+      put_internal_preparsed(obj, path, pljson_number(elem));
+    end if;
+  end;
+
+  procedure put(obj in out nocopy pljson, path pljson_list, elem pljson) as
+  begin
+    if elem is null then
+      put_internal_preparsed(obj, path, pljson_null());
+    else
+      put_internal_preparsed(obj, path, elem);
+    end if;
+  end;
+
+  procedure put(obj in out nocopy pljson, path pljson_list, elem pljson_list) as
+  begin
+    if elem is null then
+      put_internal_preparsed(obj, path, pljson_null());
+    else
+      put_internal_preparsed(obj, path, elem);
+    end if;
+  end;
+
+  procedure put(obj in out nocopy pljson, path pljson_list, elem boolean) as
+  begin
+    if elem is null then
+      put_internal_preparsed(obj, path, pljson_null());
+    else
+      put_internal_preparsed(obj, path, pljson_bool(elem));
+    end if;
+  end;
+
+  procedure put(obj in out nocopy pljson, path pljson_list, elem pljson_element) as
+  begin
+    if elem is null then
+      put_internal_preparsed(obj, path, pljson_null());
+    else
+      put_internal_preparsed(obj, path, elem);
+    end if;
+  end;
+
+  procedure put(obj in out nocopy pljson, path pljson_list, elem date) as
+  begin
+    if elem is null then
+      put_internal_preparsed(obj, path, pljson_null());
+    else
+      put_internal_preparsed(obj, path, pljson_ext.to_json_string(elem));
+    end if;
+  end;
+
   /* JSON Path putters */
   procedure put(obj in out nocopy pljson, path varchar2, elem varchar2, base number default 1) as
   begin
@@ -626,6 +801,11 @@ create or replace package body pljson_ext as
       put_internal(obj, path, pljson_ext.to_json_string(elem), base);
     end if;
   end;
+
+  procedure remove(obj in out nocopy pljson, path pljson_list) as
+  begin
+    pljson_ext.put_internal_preparsed(obj, path, null);
+  end remove;
 
   procedure remove(obj in out nocopy pljson, path varchar2, base number default 1) as
   begin

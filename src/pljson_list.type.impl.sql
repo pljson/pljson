@@ -65,6 +65,13 @@ create or replace type body pljson_list as
     return;
   end;
 
+  constructor function pljson_list(elem_array pljson_element_array) return self as result as
+  begin
+    self.list_data := elem_array;
+    self.typeval := 2;
+    return;
+  end;
+
   overriding member function is_array return boolean as
   begin
     return true;
@@ -78,30 +85,30 @@ create or replace type body pljson_list as
   /* list management */
   member procedure append(self in out nocopy pljson_list, elem pljson_element, position pls_integer default null) as
     indx pls_integer;
-    insert_value pljson_element;
   begin
-    insert_value := elem;
-    if insert_value is null then
-      insert_value := pljson_null();
-    end if;
     if (position is null or position > self.count) then --end of list
       indx := self.count + 1;
       self.list_data.extend(1);
-      self.list_data(indx) := insert_value;
     elsif (position < 1) then --new first
       indx := self.count;
       self.list_data.extend(1);
       for x in reverse 1 .. indx loop
         self.list_data(x+1) := self.list_data(x);
       end loop;
-      self.list_data(1) := insert_value;
+      indx := 1;
     else
       indx := self.count;
       self.list_data.extend(1);
       for x in reverse position .. indx loop
         self.list_data(x+1) := self.list_data(x);
       end loop;
-      self.list_data(position) := insert_value;
+      indx := position;
+    end if;
+
+    if elem is not null then
+      self.list_data(indx) := elem;
+    else
+      self.list_data(indx) := pljson_null();
     end if;
   end;
 
@@ -480,6 +487,59 @@ create or replace type body pljson_list as
     pljson_ext.remove(objlist, json_path, base);
     self := objlist.get_values;
   end path_remove;
+
+  /** Private method for internal processing. */
+  overriding member function put_internal_path(self in out nocopy pljson_list, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
+    indx pls_integer := path(path_position).indx;
+  begin
+    indx := path(path_position).indx;
+    if (indx > self.list_data.count) then
+      if (elem is null) then
+        return false;
+      end if;
+
+      self.list_data.extend;
+      self.list_data(self.list_data.count) := pljson_null();
+
+      if (indx > self.list_data.count) then
+        self.list_data.extend(indx - self.list_data.count, self.list_data.count);
+      end if;
+    end if;
+
+    if (path_position < path.count) then
+      if (path(path_position + 1).indx is null) then
+        if (not self.list_data(indx).is_object()) then
+          if (elem is not null) then
+            self.list_data(indx) := pljson();
+          else
+            return false;
+          end if;
+        end if;
+      else
+        if (not self.list_data(indx).is_object() and not self.list_data(indx).is_array()) then
+          if (elem is not null) then
+            self.list_data(indx) := pljson_list();
+          else
+            return false;
+          end if;
+        end if;
+      end if;
+
+      if (self.list_data(indx).put_internal_path(path, elem, path_position + 1)) then
+        self.remove(indx);
+        return self.list_data.count = 0;
+      end if;
+    else
+      if (elem is not null) then
+        self.list_data(indx) := elem;
+      else
+        self.remove(indx);
+        return self.list_data.count = 0;
+      end if;
+    end if;
+
+    return false;
+  end;
 end;
 /
 show err

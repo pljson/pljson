@@ -276,7 +276,33 @@ begin
     pljson_ext.put(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]', 2.718281828459e210d);
     pljson_ut.assertTrue(nvl(pljson_ext.get_double(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]''),0) = 2.718281828459e210d');
   end;
-  
+   
+  -- put with pre-parsed path
+  pljson_ut.testcase('Test put with pre-parsed path');
+  declare
+    obj pljson := pljson();
+  begin
+    pljson_ext.put(obj, pljson_ext.parsePath('a.b[1].c'), true);
+    pljson_ut.assertTrue(pljson_ext.get_json_list(obj, pljson_ext.parsePath('a.b')) is not null, 'pljson_ext.get_json_list(obj, pljson_ext.parsePath(''a.b'')) is not null');
+    pljson_ext.put(obj, pljson_ext.parsePath('a.b[1].c'), false);
+    --dbms_output.put_line('Put false');
+    --obj.print;
+    pljson_ut.assertTrue(pljson_ext.get_json_list(obj, pljson_ext.parsePath('a.b')) is not null, 'pljson_ext.get_json_list(obj, pljson_ext.parsePath(''a.b'')) is not null');
+    pljson_ut.assertFalse(pljson_ext.get_json_element(obj, pljson_ext.parsePath('a.b[1].c')).get_bool, 'pljson_ext.get_json_element(obj, pljson_ext.parsePath(''a.b[1].c'')).get_bool');
+  end;
+ 
+  -- remove with pre-parsed path
+  pljson_ut.testcase('Test remove with pre-parsed path');
+  declare
+    obj pljson := pljson('{"a":true, "b":[[]]}');
+  begin
+    pljson_ext.remove(obj, pljson_ext.parsePath('a'));
+    pljson_ut.assertFalse(obj.exist('a'), 'obj.exist(''a'')');
+    pljson_ut.assertTrue(obj.count = 1, 'obj.count = 1');
+    pljson_ext.remove(obj, pljson_ext.parsePath('b[1]'));
+    pljson_ut.assertFalse(obj.exist('b'), 'obj.exist(''b'')');
+  end;
+
   pljson_ut.testsuite_report;
   
 end;
