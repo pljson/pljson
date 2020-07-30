@@ -95,7 +95,8 @@ create or replace type pljson force under pljson_element (
   member function get_keys return pljson_list,
   member function get_values return pljson_list,
 
-  overriding member function internal_path_put(self in out nocopy pljson, path pljson_path, elem pljson_element, path_position pls_integer) return boolean
+  /** Private method for internal processing. */
+  overriding member function put_internal_path(self in out nocopy pljson, path pljson_path, elem pljson_element, path_position pls_integer) return boolean
 ) not final;
 /
 show err

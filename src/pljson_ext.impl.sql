@@ -514,7 +514,7 @@ create or replace package body pljson_ext as
       end if;
     end loop;
 
-    dummy := obj.internal_path_put(path_segments, elem, 1);
+    dummy := obj.put_internal_path(path_segments, elem, 1);
   end;
 
   /* JSON Path putter internal function */

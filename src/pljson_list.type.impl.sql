@@ -488,7 +488,8 @@ create or replace type body pljson_list as
     self := objlist.get_values;
   end path_remove;
 
-  overriding member function internal_path_put(self in out nocopy pljson_list, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
+  /** Private method for internal processing. */
+  overriding member function put_internal_path(self in out nocopy pljson_list, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
     indx pls_integer := path(path_position).indx;
   begin
     indx := path(path_position).indx;
@@ -524,7 +525,7 @@ create or replace type body pljson_list as
         end if;
       end if;
 
-      if (self.list_data(indx).internal_path_put(path, elem, path_position + 1)) then
+      if (self.list_data(indx).put_internal_path(path, elem, path_position + 1)) then
         self.remove(indx);
         return self.list_data.count = 0;
       end if;

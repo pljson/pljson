@@ -153,7 +153,8 @@ create or replace type body pljson_element as
     dbms_lob.freetemporary(my_clob);
   end;
 
-  member function internal_path_put(self in out nocopy pljson_element, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
+  /** Private method for internal processing. */
+  member function put_internal_path(self in out nocopy pljson_element, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
   begin
     return false;
   end;

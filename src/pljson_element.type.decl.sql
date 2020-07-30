@@ -57,7 +57,8 @@ create or replace type pljson_element force as object
   member procedure print(self in pljson_element, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null),
   member procedure htp(self in pljson_element, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
 
-  member function internal_path_put(self in out nocopy pljson_element, path pljson_path, elem pljson_element, path_position pls_integer) return boolean
+  /** Private method for internal processing. */
+  member function put_internal_path(self in out nocopy pljson_element, path pljson_path, elem pljson_element, path_position pls_integer) return boolean
 ) not final
 /
 show err

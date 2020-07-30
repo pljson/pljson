@@ -94,7 +94,8 @@ create or replace type pljson_list force under pljson_element (
   /* json path_remove */
   member procedure path_remove(self in out nocopy pljson_list, json_path varchar2, base number default 1),
 
-  overriding member function internal_path_put(self in out nocopy pljson_list, path pljson_path, elem pljson_element, path_position pls_integer) return boolean
+  /** Private method for internal processing. */
+  overriding member function put_internal_path(self in out nocopy pljson_list, path pljson_path, elem pljson_element, path_position pls_integer) return boolean
 ) not final;
 /
 show err

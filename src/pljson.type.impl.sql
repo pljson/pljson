@@ -470,7 +470,8 @@ create or replace type body pljson as
     return vals;
   end;
 
-  overriding member function internal_path_put(self in out nocopy pljson, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
+  /** Private method for internal processing. */
+  overriding member function put_internal_path(self in out nocopy pljson, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
     indx pls_integer;
     keystring varchar2(4000);
     new_obj pljson;
@@ -514,7 +515,7 @@ create or replace type body pljson as
             end if;
           end if;
 
-          if (self.json_data(indx).internal_path_put(path, elem, path_position + 1)) then
+          if (self.json_data(indx).put_internal_path(path, elem, path_position + 1)) then
             self.remove(keystring);
             return true;
           end if;
@@ -539,11 +540,11 @@ create or replace type body pljson as
       else
         if (path(path_position + 1).indx is null) then
           new_obj := pljson();
-          ret := new_obj.internal_path_put(path, elem, path_position + 1);
+          ret := new_obj.put_internal_path(path, elem, path_position + 1);
           put(keystring, new_obj);
         else
           new_list := pljson_list();
-          ret := new_list.internal_path_put(path, elem, path_position + 1);
+          ret := new_list.put_internal_path(path, elem, path_position + 1);
           put(keystring, new_list);
         end if;
       end if;
