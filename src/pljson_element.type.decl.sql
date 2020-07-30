@@ -1,3 +1,12 @@
+create or replace type pljson_path_segment as object (
+  indx number(32),
+  name varchar2(4000)
+) final
+/
+
+create or replace type pljson_path as table of pljson_path_segment
+/
+
 create or replace type pljson_element force as object
 (
   /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
@@ -46,7 +55,9 @@ create or replace type pljson_element force as object
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
   member procedure to_clob(self in pljson_element, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),
   member procedure print(self in pljson_element, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null),
-  member procedure htp(self in pljson_element, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null)
+  member procedure htp(self in pljson_element, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null),
+
+  member function internal_path_put(self in out nocopy pljson_element, path pljson_path, elem pljson_element, path_position pls_integer) return boolean
 ) not final
 /
 show err

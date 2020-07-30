@@ -41,6 +41,8 @@ begin
   begin execute immediate 'drop type pljson_null force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_element_array force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_element force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_path_segment force'; exception when others then null; end;
+  begin execute immediate 'drop type pljson_path force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_narray force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_vtab force'; exception when others then null; end;
   begin execute immediate 'drop type pljson_varray force'; exception when others then null; end;

@@ -152,6 +152,11 @@ create or replace type body pljson_element as
     pljson_printer.htp_output_clob(my_clob, jsonp);
     dbms_lob.freetemporary(my_clob);
   end;
+
+  member function internal_path_put(self in out nocopy pljson_element, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
+  begin
+    return false;
+  end;
 end;
 /
 show err
