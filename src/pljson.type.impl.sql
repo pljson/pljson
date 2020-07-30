@@ -469,6 +469,89 @@ create or replace type body pljson as
     vals.list_data := self.json_data;
     return vals;
   end;
+
+  /** Private method for internal processing. */
+  overriding member function put_internal_path(self in out nocopy pljson, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
+    indx pls_integer;
+    keystring varchar2(4000);
+    new_obj pljson;
+    new_list pljson_list;
+    ret boolean := false;
+  begin
+    if (path(path_position).indx is null) then
+      keystring := path(path_position).name;
+    else
+      if (path(path_position).indx > self.json_data.count) then
+        if (elem is null) then
+          return false;
+        end if;
+        raise_application_error(-20110, 'PLJSON_EXT put error: access object with too few members.');
+      end if;
+
+      keystring := self.json_data(path(path_position).indx).mapname;
+    end if;
+
+    indx := self.json_data.first;
+    loop
+      exit when indx is null;
+
+      if ((keystring is null and self.json_data(indx).mapname is null) or (self.json_data(indx).mapname = keystring)) then
+        if (path_position < path.count) then
+          if (path(path_position + 1).indx is null) then
+            if (not self.json_data(indx).is_object()) then
+              if (elem is not null) then
+                put(keystring, pljson());
+              else
+                return false;
+              end if;
+            end if;
+          else
+            if (not self.json_data(indx).is_object() and not self.json_data(indx).is_array()) then
+              if (elem is not null) then
+                put(keystring, pljson_list());
+              else
+                return false;
+              end if;
+            end if;
+          end if;
+
+          if (self.json_data(indx).put_internal_path(path, elem, path_position + 1)) then
+            self.remove(keystring);
+            return true;
+          end if;
+        else
+          if (elem is null) then
+            self.remove(keystring);
+            return true;
+          else
+            self.put(keystring, elem);
+          end if;
+        end if;
+
+        return false;
+      end if;
+
+      indx := self.json_data.next(indx);
+    end loop;
+
+    if (elem is not null) then
+      if (path_position = path.count) then
+        put(keystring, elem);
+      else
+        if (path(path_position + 1).indx is null) then
+          new_obj := pljson();
+          ret := new_obj.put_internal_path(path, elem, path_position + 1);
+          put(keystring, new_obj);
+        else
+          new_list := pljson_list();
+          ret := new_list.put_internal_path(path, elem, path_position + 1);
+          put(keystring, new_list);
+        end if;
+      end if;
+    end if;
+
+    return ret;
+  end;
 end;
 /
 show err
