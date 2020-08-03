@@ -51,6 +51,9 @@ create or replace type pljson_element force as object
 
   member function path(json_path varchar2, base number default 1) return pljson_element,
 
+  /** Private method for internal processing. */
+  member procedure get_internal_path(self in pljson_element, path pljson_path, path_position pls_integer, ret out nocopy pljson_element),
+
   /* output methods */
   member function to_char(spaces boolean default true, chars_per_line number default 0) return varchar2,
   member procedure to_clob(self in pljson_element, buf in out nocopy clob, spaces boolean default false, chars_per_line number default 0, erase_clob boolean default true),

@@ -371,6 +371,21 @@ create or replace type body pljson_list as
     return pljson_ext.get_json_element(pljson(cp), json_path, base);
   end path;
 
+  /** Private method for internal processing. */
+  overriding member procedure get_internal_path(self in pljson_list, path pljson_path, path_position pls_integer, ret out nocopy pljson_element) as
+    indx pls_integer := path(path_position).indx;
+  begin
+    indx := path(path_position).indx;
+
+    if (indx <= self.list_data.count) then
+      if (path_position < path.count) then
+        self.list_data(indx).get_internal_path(path, path_position + 1, ret);
+      else
+        ret := self.list_data(indx);
+      end if;
+    end if;
+  end;
+
   /* json path_put */
   member procedure path_put(self in out nocopy pljson_list, json_path varchar2, elem pljson_element, base number default 1) as
     objlist pljson;
