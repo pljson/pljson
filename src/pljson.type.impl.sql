@@ -470,7 +470,42 @@ create or replace type body pljson as
     return vals;
   end;
 
-  /** Private method for internal processing. */
+  /* private method for internal use, not part of the API, contributed by @asfernandes */
+  overriding member procedure get_internal_path(self in pljson, path pljson_path, path_position pls_integer, ret out nocopy pljson_element) as
+    indx pls_integer := path(path_position).indx;
+  begin
+    
+    if (indx is null) then
+      indx := self.json_data.first;
+      loop
+        exit when indx is null;
+
+        if ((path(path_position).name is null and self.json_data(indx).mapname is null) or
+            (self.json_data(indx).mapname = path(path_position).name))
+        then
+          if (path_position < path.count) then
+            self.json_data(indx).get_internal_path(path, path_position + 1, ret);
+          else
+            ret := self.json_data(indx);
+          end if;
+          
+          exit;
+        end if;
+        
+        indx := self.json_data.next(indx);
+      end loop;
+    else
+      if (indx <= self.json_data.count) then
+        if (path_position < path.count) then
+          self.json_data(indx).get_internal_path(path, path_position + 1, ret);
+        else
+          ret := self.json_data(indx);
+        end if;
+      end if;
+    end if;
+  end;
+
+  /* private method for internal use, not part of the API, contributed by @asfernandes */
   overriding member function put_internal_path(self in out nocopy pljson, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
     indx pls_integer;
     keystring varchar2(4000);

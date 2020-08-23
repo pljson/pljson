@@ -85,7 +85,14 @@ create or replace type body pljson_list as
   /* list management */
   member procedure append(self in out nocopy pljson_list, elem pljson_element, position pls_integer default null) as
     indx pls_integer;
+    --insert_value pljson_element;
   begin
+    /*
+    insert_value := elem;
+    if insert_value is null then
+      insert_value := pljson_null();
+    end if;
+    */
     if (position is null or position > self.count) then --end of list
       indx := self.count + 1;
       self.list_data.extend(1);
@@ -96,6 +103,7 @@ create or replace type body pljson_list as
         self.list_data(x+1) := self.list_data(x);
       end loop;
       indx := 1;
+      --self.list_data(1) := insert_value;
     else
       indx := self.count;
       self.list_data.extend(1);
@@ -103,6 +111,7 @@ create or replace type body pljson_list as
         self.list_data(x+1) := self.list_data(x);
       end loop;
       indx := position;
+      --self.list_data(position) := insert_value;
     end if;
 
     if elem is not null then
@@ -488,7 +497,20 @@ create or replace type body pljson_list as
     self := objlist.get_values;
   end path_remove;
 
-  /** Private method for internal processing. */
+  /* private method for internal use, not part of the API, contributed by @asfernandes */
+  overriding member procedure get_internal_path(self in pljson_list, path pljson_path, path_position pls_integer, ret out nocopy pljson_element) as
+    indx pls_integer := path(path_position).indx;
+  begin
+    if (indx <= self.list_data.count) then
+      if (path_position < path.count) then
+        self.list_data(indx).get_internal_path(path, path_position + 1, ret);
+      else
+        ret := self.list_data(indx);
+      end if;
+    end if;
+  end;
+  
+  /* private method for internal use, not part of the API, contributed by @asfernandes */
   overriding member function put_internal_path(self in out nocopy pljson_list, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
     indx pls_integer := path(path_position).indx;
   begin

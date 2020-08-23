@@ -289,43 +289,25 @@ create or replace package body pljson_ext as
   end parsePath;
 
   --JSON pre-parsed path getters
+  /* contributed by @asfernandes */
   function get_json_element(obj pljson, path pljson_list) return pljson_element as
+    path_segments pljson_path := pljson_path();
     ret pljson_element;
-    o pljson; l pljson_list;
   begin
-    ret := obj;
-    if (path.count = 0) then return ret; end if;
-
+    if (path.count = 0) then
+      return null;
+    end if;
+    
     for i in 1 .. path.count loop
-      if (path.get(i).is_string()) then
-        --string fetch only on json
-        ------o := pljson(ret);
-        ------ret := o.get(path.get(i).get_string());
-        /* E.I.Sarmas (github.com/dsnz)   2020-04-18   use inheritance and avoid treat() */
-        ret := ret.get(path.get(i).get_string());
-        --experimental, ignore
-        --ret := get_piece(o, path.get(i).get_string());
+      path_segments.extend;
+      if (path.get(i).is_number()) then
+        path_segments(path_segments.count) := pljson_path_segment(path.get(i).get_number(), null);
       else
-        --number fetch on json and json_list
-        if (ret.is_array()) then
-          ------l := pljson_list(ret);
-          ------ret := l.get(path.get(i).get_number());
-          /* E.I.Sarmas (github.com/dsnz)   2020-04-18   use inheritance and avoid treat() */
-          ret := ret.get(path.get(i).get_number());
-          --experimental, ignore
-          --ret := get_piece(l, path.get(i).get_number());
-        else
-          ------o := pljson(ret);
-          ------l := o.get_values();
-          ------ret := l.get(path.get(i).get_number());
-          /* E.I.Sarmas (github.com/dsnz)   2020-04-18   use inheritance and avoid treat() */
-          ret := ret.get(path.get(i).get_number());
-          --experimental, ignore
-          --ret := get_piece(l, path.get(i).get_number());
-        end if;
+        path_segments(path_segments.count) := pljson_path_segment(null, path.get(i).get_string());
       end if;
     end loop;
-
+    
+    obj.get_internal_path(path_segments, 1, ret);
     return ret;
   exception
     when scanner_exception then raise;
@@ -412,6 +394,53 @@ create or replace package body pljson_ext as
   end;
 
   --JSON Path getters
+  function get_json_element_original(obj pljson, v_path varchar2, base number default 1) return pljson_element as
+    path pljson_list;
+    ret pljson_element;
+    o pljson; l pljson_list;
+  begin
+    path := parsePath(v_path, base);
+    ret := obj;
+    if (path.count = 0) then return ret; end if;
+
+    for i in 1 .. path.count loop
+      if (path.get(i).is_string()) then
+        --string fetch only on json
+        ------o := pljson(ret);
+        ------ret := o.get(path.get(i).get_string());
+        /* E.I.Sarmas (github.com/dsnz)   2020-04-18   use inheritance and avoid treat() */
+        ret := ret.get(path.get(i).get_string());
+        --experimental, ignore
+        --ret := get_piece(o, path.get(i).get_string());
+      else
+        --number fetch on json and json_list
+        if (ret.is_array()) then
+          ------l := pljson_list(ret);
+          ------ret := l.get(path.get(i).get_number());
+          /* E.I.Sarmas (github.com/dsnz)   2020-04-18   use inheritance and avoid treat() */
+          ret := ret.get(path.get(i).get_number());
+          --experimental, ignore
+          --ret := get_piece(l, path.get(i).get_number());
+        else
+          ------o := pljson(ret);
+          ------l := o.get_values();
+          ------ret := l.get(path.get(i).get_number());
+          /* E.I.Sarmas (github.com/dsnz)   2020-04-18   use inheritance and avoid treat() */
+          ret := ret.get(path.get(i).get_number());
+          --experimental, ignore
+          --ret := get_piece(l, path.get(i).get_number());
+        end if;
+      end if;
+    end loop;
+
+    return ret;
+  exception
+    when scanner_exception then raise;
+    when parser_exception then raise;
+    when jext_exception then raise;
+    when others then return null;
+  end get_json_element_original;
+  
   function get_json_element(obj pljson, v_path varchar2, base number default 1) return pljson_element as
     path pljson_list;
   begin
@@ -518,7 +547,8 @@ create or replace package body pljson_ext as
   end;
 
   /* JSON Path putter internal function */
-  procedure put_internal(obj in out nocopy pljson, v_path varchar2, elem pljson_element, base number) as
+  --saved original code, in case of future bug troubleshooting
+  procedure put_internal_original(obj in out nocopy pljson, v_path varchar2, elem pljson_element, base number) as
     val pljson_element := elem;
     path pljson_list;
     backreference pljson_list := pljson_list();
@@ -653,8 +683,15 @@ create or replace package body pljson_ext as
 
     end loop;
 
+  end put_internal_original;
+  
+  procedure put_internal(obj in out nocopy pljson, v_path varchar2, elem pljson_element, base number) as
+    path pljson_list;
+  begin
+    path := pljson_ext.parsePath(v_path, base);
+    put_internal_preparsed(obj, path, elem);
   end put_internal;
-
+  
   /* JSON pre-parsed path putters */
   procedure put(obj in out nocopy pljson, path pljson_list, elem varchar2) as
   begin
@@ -810,8 +847,8 @@ create or replace package body pljson_ext as
   procedure remove(obj in out nocopy pljson, path varchar2, base number default 1) as
   begin
     pljson_ext.put_internal(obj, path, null, base);
---    if (json_ext.get_json_element(obj, path) is not null) then
---    end if;
+    --if (json_ext.get_json_element(obj, path) is not null) then
+    --end if;
   end remove;
 
   --Pretty print with JSON Path

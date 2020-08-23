@@ -35,6 +35,9 @@ create or replace package pljson_ext as
   function get_bool(obj pljson, path pljson_list) return boolean;
   function get_date(obj pljson, path pljson_list) return date;
 
+  --saved original code, in case of future bug troubleshooting
+  function get_json_element_original(obj pljson, v_path varchar2, base number default 1) return pljson_element;
+  
   --JSON Path getters
   function get_json_element(obj pljson, v_path varchar2, base number default 1) return pljson_element;
   function get_string(obj pljson, path varchar2,       base number default 1) return varchar2;
