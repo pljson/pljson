@@ -153,7 +153,13 @@ create or replace type body pljson_element as
     dbms_lob.freetemporary(my_clob);
   end;
 
-  /** Private method for internal processing. */
+  /* private method for internal use, not part of the API, contributed by @asfernandes */
+  member procedure get_internal_path(self in pljson_element, path pljson_path, path_position pls_integer, ret out nocopy pljson_element) as
+  begin
+    raise_application_error(-20010, 'path() method is not supported by object of type:'  || get_type());
+  end;
+
+  /* private method for internal use, not part of the API, contributed by @asfernandes */
   member function put_internal_path(self in out nocopy pljson_element, path pljson_path, elem pljson_element, path_position pls_integer) return boolean as
   begin
     return false;

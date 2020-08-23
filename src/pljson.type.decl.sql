@@ -76,7 +76,7 @@ create or replace type pljson force under pljson_element (
 
   /* json path */
   overriding member function path(json_path varchar2, base number default 1) return pljson_element,
-
+  
   /* json path_put */
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem pljson_element, base number default 1),
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem varchar2, base number default 1),
@@ -95,7 +95,10 @@ create or replace type pljson force under pljson_element (
   member function get_keys return pljson_list,
   member function get_values return pljson_list,
 
-  /** Private method for internal processing. */
+  /* private method for internal use, not part of the API, contributed by @asfernandes */
+  overriding member procedure get_internal_path(self in pljson, path pljson_path, path_position pls_integer, ret out nocopy pljson_element),
+  
+  /* private method for internal use, not part of the API, contributed by @asfernandes */
   overriding member function put_internal_path(self in out nocopy pljson, path pljson_path, elem pljson_element, path_position pls_integer) return boolean
 ) not final;
 /
