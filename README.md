@@ -1,9 +1,15 @@
+<img alt="language" src="https://img.shields.io/badge/language-PLSQL%2FSQL-brightgreen?labelColor=orange">
+
+<img alt="platform" src="https://img.shields.io/badge/platform-Oracle-red?labelColor=brightgreen">
+
+<img alt="version" src="https://img.shields.io/github/package-json/v/pljson/pljson/develop_v3?color=orange&label=version&labelColor=brightgreen">
+
 # PL/JSON
 
 **PL/JSON** provides packages and APIs for dealing with JSON formatted data within PL/SQL code.
 General information about JSON is available at http://www.json.org.
 
-## Latest release 3.2.0 (2020-04-18)
+## Latest release 3.4.0 (2020-08-23)
 
 ## This is version 3
 You should move to version 3. It's cleaner and faster.
@@ -221,6 +227,16 @@ returns
 | 3 |	Middle| 9	| 20|	extra_20|
 
 ##### and many other (automatic support for Double numbers or Oracle numbers, base64 encode/decode, XML to json, etc.)
+
+### Notes about PLJSON path operations
+
+- never raise an exception (null is returned instead)
+- arrays are 1-indexed
+- use dots to navigate through the json nested objects
+- the empty string as path returns the entire json object
+- 7 get types are supported: string, number, bool, null, json, json_list and date
+- spaces inside [ ] are not important, but are important otherwise
+- keys made with non-standard javascript characters must be enclosed in double quotes
 
 ## Install
 

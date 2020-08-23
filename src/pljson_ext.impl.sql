@@ -394,6 +394,7 @@ create or replace package body pljson_ext as
   end;
 
   --JSON Path getters
+  --saved original code, in case of future bug troubleshooting
   function get_json_element_original(obj pljson, v_path varchar2, base number default 1) return pljson_element as
     path pljson_list;
     ret pljson_element;
