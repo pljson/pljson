@@ -1,6 +1,6 @@
-https://img.shields.io/badge/language-PLSQL%2FSQL-brightgreen?labelColor=orange
+<img alt="language" src="https://img.shields.io/badge/language-PLSQL%2FSQL-brightgreen?labelColor=orange">
 
-https://img.shields.io/badge/platform-Oracle-red?labelColor=brightgreen
+<img alt="platform" src="https://img.shields.io/badge/platform-Oracle-red?labelColor=brightgreen">
 
 <img alt="version" src="https://img.shields.io/github/package-json/v/pljson/pljson/develop_v3?color=orange&label=version&labelColor=brightgreen">
 
