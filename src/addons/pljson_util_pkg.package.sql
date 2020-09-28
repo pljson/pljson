@@ -189,6 +189,14 @@ begin
           <xsl:with-param name="s" select="concat(substring-before($s,'&#xD;'),'\r',substring-after($s,'&#xD;'))"/>
         </xsl:call-template>
       </xsl:when>
+      <!-- ambersand, addition by boriborm -->
+      <xsl:when test="contains($s,'&amp;')">
+        <xsl:value-of select="substring-before($s,'&amp;')"/><![CDATA[&amp;]]><xsl:value-of select="substring-after( $s, '&amp;' )"/>   
+      </xsl:when>
+      <!-- lt, addition by boriborm -->
+      <xsl:when test="contains($s,'&lt;')">
+        <xsl:value-of select="substring-before($s,'&lt;')"/><![CDATA[&lt;]]><xsl:value-of select="substring-after( $s, '&lt;' )"/>   
+      </xsl:when>
       <xsl:otherwise><xsl:value-of select="$s"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -278,38 +286,39 @@ begin
   */
 
   l_ctx := dbms_xmlgen.newcontext (p_ref_cursor);
-  
+
   dbms_xmlgen.setnullhandling (l_ctx, dbms_xmlgen.empty_tag);
-  
+
   -- for pagination
-  
+
   if p_max_rows is not null then
     dbms_xmlgen.setmaxrows (l_ctx, p_max_rows);
   end if;
-  
+
   if p_skip_rows is not null then
     dbms_xmlgen.setskiprows (l_ctx, p_skip_rows);
   end if;
-  
+
   -- get the XML content
   l_xml := dbms_xmlgen.getxmltype (l_ctx, dbms_xmlgen.none);
-  
+
   l_num_rows := dbms_xmlgen.getnumrowsprocessed (l_ctx);
-  
+
   dbms_xmlgen.closecontext (l_ctx);
-  
+
   close p_ref_cursor;
-  
+  --dbms_output.put_line(l_xml.getstringval);
   if l_num_rows > 0 then
     -- perform the XSL transformation
     l_json := l_xml.transform (xmltype(get_xml_to_json_stylesheet));
+    --dbms_output.put_line(l_json.getstringval);
     l_returnvalue := l_json.getclobval();
   else
     l_returnvalue := g_json_null_object;
   end if;
-  
+
   l_returnvalue := dbms_xmlgen.convert (l_returnvalue, dbms_xmlgen.entity_decode);
-  
+  --dbms_output.put_line(l_returnvalue);
   if(l_num_rows = 0) then
     return pljson_list();
   else
@@ -338,6 +347,7 @@ exception
     dbms_output.put_line(l_returnvalue);
     raise;
   when others then raise;
+
 end ref_cursor_to_json;
 
 function sql_to_json (p_sql in varchar2,
