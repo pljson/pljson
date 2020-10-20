@@ -51,9 +51,6 @@ create or replace package body pljson_util_pkg as
   */
 
 
-  g_json_null_object             constant varchar2(20) := '{ }';
-
-
 function get_xml_to_json_stylesheet return varchar2 as
 begin
 
@@ -307,21 +304,21 @@ begin
   dbms_xmlgen.closecontext (l_ctx);
   
   close p_ref_cursor;
+
+  if(l_num_rows = 0) then
+    return pljson_list();
+  end if;
+
   --dbms_output.put_line(l_xml.getstringval);
   if l_num_rows > 0 then
     -- perform the XSL transformation
     l_json := l_xml.transform (xmltype(get_xml_to_json_stylesheet));
     --dbms_output.put_line(l_json.getstringval);
     l_returnvalue := l_json.getclobval();
-  else
-    l_returnvalue := g_json_null_object;
   end if;
   
   l_returnvalue := dbms_xmlgen.convert (l_returnvalue, dbms_xmlgen.entity_decode);
   --dbms_output.put_line(l_returnvalue);
-  if(l_num_rows = 0) then
-    return pljson_list();
-  else
     if(l_num_rows = 1) then
       declare ret pljson_list := pljson_list();
       begin
@@ -335,7 +332,6 @@ begin
     else
       return pljson_list(pljson(l_returnvalue).get('ROWSET'));
     end if;
-  end if;
 
 exception
   when scanner_exception then
