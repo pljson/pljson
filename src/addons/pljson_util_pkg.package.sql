@@ -310,28 +310,27 @@ begin
   end if;
 
   --dbms_output.put_line(l_xml.getstringval);
-  if l_num_rows > 0 then
-    -- perform the XSL transformation
-    l_json := l_xml.transform (xmltype(get_xml_to_json_stylesheet));
-    --dbms_output.put_line(l_json.getstringval);
-    l_returnvalue := l_json.getclobval();
-  end if;
+  -- perform the XSL transformation
+  l_json := l_xml.transform (xmltype(get_xml_to_json_stylesheet));
+  --dbms_output.put_line(l_json.getstringval);
+  l_returnvalue := l_json.getclobval();
   
   l_returnvalue := dbms_xmlgen.convert (l_returnvalue, dbms_xmlgen.entity_decode);
   --dbms_output.put_line(l_returnvalue);
-    if(l_num_rows = 1) then
-      declare ret pljson_list := pljson_list();
-      begin
-        ret.append(
-          pljson(
-            pljson(l_returnvalue).get('ROWSET')
-          ).get('ROW')
-        );
-        return ret;
-      end;
-    else
-      return pljson_list(pljson(l_returnvalue).get('ROWSET'));
-    end if;
+
+  if(l_num_rows > 1) then
+    return pljson_list(pljson(l_returnvalue).get('ROWSET'));
+  end if;
+
+  declare ret pljson_list := pljson_list();
+  begin
+    ret.append(
+      pljson(
+        pljson(l_returnvalue).get('ROWSET')
+      ).get('ROW')
+    );
+    return ret;
+  end;
 
 exception
   when scanner_exception then
