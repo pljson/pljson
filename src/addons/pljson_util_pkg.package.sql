@@ -51,9 +51,6 @@ create or replace package body pljson_util_pkg as
   */
 
 
-  g_json_null_object             constant varchar2(20) := '{ }';
-
-
 function get_xml_to_json_stylesheet return varchar2 as
 begin
 
@@ -189,14 +186,6 @@ begin
           <xsl:with-param name="s" select="concat(substring-before($s,'&#xD;'),'\r',substring-after($s,'&#xD;'))"/>
         </xsl:call-template>
       </xsl:when>
-      <!-- ambersand, addition by boriborm -->
-      <xsl:when test="contains($s,'&amp;')">
-        <xsl:value-of select="substring-before($s,'&amp;')"/><![CDATA[&amp;]]><xsl:value-of select="substring-after( $s, '&amp;' )"/>   
-      </xsl:when>
-      <!-- lt, addition by boriborm -->
-      <xsl:when test="contains($s,'&lt;')">
-        <xsl:value-of select="substring-before($s,'&lt;')"/><![CDATA[&lt;]]><xsl:value-of select="substring-after( $s, '&lt;' )"/>   
-      </xsl:when>
       <xsl:otherwise><xsl:value-of select="$s"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -268,7 +257,7 @@ as
   l_ctx         dbms_xmlgen.ctxhandle;
   l_num_rows    pls_integer;
   l_xml         xmltype;
-  l_json        xmltype;
+  l_xsl         xmltype         := xmltype(get_xml_to_json_stylesheet);
   l_returnvalue clob;
 begin
 
@@ -307,35 +296,32 @@ begin
   dbms_xmlgen.closecontext (l_ctx);
   
   close p_ref_cursor;
-  --dbms_output.put_line(l_xml.getstringval);
-  if l_num_rows > 0 then
-    -- perform the XSL transformation
-    l_json := l_xml.transform (xmltype(get_xml_to_json_stylesheet));
-    --dbms_output.put_line(l_json.getstringval);
-    l_returnvalue := l_json.getclobval();
-  else
-    l_returnvalue := g_json_null_object;
-  end if;
-  
-  l_returnvalue := dbms_xmlgen.convert (l_returnvalue, dbms_xmlgen.entity_decode);
-  --dbms_output.put_line(l_returnvalue);
+
   if(l_num_rows = 0) then
     return pljson_list();
-  else
-    if(l_num_rows = 1) then
-      declare ret pljson_list := pljson_list();
-      begin
-        ret.append(
-          pljson(
-            pljson(l_returnvalue).get('ROWSET')
-          ).get('ROW')
-        );
-        return ret;
-      end;
-    else
-      return pljson_list(pljson(l_returnvalue).get('ROWSET'));
-    end if;
   end if;
+
+  --dbms_output.put_line(l_xml.getstringval);
+  -- perform the XSL transformation
+  SELECT  l_xml.transform(l_xsl).getclobval()
+  INTO    l_returnvalue
+  FROM    DUAL;
+
+  --dbms_output.put_line(l_returnvalue);
+
+  if(l_num_rows > 1) then
+    return pljson_list(pljson(l_returnvalue).get('ROWSET'));
+  end if;
+
+  declare ret pljson_list := pljson_list();
+  begin
+    ret.append(
+      pljson(
+        pljson(l_returnvalue).get('ROWSET')
+      ).get('ROW')
+    );
+    return ret;
+  end;
 
 exception
   when scanner_exception then
