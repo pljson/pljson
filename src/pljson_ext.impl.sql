@@ -295,7 +295,7 @@ create or replace package body pljson_ext as
     ret pljson_element;
   begin
     if (path.count = 0) then
-      return null;
+      return obj;
     end if;
     
     for i in 1 .. path.count loop
