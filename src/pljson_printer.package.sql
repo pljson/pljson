@@ -582,7 +582,7 @@ create or replace package body pljson_printer as
         loop
           dbms_lob.read(my_clob, amount, prev, v_str);
           dbms_output.put_line(v_str);
-          prev := prev+amount-1;
+          prev := prev+amount;
           exit when prev >= dbms_lob.getlength(my_clob);
         end loop;
       else
@@ -593,7 +593,7 @@ create or replace package body pljson_printer as
           loop
             dbms_lob.read(my_clob, amount, prev, v_str);
             dbms_output.put_line(v_str);
-            prev := prev+amount-1;
+            prev := prev+amount;
             amount := indx - prev;
             exit when prev >= indx - 1;
             if (amount > 8191) then amount := 8191; end if; /* max unicode chars */
