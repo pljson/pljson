@@ -12,7 +12,7 @@ begin
 
   tstjson_list := pljson_util_pkg.sql_to_json(i_sql);
   tstjson_list.to_clob(l_Result_json_clob);
-  
+
   return l_Result_json_clob;
 exception
   when others then raise;

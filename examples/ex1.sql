@@ -22,20 +22,20 @@ This software has been released under the MIT license:
   THE SOFTWARE.
 */
 /*
-    json parses varchar2 strings 
-    max json length is 32000, 
-    max pair_name length is 4000, 
+    pljson parses varchar2 strings
+    max json length is 32000,
+    max pair_name length is 4000,
     max string length is 4000
 */
 
 set serveroutput on format wrapped;
 declare
-  obj json;
+  obj pljson;
 begin
-  obj := json('{"a": true }');
+  obj := pljson('{"a": true }');
   obj.print;
   --more complex json:
-  obj := json('
+  obj := pljson('
 {
   "a": null,
   "b": 12.243,

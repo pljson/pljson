@@ -28,7 +28,7 @@ This software has been released under the MIT license:
 set serveroutput on;
 
 declare
-  obj json;
+  obj pljson;
   my_clob clob := '{
   "a" : true,
   "b" : [1,2,"3"],
@@ -36,9 +36,9 @@ declare
     "d" : [["array of array"], null, { "e": 7913 }]
   }
 }';
-  
+
 begin
-  obj := json(my_clob);
+  obj := pljson(my_clob);
   obj.print;
   dbms_lob.trim(my_clob, 0); --empty the lob
   obj.to_clob(my_clob);
@@ -51,21 +51,21 @@ begin
   dbms_output.put_line('----');
   dbms_output.put_line(my_clob);
   dbms_lob.freetemporary(my_clob);
-  
+
   --if you want to update a json-clob in a table, then first open the clob for update:
   --select "JSON-CLOB" into my_clob from my_json_table where j_id = 23 for update
-  
-  --parse it into a json object:
-  --obj := json(my_clob);
-  
+
+  --parse it into a pljson object:
+  --obj := pljson(my_clob);
+
   --then modify the object:
-  --json_ext.put(obj, 'mypath[2]', 123);
-  
+  --pljson_ext.put(obj, 'mypath[2]', 123);
+
   --finally, update the clob and commit:
   --dbms_lob.trim(my_clob, 0); --empty the lob
   --obj.to_clob(my_clob);
   --commit;
-  
+
   --That's it!
 
 end;

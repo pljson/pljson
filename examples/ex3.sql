@@ -23,7 +23,7 @@ This software has been released under the MIT license:
 */
 /*
   Working with errors/exceptions
-  The parser follows the json specification described @ www.json.org  
+  The parser follows the json specification described @ www.json.org
 */
 
 set serveroutput on format wrapped;
@@ -33,13 +33,12 @@ declare
   parser_exception exception;
   pragma exception_init(parser_exception, -20101);
 
-  obj json;
+  obj pljson;
 begin
-  obj := json('this is not valid json'); 
-  --displays ORA-20100: JSON Scanner exception @ line: 1 column: 1 - Expected: 'true'
-  --thats because the closest match was a boolean
+  obj := pljson('this is not valid json');
+  --displays ORA-20101: JSON Parser exception - no { start found
   obj.print;
-exception 
+exception
   when scanner_exception then
     dbms_output.put_line(SQLERRM);
   when parser_exception then
