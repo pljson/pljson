@@ -27,16 +27,16 @@ This software has been released under the MIT license:
 
 set serveroutput on format wrapped;
 declare
-  obj json := json();
+  obj pljson := pljson();
   testdate date := date '2009-12-24'; --Xmas
   procedure p(v varchar2) as begin dbms_output.put_line(null);dbms_output.put_line(v); end;
 begin
-  obj.put('My favorite date', json_ext.to_json_value(testdate));
+  obj.put('My favorite date', pljson_ext.to_json_string(testdate));
   obj.print;
-  if(json_ext.is_date(obj.get('My favorite date'))) then
+  if(pljson_ext.is_date(obj.get('My favorite date'))) then
     p('We can also test the value');
   end if;
   p('And convert it back');
-  dbms_output.put_line(json_ext.to_date2(obj.get('My favorite date')));
+  dbms_output.put_line(pljson_ext.to_date(obj.get('My favorite date')));
 end;
 /

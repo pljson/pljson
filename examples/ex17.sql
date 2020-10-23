@@ -28,12 +28,12 @@ This software has been released under the MIT license:
                  get(indx)
 */
 set serveroutput on;
-declare 
-  obj json;
+declare
+  obj pljson;
   indx number;
 begin
   --fast construction of json
-  obj := json();
+  obj := pljson();
   obj.check_duplicate(false); --enables fast construction without checks for duplicate keys
   for i in 1 .. 10000 loop
     obj.put('A'||i, true);

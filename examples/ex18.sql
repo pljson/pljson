@@ -24,10 +24,10 @@ This software has been released under the MIT license:
 /* Using JSONML */
 
 set serveroutput on;
-declare 
-  arr json_list;
+declare
+  arr pljson_list;
 begin
-  arr := json_ml.xmlstr2json('<abc value="123">123</abc>');
+  arr := pljson_ml.xmlstr2json('<abc value="123">123</abc>');
   arr.print;
 end;
 /

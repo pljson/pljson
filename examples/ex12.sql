@@ -23,17 +23,17 @@ This software has been released under the MIT license:
 */
 /* Using the pretty-print with anydata */
 set serveroutput on;
-declare 
-  obj json;
+declare
+  obj pljson;
 begin
-  obj := json('{"a": "true"}');
-  --directly from json_printer
-  dbms_output.put_line(json_printer.pretty_print_any(json_ext.get_json_value(obj, 'a')));
-  --from json_ext varchar2
-  dbms_output.put_line(json_ext.pp(obj, 'a'));
-  --from json_ext dbms_output.put_line
-  json_ext.pp(obj, 'a');
-  --from json_ext htp.print
-  --json_ext.pp_htp(obj, 'a');
+  obj := pljson('{"a": "true"}');
+  --directly from pljson_printer
+  dbms_output.put_line(pljson_printer.pretty_print_any(pljson_ext.get_json_element(obj, 'a')));
+  --from pljson_ext varchar2
+  dbms_output.put_line(pljson_ext.pp(obj, 'a'));
+  --from pljson_ext dbms_output.put_line
+  pljson_ext.pp(obj, 'a');
+  --from pljson_ext htp.print
+  --pljson_ext.pp_htp(obj, 'a');
 end;
 /

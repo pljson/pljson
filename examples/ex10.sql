@@ -27,7 +27,7 @@ This software has been released under the MIT license:
 
 set serveroutput on;
 declare
-  obj json := json(
+  obj pljson := pljson(
 '{
   "a" : true,
   "b" : [1,2,"3"],
@@ -36,40 +36,40 @@ declare
   }
 }');
 begin
-  -- Having understood ex8.sql and ex9.sql, we now what to delete elements with
-  -- JSON Path. The JSON Path remove method does only remove an element if it 
-  -- exists. Unlike put, it does not build up a structure but uses get to 
-  -- investigate if the structure exists. The only time remove should fail, is 
-  -- when you ask it to remove the entire structure. 
-  -- (Which you could easily do yourself >> obj := json() << )
+  -- Having understood ex8.sql and ex9.sql, we show how to delete elements with
+  -- JSON Path. The JSON Path remove method does only remove an element if it
+  -- exists. Unlike put, it does not build up a structure but uses get to
+  -- investigate if the structure exists. The only time remove should fail, is
+  -- when you ask it to remove the entire structure.
+  -- (Which you could easily do yourself >> obj := pljson() << )
 
   dbms_output.put_line('Example 1: remove a');
-  json_ext.remove(obj, 'a');
+  pljson_ext.remove(obj, 'a');
   obj.print;
 
   dbms_output.put_line('Example 2: remove third element of b');
-  json_ext.remove(obj, 'b[3]');
+  pljson_ext.remove(obj, 'b[3]');
   obj.print;
 
   dbms_output.put_line('Example 3: remove first element of b');
-  json_ext.remove(obj, 'b[1]');
+  pljson_ext.remove(obj, 'b[1]');
   obj.print;
-  
+
   dbms_output.put_line('Example 4: remove e in d in c');
-  json_ext.remove(obj, 'c.d[3].e');
+  pljson_ext.remove(obj, 'c.d[3].e');
   obj.print;
 
   dbms_output.put_line('Example 5: remove array of array in d');
-  json_ext.remove(obj, 'c.d[1]');
+  pljson_ext.remove(obj, 'c.d[1]');
   obj.print;
 
   dbms_output.put_line('Example 6: remove null element in d');
-  json_ext.remove(obj, 'c.d[1]');
+  pljson_ext.remove(obj, 'c.d[1]');
   obj.print;
 
   dbms_output.put_line('Example 7: remove b and c');
-  json_ext.remove(obj, 'c');
-  json_ext.remove(obj, 'b');
+  pljson_ext.remove(obj, 'c');
+  pljson_ext.remove(obj, 'b');
   obj.print;
 
   -- thats it!

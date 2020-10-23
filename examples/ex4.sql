@@ -27,16 +27,16 @@ This software has been released under the MIT license:
 
 set serveroutput on format wrapped;
 declare
-  obj json;
+  obj pljson;
   procedure p(v varchar2) as begin dbms_output.put_line(null);dbms_output.put_line(v); end;
 begin
   p('Build a little json structure');
-  obj := json(); --an empty structure
+  obj := pljson(); --an empty structure
   obj.put('A', 'a little string');
   obj.put('B', 123456789);
   obj.put('C', true);
   obj.put('D', false);
-  obj.put('F', json_value.makenull);
+  obj.put('F', pljson_null);
   obj.print;
   p('add with position');
   obj.put('E', 'Wow thats great!', 5);
@@ -59,10 +59,10 @@ begin
       dbms_output.put_line(':-)');
     end if;
   end if;
-  p('you can also put json or json_lists as values:');
-  obj := json(); --fresh json;
-  obj.put('Nested JSON', json('{"lazy construction": true}'));
-  obj.put('An array', json_list('[1,2,3,4,5]'));
+  p('you can also put json or pljson_lists as values:');
+  obj := pljson(); --fresh json;
+  obj.put('Nested JSON', pljson('{"lazy construction": true}'));
+  obj.put('An array', pljson_list('[1,2,3,4,5]'));
   obj.print;
 end;
 /
