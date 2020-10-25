@@ -146,6 +146,20 @@ pljson_varray('name', 'extra', 'map', 'count', 'whatelse'))
 /
 
 /*
+  select from a single table
+*/
+select num, name, map, count
+from pljson_table_test pljtt,
+table(
+pljson_table.json_table(
+pljtt.col,
+pljson_varray('data.name', 'data.extra', 'data.maps', 'data.shares.count', 'data.missing'),
+pljson_varray('name', 'extra', 'map', 'count', 'whatelse'))
+)
+order by num
+/
+
+/*
   select from a single 'literal' json document and joined to other table
 */
 select num, name, map, count
