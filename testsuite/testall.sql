@@ -37,6 +37,7 @@ exec pljson_ut.startup;
 REM @@pljson_helper.test.sql
 @@pljson_unicode.test.sql
 @@pljson_base64.test.sql
+@@pljson_table.test.sql
 
 REM set again for report at end, some test may change linesize
 set linesize 120
