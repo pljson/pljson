@@ -35,6 +35,7 @@ begin
         pljson_ut.assertTrue(false, 'CREATE TABLE pljson_table_test');
     end;
     
+    execute immediate q'#
     insert all
     into pljson_table_test values(1,
     '{"data":
@@ -72,9 +73,11 @@ begin
        "maps" : [ true, true, false ]
       }
     }')
-    select * from dual;
-
+    select * from dual#';
+    
     pljson_ut.assertTrue(true, 'pljson_table_test example data');
+    
+    commit;
 
   exception
     when others then
