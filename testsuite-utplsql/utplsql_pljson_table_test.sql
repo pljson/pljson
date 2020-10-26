@@ -1,26 +1,78 @@
-/**
- * Test of PLSQL PLJSON_Table
- **/
 
-set serveroutput on format wrapped
+create or replace package utplsql_pljson_table_test is
+  
+  --%suite(pljson table test)
+  --%suitepath(core)
+  --%rollback(manual)
+  
+  --%beforeall
+  procedure startup;
+  
+  --%test(Test SELECT statements (cartesian))
+  procedure test_cartesian;
+  
+  --%test(Test SELECT statements (nested))  
+  procedure test_nested;
+  
+end utplsql_pljson_table_test;
+/
 
-begin
-
-  pljson_ut.testsuite('pljson_table test', 'pljson_table.test.sql');
-
+create or replace package body utplsql_pljson_table_test is
+  
+  EOL varchar2(10) := chr(13);
+  
+  -- INDENT_1 varchar2(10) := '  ';
+  INDENT_2 varchar2(10) := '  ';
+  
+  procedure pass(test_name varchar2 := null) as
+  begin
+    if (test_name is not null) then
+      dbms_output.put_line(INDENT_2 || 'OK: '|| test_name);
+    end if;
+    --ut.expect(true, str).to_be_true;
+  end;
+  
+  procedure fail(test_name varchar2 := null) as
+  begin
+    if (test_name is not null) then
+      dbms_output.put_line(INDENT_2 || 'FAILED: '|| test_name);
+    end if;
+    ut.fail(test_name);
+    --ut.expect(true, str).to_be_true;
+  end;
+  
+  procedure assertTrue(b boolean, test_name varchar2 := null) as
+  begin
+    if (b) then
+      pass(test_name);
+    else
+      fail(test_name);
+    end if;
+  end;
+  
+  procedure assertFalse(b boolean, test_name varchar2 := null) as
+  begin
+    if (not b) then
+      pass(test_name);
+    else
+      fail(test_name);
+    end if;
+  end;
+  
+  procedure startup is
   begin
   
     begin
 
       execute immediate 'drop table pljson_table_test';
-      pljson_ut.assertTrue(true, 'DROP TABLE pljson_table_test');
+      assertTrue(true, 'DROP TABLE pljson_table_test');
 
     exception
       when others then
         if (sqlcode = -942) then
-          pljson_ut.assertTrue(true, 'DROP TABLE pljson_table_test; ignored, table did not exist');
+          assertTrue(true, 'DROP TABLE pljson_table_test; ignored, table did not exist');
         else
-          pljson_ut.assertTrue(false, 'Unexpected error dropping pljson_table_test');
+          assertTrue(false, 'Unexpected error dropping pljson_table_test');
           dbms_output.put_line(sqlerrm);
         end if;
     end;
@@ -28,13 +80,14 @@ begin
     begin
 
       execute immediate 'create table pljson_table_test (num number not null, col clob)';
-      pljson_ut.assertTrue(true, 'CREATE TABLE pljson_table_test');
+      assertTrue(true, 'CREATE TABLE pljson_table_test');
 
     exception
       when others then
-        pljson_ut.assertTrue(false, 'CREATE TABLE pljson_table_test');
+        assertTrue(false, 'CREATE TABLE pljson_table_test');
     end;
     
+    execute immediate q'#
     insert all
     into pljson_table_test values(1,
     '{"data":
@@ -72,18 +125,19 @@ begin
        "maps" : [ true, true, false ]
       }
     }')
-    select * from dual;
-
-    pljson_ut.assertTrue(true, 'pljson_table_test example data');
-
+    select * from dual#';
+    
+    assertTrue(true, 'pljson_table_test example data');
+    
+    commit;
+    
   exception
     when others then
-      pljson_ut.assertTrue(false, 'pljson_table_test example data creation');
+      assertTrue(false, 'pljson_table_test example data creation');
   end;
-
-  -- cartesian
-  pljson_ut.testcase('Test SELECT statements (cartesian)');
-  declare
+  
+  -- SELECT statements (cartesian)
+  procedure test_cartesian is
     l_n integer;
   begin
 
@@ -113,7 +167,7 @@ begin
       when others then
         null;
     end;
-    pljson_ut.assertTrue(l_n = 3, 'select from literal');
+    assertTrue(l_n = 3, 'select from literal');
 
     begin
     
@@ -132,7 +186,7 @@ begin
       when others then
         null;
     end;
-    pljson_ut.assertTrue(l_n = 5, 'select from table');
+    assertTrue(l_n = 5, 'select from table');
 
     begin
 
@@ -161,13 +215,12 @@ begin
       when others then
         null;
     end;
-    pljson_ut.assertTrue(l_n = 9, 'select from table cartesian join with literal');
+    assertTrue(l_n = 9, 'select from table cartesian join with literal');
     
   end;
-
-  -- nested
-  pljson_ut.testcase('Test SELECT statements (nested)');
-  declare
+  
+  -- SELECT statements (nested)
+  procedure test_nested is
     l_n integer;
   begin
 
@@ -192,7 +245,7 @@ begin
       when others then
         null;
     end;
-    pljson_ut.assertTrue(l_n = 6, 'select from literal');
+    assertTrue(l_n = 6, 'select from literal');
 
     begin
 
@@ -237,7 +290,7 @@ begin
       when others then
         null;
     end;
-    pljson_ut.assertTrue(l_n = 2, 'select from literal (2)');
+    assertTrue(l_n = 2, 'select from literal (2)');
 
     begin
 
@@ -282,11 +335,10 @@ begin
       when others then
         null;
     end;
-    pljson_ut.assertTrue(l_n = 2, 'select from literal (3)');
+    assertTrue(l_n = 2, 'select from literal (3)');
     
   end;
-
-  pljson_ut.testsuite_report;
-
-end;
+  
+end utplsql_pljson_table_test;
 /
+show err

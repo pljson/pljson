@@ -49,6 +49,12 @@ create or replace package utplsql_pljson_path_test is
   --%test(Test put with index)
   procedure test_put_index;
   
+  --%test(Test put with pre-parsed path)
+  procedure test_put_pre_parsed_path;
+  
+  --%test(Test remove with pre-parsed path)
+  procedure test_remove_pre_parsed_path;
+  
 end utplsql_pljson_path_test;
 /
 
@@ -346,6 +352,30 @@ create or replace package body utplsql_pljson_path_test is
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
     pljson_ext.put(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]', 2.718281828459e210d);
     assertTrue(nvl(pljson_ext.get_double(obj, '[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''[ "a"  ][2][1 ] [ "a" ]["i"][1]["A"]''),0) = 2.718281828459e210d');
+  end;
+  
+  -- put with pre-parsed path
+  procedure test_put_pre_parsed_path is
+    obj pljson := pljson();
+  begin
+    pljson_ext.put(obj, pljson_ext.parsePath('a.b[1].c'), true);
+    assertTrue(pljson_ext.get_json_list(obj, pljson_ext.parsePath('a.b')) is not null, 'pljson_ext.get_json_list(obj, pljson_ext.parsePath(''a.b'')) is not null');
+    pljson_ext.put(obj, pljson_ext.parsePath('a.b[1].c'), false);
+    --dbms_output.put_line('Put false');
+    --obj.print;
+    assertTrue(pljson_ext.get_json_list(obj, pljson_ext.parsePath('a.b')) is not null, 'pljson_ext.get_json_list(obj, pljson_ext.parsePath(''a.b'')) is not null');
+    assertFalse(pljson_ext.get_json_element(obj, pljson_ext.parsePath('a.b[1].c')).get_bool, 'pljson_ext.get_json_element(obj, pljson_ext.parsePath(''a.b[1].c'')).get_bool');
+  end;
+ 
+  -- remove with pre-parsed path
+  procedure test_remove_pre_parsed_path is
+    obj pljson := pljson('{"a":true, "b":[[]]}');
+  begin
+    pljson_ext.remove(obj, pljson_ext.parsePath('a'));
+    assertFalse(obj.exist('a'), 'obj.exist(''a'')');
+    assertTrue(obj.count = 1, 'obj.count = 1');
+    pljson_ext.remove(obj, pljson_ext.parsePath('b[1]'));
+    assertFalse(obj.exist('b'), 'obj.exist(''b'')');
   end;
   
 end utplsql_pljson_path_test;
