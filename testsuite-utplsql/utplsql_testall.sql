@@ -41,6 +41,7 @@ PROMPT Installing tests
 REM @@utplsql_pljson_helper_test.sql
 @@utplsql_pljson_unicode_test.sql
 @@utplsql_pljson_base64_test.sql
+@@utplsql_pljson_table_test.sql
 
 PROMPT Executing tests
 REM exec ut.run(ut_coverage_html_reporter());
@@ -55,3 +56,4 @@ drop package utplsql_pljson_path_test;
 REM drop package utplsql_pljson_helper_test;
 drop package utplsql_pljson_unicode_test;
 drop package utplsql_pljson_base64_test;
+drop package utplsql_pljson_table_test;

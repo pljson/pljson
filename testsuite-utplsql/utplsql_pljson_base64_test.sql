@@ -11,7 +11,7 @@ create or replace package utplsql_pljson_base64_test is
   --%suite(base64_test test)
   --%suitepath(core)
   
-  --%test(Test Base64 encode/decode size > 32K)
+  --%test(Base64 encode/decode size > 32K)
   procedure test_base64_32K;
   --%test(Base64 encode/decode size < 64, two =)
   procedure test_base64_64_padtwo;
