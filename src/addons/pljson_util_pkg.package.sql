@@ -50,11 +50,9 @@ create or replace package body pljson_util_pkg as
 
   */
 
-
-  g_json_null_object             constant varchar2(20) := '{ }';
-
-
 function get_xml_to_json_stylesheet return varchar2 as
+  stylesheet varchar2(32767);
+  nls_numeric_characters varchar2(2);
 begin
 
   /*
@@ -70,8 +68,7 @@ begin
 
   */
 
-
-  return q'^<?xml version="1.0" encoding="UTF-8"?>
+  stylesheet := q'^<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <!--
   Copyright (c) 2006,2008 Doeke Zanstra
@@ -123,7 +120,7 @@ begin
     </xsl:call-template>
     <xsl:text>"</xsl:text>
   </xsl:template>
-  
+
   <!-- Escape the backslash (\) before everything else. -->
   <xsl:template name="escape-bs-string">
     <xsl:param name="s"/>
@@ -143,7 +140,7 @@ begin
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
+
   <!-- Escape the double quote ("). -->
   <xsl:template name="escape-quot-string">
     <xsl:param name="s"/>
@@ -163,7 +160,7 @@ begin
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
+
   <!-- Replace tab, line feed and/or carriage return by its matching escape code. Can't escape backslash
        or double quote here, because they don't replace characters (&#x0; becomes \t), but they prefix
        characters (\ becomes \\). Besides, backslash should be seperate anyway, because it should be
@@ -191,30 +188,42 @@ begin
       </xsl:when>
       <!-- ambersand, addition by boriborm -->
       <xsl:when test="contains($s,'&amp;')">
-        <xsl:value-of select="substring-before($s,'&amp;')"/><![CDATA[&amp;]]><xsl:value-of select="substring-after( $s, '&amp;' )"/>   
+        <xsl:value-of select="substring-before($s,'&amp;')"/><![CDATA[&amp;]]><xsl:value-of select="substring-after( $s, '&amp;' )"/>
       </xsl:when>
       <!-- lt, addition by boriborm -->
       <xsl:when test="contains($s,'&lt;')">
-        <xsl:value-of select="substring-before($s,'&lt;')"/><![CDATA[&lt;]]><xsl:value-of select="substring-after( $s, '&lt;' )"/>   
+        <xsl:value-of select="substring-before($s,'&lt;')"/><![CDATA[&lt;]]><xsl:value-of select="substring-after( $s, '&lt;' )"/>
       </xsl:when>
       <xsl:otherwise><xsl:value-of select="$s"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
+
   <!-- number (no support for javascript mantissa) -->
-  <xsl:template match="text()[not(string(number())='NaN' or
-                      (starts-with(.,'0' ) and . != '0' and
-not(starts-with(.,'0.' ))) or
-                      (starts-with(.,'-0' ) and . != '-0' and
-not(starts-with(.,'-0.' )))
+  <!-- *** NOTE ***
+the following is part within "not" connected with "or", in original code, unknown use
+                      (starts-with(.,'0' ) and . != '0' and not(starts-with(.,'0.' ))) or
+                      (starts-with(.,'-0' ) and . != '-0' and not(starts-with(.,'-0.' )))
+  -->
+  <xsl:template match="text()[not(
+                      string(number(translate(., '{{nls_numeric_characters}}', '.,')))='NaN'
                       )]">
-    <xsl:value-of select="."/>
+    <xsl:variable name="num_string" select="translate(., '{{nls_numeric_characters}}', '.,')"/>
+    
+    <xsl:choose>
+      <xsl:when test="starts-with($num_string, '.')">
+        <xsl:value-of select="concat('0', $num_string)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$num_string"/>
+      </xsl:otherwise>
+    </xsl:choose>
+
   </xsl:template>
-  
+
   <!-- boolean, case-insensitive -->
   <xsl:template match="text()[translate(.,'TRUE','true')='true']">true</xsl:template>
   <xsl:template match="text()[translate(.,'FALSE','false')='false']">false</xsl:template>
-  
+
   <!-- object -->
   <xsl:template match="*" name="base">
     <xsl:if test="not(preceding-sibling::*)">{</xsl:if>
@@ -235,7 +244,7 @@ not(starts-with(.,'-0.' )))
     <xsl:if test="following-sibling::*">,</xsl:if>
     <xsl:if test="not(following-sibling::*)">}</xsl:if>
   </xsl:template>
-  
+
   <!-- array -->
   <xsl:template match="*[count(../*[name(../*)=name(.)])=count(../*) and count(../*)&gt;1]">
     <xsl:if test="not(preceding-sibling::*)">[</xsl:if>
@@ -250,7 +259,7 @@ not(starts-with(.,'-0.' )))
     <xsl:if test="following-sibling::*">,</xsl:if>
     <xsl:if test="not(following-sibling::*)">]</xsl:if>
   </xsl:template>
-  
+
   <!-- convert root element to an anonymous container -->
   <xsl:template match="/">
     <xsl:apply-templates select="node()"/>
@@ -258,8 +267,14 @@ not(starts-with(.,'-0.' )))
 
 </xsl:stylesheet>^';
 
-end get_xml_to_json_stylesheet;
+  select value
+  into nls_numeric_characters
+  from nls_session_parameters
+  where parameter = 'NLS_NUMERIC_CHARACTERS';
+  
+  return replace(stylesheet, '{{nls_numeric_characters}}', nls_numeric_characters);
 
+end get_xml_to_json_stylesheet;
 
 function ref_cursor_to_json (p_ref_cursor in sys_refcursor,
                              p_max_rows in number := null,
@@ -268,7 +283,7 @@ as
   l_ctx         dbms_xmlgen.ctxhandle;
   l_num_rows    pls_integer;
   l_xml         xmltype;
-  l_json        xmltype;
+  l_xsl         xmltype         := xmltype(get_xml_to_json_stylesheet);
   l_returnvalue clob;
 begin
 
@@ -307,35 +322,32 @@ begin
   dbms_xmlgen.closecontext (l_ctx);
 
   close p_ref_cursor;
-  --dbms_output.put_line(l_xml.getstringval);
-  if l_num_rows > 0 then
-    -- perform the XSL transformation
-    l_json := l_xml.transform (xmltype(get_xml_to_json_stylesheet));
-    --dbms_output.put_line(l_json.getstringval);
-    l_returnvalue := l_json.getclobval();
-  else
-    l_returnvalue := g_json_null_object;
-  end if;
 
-  l_returnvalue := dbms_xmlgen.convert (l_returnvalue, dbms_xmlgen.entity_decode);
-  --dbms_output.put_line(l_returnvalue);
   if(l_num_rows = 0) then
     return pljson_list();
-  else
-    if(l_num_rows = 1) then
-      declare ret pljson_list := pljson_list();
-      begin
-        ret.append(
-          pljson(
-            pljson(l_returnvalue).get('ROWSET')
-          ).get('ROW')
-        );
-        return ret;
-      end;
-    else
-      return pljson_list(pljson(l_returnvalue).get('ROWSET'));
-    end if;
   end if;
+
+  --dbms_output.put_line(l_xml.getstringval);
+  -- perform the XSL transformation
+  SELECT  l_xml.transform(l_xsl).getclobval()
+  INTO    l_returnvalue
+  FROM    DUAL;
+
+  --dbms_output.put_line(l_returnvalue);
+
+  if(l_num_rows > 1) then
+    return pljson_list(pljson(l_returnvalue).get('ROWSET'));
+  end if;
+
+  declare ret pljson_list := pljson_list();
+  begin
+    ret.append(
+      pljson(
+        pljson(l_returnvalue).get('ROWSET')
+      ).get('ROW')
+    );
+    return ret;
+  end;
 
 exception
   when scanner_exception then
@@ -347,7 +359,6 @@ exception
     dbms_output.put_line(l_returnvalue);
     raise;
   when others then raise;
-
 end ref_cursor_to_json;
 
 function sql_to_json (p_sql in varchar2,
@@ -360,7 +371,6 @@ begin
   return ref_cursor_to_json(v_cur, p_max_rows, p_skip_rows);
 
 end sql_to_json;
-
 
 end pljson_util_pkg;
 /
