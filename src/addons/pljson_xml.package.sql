@@ -62,23 +62,24 @@ create or replace package body pljson_xml as
 /* Clob methods from printer */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
-    if (length(str) > 32767 - length(buf_str)) then
+    -- if (length(str) > 5000 - length(buf_str)) then
+    if (lengthb(str) > 32767 - lengthb(buf_str)) then
       dbms_lob.append(buf_lob, buf_str);
       buf_str := str;
     else
       buf_str := buf_str || str;
     end if;
   end add_to_clob;
-  
+
   procedure flush_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2) as
   begin
     dbms_lob.append(buf_lob, buf_str);
   end flush_clob;
-  
+
   procedure toString(obj pljson_value, tagname in varchar2, xmlstr in out nocopy clob, xmlbuf in out nocopy varchar2) as
     v_obj pljson;
     v_list pljson_list;
-    
+
     v_keys pljson_list;
     v_value pljson_value;
     key_str varchar2(4000);
@@ -86,12 +87,12 @@ create or replace package body pljson_xml as
     if (obj.is_object()) then
       add_to_clob(xmlstr, xmlbuf, '<' || tagname || '>');
       v_obj := pljson(obj);
-      
+
       v_keys := v_obj.get_keys();
       for i in 1 .. v_keys.count loop
         v_value := v_obj.get(i);
         key_str := v_keys.get(i).get_string();
-        
+
         if (key_str = 'content') then
           if (v_value.is_array()) then
             declare
@@ -126,7 +127,7 @@ create or replace package body pljson_xml as
           toString(v_value, key_str, xmlstr, xmlbuf);
         end if;
       end loop;
-      
+
       add_to_clob(xmlstr, xmlbuf, '</' || tagname || '>');
     elsif (obj.is_array()) then
       v_list := pljson_list(obj);
@@ -138,16 +139,16 @@ create or replace package body pljson_xml as
       add_to_clob(xmlstr, xmlbuf, '<' || tagname || '>'||case when obj.value_of() is  not null then escapeStr(obj.value_of()) end ||'</' || tagname || '>');
     end if;
   end toString;
-  
+
   function json_to_xml(obj pljson, tagname varchar2 default 'root') return xmltype as
     xmlstr clob := empty_clob();
     xmlbuf varchar2(32767) := '';
     returnValue xmltype;
   begin
     dbms_lob.createtemporary(xmlstr, true);
-    
+
     toString(obj.to_json_value, tagname, xmlstr, xmlbuf);
-    
+
     flush_clob(xmlstr, xmlbuf);
     returnValue := xmltype('<?xml version="1.0"?>'||xmlstr);
     dbms_lob.freetemporary(xmlstr);

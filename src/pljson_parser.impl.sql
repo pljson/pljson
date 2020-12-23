@@ -23,8 +23,10 @@ create or replace package body pljson_parser as
 
   decimalpoint varchar2(1 char) := '.';
 
+  /* moved to package spec
   ucs2_exception EXCEPTION;
   pragma exception_init(ucs2_exception, -22831);
+  */
 
   function lengthcc(buf clob) return number as
    offset number := 0;
@@ -283,6 +285,7 @@ create or replace package body pljson_parser as
     varbuf varchar2(32767) := '';
     buf varchar(4);
     wrong boolean;
+    max_string_chars number := 5000; /* chunk size, less than this number may be copied */
   begin
     indx := indx + 1;
     buf := next_char(indx, jsrc);
@@ -377,7 +380,9 @@ create or replace package body pljson_parser as
     if (v_extended is not null) then
       updateClob(v_extended, unistr(varbuf));
       tok.data_overflow := v_extended;
-      tok.data := dbms_lob.substr(v_extended, 1, 32767);
+      -- tok.data := dbms_lob.substr(v_extended, 1, 32767);
+      /* may read less than "max_string_chars" characters but it's a sample so doesn't matter */
+      dbms_lob.read(v_extended, max_string_chars, 1, tok.data);
     else
       tok.data := unistr(varbuf);
     end if;
