@@ -186,14 +186,6 @@ begin
           <xsl:with-param name="s" select="concat(substring-before($s,'&#xD;'),'\r',substring-after($s,'&#xD;'))"/>
         </xsl:call-template>
       </xsl:when>
-      <!-- ambersand, addition by boriborm -->
-      <xsl:when test="contains($s,'&amp;')">
-        <xsl:value-of select="substring-before($s,'&amp;')"/><![CDATA[&amp;]]><xsl:value-of select="substring-after( $s, '&amp;' )"/>
-      </xsl:when>
-      <!-- lt, addition by boriborm -->
-      <xsl:when test="contains($s,'&lt;')">
-        <xsl:value-of select="substring-before($s,'&lt;')"/><![CDATA[&lt;]]><xsl:value-of select="substring-after( $s, '&lt;' )"/>
-      </xsl:when>
       <xsl:otherwise><xsl:value-of select="$s"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -207,6 +199,7 @@ the following is part within "not" connected with "or", in original code, unknow
   <xsl:template match="text()[not(
                       string(number(translate(., '{{nls_numeric_characters}}', '.,')))='NaN'
                       )]">
+    
     <xsl:variable name="num_string" select="translate(., '{{nls_numeric_characters}}', '.,')"/>
     
     <xsl:choose>
@@ -217,7 +210,7 @@ the following is part within "not" connected with "or", in original code, unknow
         <xsl:value-of select="$num_string"/>
       </xsl:otherwise>
     </xsl:choose>
-
+    
   </xsl:template>
 
   <!-- boolean, case-insensitive -->
@@ -273,7 +266,7 @@ the following is part within "not" connected with "or", in original code, unknow
   where parameter = 'NLS_NUMERIC_CHARACTERS';
   
   return replace(stylesheet, '{{nls_numeric_characters}}', nls_numeric_characters);
-
+  
 end get_xml_to_json_stylesheet;
 
 function ref_cursor_to_json (p_ref_cursor in sys_refcursor,
