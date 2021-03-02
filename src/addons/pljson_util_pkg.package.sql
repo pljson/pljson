@@ -191,17 +191,14 @@ begin
   </xsl:template>
 
   <!-- number (no support for javascript mantissa) -->
-  <!-- *** NOTE ***
-the following is part within "not" connected with "or", in original code, unknown use
-                      (starts-with(.,'0' ) and . != '0' and not(starts-with(.,'0.' ))) or
-                      (starts-with(.,'-0' ) and . != '-0' and not(starts-with(.,'-0.' )))
-  -->
   <xsl:template match="text()[not(
+                      (starts-with(., '0' ) and . !=  '0' and not(starts-with(., '0.' ))) or
+                      (starts-with(.,'-0' ) and . != '-0' and not(starts-with(.,'-0.' ))) or
                       string(number(translate(., '{{nls_numeric_characters}}', '.,')))='NaN'
                       )]">
-    
+
     <xsl:variable name="num_string" select="translate(., '{{nls_numeric_characters}}', '.,')"/>
-    
+
     <xsl:choose>
       <xsl:when test="starts-with($num_string, '.')">
         <xsl:value-of select="concat('0', $num_string)"/>
@@ -210,7 +207,7 @@ the following is part within "not" connected with "or", in original code, unknow
         <xsl:value-of select="$num_string"/>
       </xsl:otherwise>
     </xsl:choose>
-    
+
   </xsl:template>
 
   <!-- boolean, case-insensitive -->
@@ -264,9 +261,9 @@ the following is part within "not" connected with "or", in original code, unknow
   into nls_numeric_characters
   from nls_session_parameters
   where parameter = 'NLS_NUMERIC_CHARACTERS';
-  
+
   return replace(stylesheet, '{{nls_numeric_characters}}', nls_numeric_characters);
-  
+
 end get_xml_to_json_stylesheet;
 
 
