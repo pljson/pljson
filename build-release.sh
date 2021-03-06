@@ -8,9 +8,9 @@ fi
 
 version=$(cat package.json | jq -r '.version')
 
-rm -rf target *.zip 2>&1 1>/dev/null
+rm -rf target pljson-*.zip 2>&1 1>/dev/null
 mkdir target
-cp -R src testsuite examples *install.sql CHANGELOG.md README.md target
+cp -R src testsuite testsuite-utplsql examples install.sql uninstall.sql README.md target
 sed -i -e 's/{{PLJSON_VERSION}}/'${version}'/' target/src/pljson_parser.impl.sql
 cp -R docs target
 
