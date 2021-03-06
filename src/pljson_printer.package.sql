@@ -89,7 +89,8 @@ create or replace package body pljson_printer as
       when chr(34) then result := '\"';
       when chr(47) then if (escape_solidus) then result := '\/'; end if;
       when chr(92) then result := '\\';
-      else if (ascii(ch) < 32) then
+      /* WARNING: ascii() returns PLS_INTEGER and large unicode code points can be negative */
+      else if (ascii(ch) >= 0 and ascii(ch) < 32) then
              result :=  '\u' || replace(substr(to_char(ascii(ch), 'XXXX'), 2, 4), ' ', '0');
         elsif (ascii_output) then
              result := replace(asciistr(ch), '\', '\u');
@@ -167,9 +168,10 @@ create or replace package body pljson_printer as
   /* Clob method start here */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
+    -- if (length(str) > 5000 - length(buf_str)) then
     if (lengthb(str) > 32767 - lengthb(buf_str)) then
---      dbms_lob.append(buf_lob, buf_str);
-      dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
+      -- dbms_lob.writeappend(buf_lob, length2(buf_str), buf_str);
+      dbms_lob.append(buf_lob, buf_str);
       buf_str := str;
     else
       buf_str := buf_str || str;
@@ -178,8 +180,8 @@ create or replace package body pljson_printer as
   
   procedure flush_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2) as
   begin
-    --dbms_lob.append(buf_lob, buf_str);
-    dbms_lob.writeappend(buf_lob, length(buf_str), buf_str);
+    -- dbms_lob.writeappend(buf_lob, length2(buf_str), buf_str);
+    dbms_lob.append(buf_lob, buf_str);
   end flush_clob;
   
   procedure ppObj(obj pljson, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2);
@@ -188,7 +190,7 @@ create or replace package body pljson_printer as
     offset number := 1;
     /* E.I.Sarmas (github.com/dsnz)   2016-01-21   limit to 5000 chars */
     v_str varchar(5000 char);
-    amount number := 5000; /* chunk size for use in escapeString; maximum escaped unicode string size for chunk may be 6 one-byte chars * 5000 chunk size in multi-byte chars = 30000 1-byte chars (maximum value is 32767 1-byte chars) */
+    amount number := 5000; /* chunk size for use in escapeString, less than this number may be copied */
   begin
     if empty_string_as_null and elem.extended_str is null and elem.str is null then
       add_to_clob(buf, buf_str, 'null');
@@ -314,7 +316,10 @@ create or replace package body pljson_printer as
     buf_str varchar2(32767);
     amount number := dbms_lob.getlength(buf);
   begin
-    if (erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
+    if (erase_clob and amount > 0) then
+      dbms_lob.trim(buf, 0);
+      -- dbms_lob.erase(buf, amount);
+    end if;
     
     max_line_len := line_length;
     cur_line_len := 0;
@@ -326,7 +331,10 @@ create or replace package body pljson_printer as
     buf_str varchar2(32767);
     amount number := dbms_lob.getlength(buf);
   begin
-    if (erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
+    if (erase_clob and amount > 0) then
+      dbms_lob.trim(buf, 0);
+      -- dbms_lob.erase(buf, amount);
+    end if;
     
     max_line_len := line_length;
     cur_line_len := 0;
@@ -341,7 +349,10 @@ create or replace package body pljson_printer as
     numbuf varchar2(4000);
     amount number := dbms_lob.getlength(buf);
   begin
-    if (erase_clob and amount > 0) then dbms_lob.trim(buf, 0); dbms_lob.erase(buf, amount); end if;
+    if (erase_clob and amount > 0) then
+      dbms_lob.trim(buf, 0);
+      -- dbms_lob.erase(buf, amount);
+    end if;
     
     case json_part.typeval
       /* number */
@@ -390,7 +401,7 @@ create or replace package body pljson_printer as
     offset number := 1;
     /* E.I.Sarmas (github.com/dsnz)   2016-01-21   limit to 5000 chars */
     v_str varchar(5000 char);
-    amount number := 5000; /* chunk size for use in escapeString; maximum escaped unicode string size for chunk may be 6 one-byte chars * 5000 chunk size in multi-byte chars = 30000 1-byte chars (maximum value is 32767 1-byte chars) */
+    amount number := 5000; /* chunk size for use in escapeString, less than this number may be copied */
   begin
     if empty_string_as_null and elem.extended_str is null and elem.str is null then
       add_buf(buf, 'null');
@@ -565,9 +576,10 @@ create or replace package body pljson_printer as
   procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as
     prev number := 1;
     indx number := 1;
-    size_of_nl number := lengthb(delim);
+    size_of_nl number := length2(delim);
     v_str varchar2(32767);
-    amount number := 8191; /* max unicode chars */
+    amount number;
+    max_string_chars number := 5000; /* chunk size, less than this number may be copied */
   begin
     if (jsonp is not null) then dbms_output.put_line(jsonp||'('); end if;
     while (indx != 0) loop
@@ -577,7 +589,7 @@ create or replace package body pljson_printer as
       
       if (indx = 0) then
         --emit from prev to end;
-        amount := 8191; /* max unicode chars */
+        amount := max_string_chars;
         --dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
         loop
           dbms_lob.read(my_clob, amount, prev, v_str);
@@ -587,8 +599,8 @@ create or replace package body pljson_printer as
         end loop;
       else
         amount := indx - prev;
-        if (amount > 8191) then /* max unicode chars */
-          amount := 8191; /* max unicode chars */
+        if (amount > max_string_chars) then
+          amount := max_string_chars;
           --dbms_output.put_line(' mycloblen ' || dbms_lob.getlength(my_clob));
           loop
             dbms_lob.read(my_clob, amount, prev, v_str);
@@ -596,7 +608,9 @@ create or replace package body pljson_printer as
             prev := prev+amount;
             amount := indx - prev;
             exit when prev >= indx - 1;
-            if (amount > 8191) then amount := 8191; end if; /* max unicode chars */
+            if (amount > max_string_chars) then
+              amount := max_string_chars;
+            end if;
           end loop;
           prev := indx + size_of_nl;
         else
@@ -635,7 +649,7 @@ create or replace package body pljson_printer as
 /*  procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as
     prev number := 1;
     indx number := 1;
-    size_of_nl number := lengthb(delim);
+    size_of_nl number := length2(delim);
     v_str varchar2(32767);
     amount number;
   begin
