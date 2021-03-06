@@ -37,6 +37,9 @@ create or replace package pljson_parser as
 
   json_strict boolean not null := false;
 
+  ucs2_exception EXCEPTION;
+  pragma exception_init(ucs2_exception, -22831);
+
   function lengthcc(buf clob) return number;
 
   function next_char(indx number, s in out nocopy json_src) return varchar2;

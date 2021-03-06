@@ -62,7 +62,8 @@ create or replace package body pljson_xml as
 /* Clob methods from printer */
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
-    if (length(str) > 32767 - length(buf_str)) then
+    -- if (length(str) > 5000 - length(buf_str)) then
+    if (lengthb(str) > 32767 - lengthb(buf_str)) then
       dbms_lob.append(buf_lob, buf_str);
       buf_str := str;
     else
