@@ -22,25 +22,25 @@ create or replace package body pljson_parser as
   */
 
   decimalpoint varchar2(1 char) := '.';
+  -- Why 222? - I like it.
+  substr_amount number := 222;
 
-  /* moved to package spec
-  ucs2_exception EXCEPTION;
-  pragma exception_init(ucs2_exception, -22831);
-  */
+  procedure set_src_array(s in out nocopy json_src) as
+  begin
+    s.src_len := length(s.src);
+    select substr(s.src, level, 1)
+      bulk collect into s.src_array
+      from dual
+      connect by level <= s.src_len;
+  end;
 
   function lengthcc(buf clob) return number as
    offset number := 0;
    len number := 0;
    src varchar2(32767);
-   src_len number;
   begin
     while true loop
-      begin
-        src := dbms_lob.substr(buf, 4000, offset+1);
-      exception
-      when ucs2_exception then
-        src := dbms_lob.substr(buf, 3999, offset+1);
-      end;
+      src := dbms_lob.substr(buf, substr_amount, offset+1);
       exit when src is null;
       len := len + length(src);
       offset := offset + length2(src);
@@ -85,43 +85,27 @@ create or replace package body pljson_parser as
 
     /* use of length, so works correctly for 4-byte unicode characters (issue #169) */
     /* lengthc does not work (issue #190) */
-    if (indx > length(s.src) + s.offset_chars) then
+    if (indx > s.src_len + s.offset_chars) then
       while (indx > length(s.src) + s.offset_chars) loop
         s.offset_chars := s.offset_chars + length(s.src);
         s.offset := s.offset + length2(s.src);
-        /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
-        begin
-          s.src := dbms_lob.substr(s.s_clob, 4000, s.offset+1);
-        exception
-        when ucs2_exception then
-          s.src := dbms_lob.substr(s.s_clob, 3999, s.offset+1);
-        end;
+        s.src := dbms_lob.substr(s.s_clob, substr_amount, s.offset+1);
+        set_src_array(s);
       end loop;
     elsif (indx <= s.offset_chars) then
       s.offset_chars := 0;
       s.offset := 0;
-      /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
-      begin
-        s.src := dbms_lob.substr(s.s_clob, 4000, s.offset+1);
-      exception
-      when ucs2_exception then
-        s.src := dbms_lob.substr(s.s_clob, 3999, s.offset+1);
-      end;
+      s.src := dbms_lob.substr(s.s_clob, substr_amount, s.offset+1);
+      set_src_array(s);
       while (indx > length(s.src) + s.offset_chars) loop
         s.offset_chars := s.offset_chars + length(s.src);
         s.offset := s.offset + length2(s.src);
-        /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
-        begin
-          s.src := dbms_lob.substr(s.s_clob, 4000, s.offset+1);
-        exception
-        when ucs2_exception then
-          s.src := dbms_lob.substr(s.s_clob, 3999, s.offset+1);
-        end;
+        s.src := dbms_lob.substr(s.s_clob, substr_amount, s.offset+1);
+        set_src_array(s);
       end loop;
     end if;
     --dbms_output.put_line('indx: ' || indx || ' offset: ' || s.offset || ' (chars: ' || s.offset_chars || ') src chars: ' || length(s.src));
-    --read from s.src
-    return substr(s.src, indx-s.offset_chars, 1);
+    return s.src_array(indx-s.offset_chars);
   end;
 
   function next_char2(indx number, s in out nocopy json_src, amount number default 1) return varchar2 as
@@ -139,15 +123,10 @@ create or replace package body pljson_parser as
     temp.s_clob := buf;
     temp.offset_chars := 0;
     temp.offset := 0;
-    /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
-    begin
-      temp.src := dbms_lob.substr(buf, 4000, temp.offset+1);
-    exception
-    when ucs2_exception then
-      temp.src := dbms_lob.substr(buf, 3999, temp.offset+1);
-    end;
+    temp.src := dbms_lob.substr(buf, substr_amount, temp.offset+1);
     /* use of lengthcc, so works correctly for 4-byte unicode characters (issue #169) */
     temp.len := lengthcc(buf); --dbms_lob.getlength(buf);
+    set_src_array(temp);
     return temp;
   end;
 
@@ -157,8 +136,9 @@ create or replace package body pljson_parser as
     temp.s_clob := buf;
     temp.offset_chars := 0;
     temp.offset := 0;
-    temp.src := substr(buf, 1, 4000);
+    temp.src := substr(buf, 1, substr_amount);
     temp.len := length(buf);
+    set_src_array(temp);
     return temp;
   end;
 
