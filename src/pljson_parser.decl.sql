@@ -33,12 +33,9 @@ create or replace package pljson_parser as
     data_overflow clob); -- max_string_size
 
   type lTokens is table of rToken index by pls_integer;
-  type json_src is record (len number, offset number, offset_chars number, src varchar2(32767), s_clob clob);
+  type json_src is record (len number, offset number, offset_chars number, src varchar2(32767), s_clob clob, src_len number, src_array varchar_table_type);
 
   json_strict boolean not null := false;
-
-  ucs2_exception EXCEPTION;
-  pragma exception_init(ucs2_exception, -22831);
 
   function lengthcc(buf clob) return number;
 
