@@ -22,12 +22,17 @@ create or replace package body pljson_parser as
   */
 
   decimalpoint varchar2(1 char) := '.';
-  -- 400 - random value between 200 - 500
+  /* 400
+  1. perfomance optimal value (such as any of 200 - 500) for length of part s_clob in set_src_array
+  2. 4000 byte limitation in select "substr(s.src, level, 1)" in set_src_array */
   substr_amount number := 400;
 
   procedure set_src_array(s in out nocopy json_src) as
   begin
+    -- calc length src one time after subtsr clob
     s.src_len := length(s.src);
+    -- get collection of char - faster than substr in loop in pl\sql
+    -- it is necessary to remember about the limitation varchar2 - 4000 byte
     select substr(s.src, level, 1)
       bulk collect into s.src_array
       from dual
