@@ -25,7 +25,7 @@ create or replace package body pljson_parser as
   /* 400
   1. perfomance optimal value (such as any of 200 - 500) for length of part s_clob in set_src_array
   2. 4000 byte limitation in select "substr(s.src, level, 1)" in set_src_array */
-  substr_amount number := 400;
+  buffer_amount number := 400;
 
   procedure set_src_array(s in out nocopy json_src) as
   begin
@@ -46,10 +46,10 @@ create or replace package body pljson_parser as
   begin
     while true loop
       begin
-        src := dbms_lob.substr(buf, substr_amount, offset+1);
+        src := dbms_lob.substr(buf, buffer_amount, offset+1);
       exception
       when ucs2_exception then
-        src := dbms_lob.substr(buf, substr_amount-1, offset+1);
+        src := dbms_lob.substr(buf, buffer_amount-1, offset+1);
       end;
       exit when src is null;
       len := len + length(src);
@@ -101,10 +101,10 @@ create or replace package body pljson_parser as
         s.offset := s.offset + length2(s.src);
         /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
         begin
-          s.src := dbms_lob.substr(s.s_clob, substr_amount, s.offset+1);
+          s.src := dbms_lob.substr(s.s_clob, buffer_amount, s.offset+1);
         exception
         when ucs2_exception then
-          s.src := dbms_lob.substr(s.s_clob, substr_amount-1, s.offset+1);
+          s.src := dbms_lob.substr(s.s_clob, buffer_amount-1, s.offset+1);
         end;
         set_src_array(s);
       end loop;
@@ -113,10 +113,10 @@ create or replace package body pljson_parser as
       s.offset := 0;
       /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
       begin
-        s.src := dbms_lob.substr(s.s_clob, substr_amount, s.offset+1);
+        s.src := dbms_lob.substr(s.s_clob, buffer_amount, s.offset+1);
       exception
       when ucs2_exception then
-        s.src := dbms_lob.substr(s.s_clob, substr_amount-1, s.offset+1);
+        s.src := dbms_lob.substr(s.s_clob, buffer_amount-1, s.offset+1);
       end;
       set_src_array(s);
       while (indx > length(s.src) + s.offset_chars) loop
@@ -124,10 +124,10 @@ create or replace package body pljson_parser as
         s.offset := s.offset + length2(s.src);
         /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
         begin
-          s.src := dbms_lob.substr(s.s_clob, substr_amount, s.offset+1);
+          s.src := dbms_lob.substr(s.s_clob, buffer_amount, s.offset+1);
         exception
         when ucs2_exception then
-          s.src := dbms_lob.substr(s.s_clob, substr_amount-1, s.offset+1);
+          s.src := dbms_lob.substr(s.s_clob, buffer_amount-1, s.offset+1);
         end;
         set_src_array(s);
       end loop;
@@ -153,10 +153,10 @@ create or replace package body pljson_parser as
     temp.offset := 0;
     /* exception check, so works correctly for 4-byte unicode characters (issue #169) */
     begin
-      temp.src := dbms_lob.substr(buf, substr_amount, temp.offset+1);
+      temp.src := dbms_lob.substr(buf, buffer_amount, temp.offset+1);
     exception
     when ucs2_exception then
-      temp.src := dbms_lob.substr(buf, substr_amount-1, temp.offset+1);
+      temp.src := dbms_lob.substr(buf, buffer_amount-1, temp.offset+1);
     end;
     /* use of lengthcc, so works correctly for 4-byte unicode characters (issue #169) */
     temp.len := lengthcc(buf); --dbms_lob.getlength(buf);
@@ -170,7 +170,7 @@ create or replace package body pljson_parser as
     temp.s_clob := buf;
     temp.offset_chars := 0;
     temp.offset := 0;
-    temp.src := substr(buf, 1, substr_amount);
+    temp.src := substr(buf, 1, buffer_amount);
     temp.len := length(buf);
     set_src_array(temp);
     return temp;
