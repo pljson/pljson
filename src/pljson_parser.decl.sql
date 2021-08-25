@@ -1,4 +1,4 @@
-create or replace package common.pljson_parser as
+create or replace package pljson_parser as
   /*
   Copyright (c) 2010 Jonas Krogsboell
 
@@ -70,3 +70,5 @@ create or replace package common.pljson_parser as
   function get_version return varchar2;
 
 end pljson_parser;
+/
+show err
