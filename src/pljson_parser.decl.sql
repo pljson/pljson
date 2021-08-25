@@ -1,4 +1,4 @@
-create or replace package pljson_parser as
+create or replace package common.pljson_parser as
   /*
   Copyright (c) 2010 Jonas Krogsboell
 
@@ -40,6 +40,8 @@ create or replace package pljson_parser as
   ucs2_exception EXCEPTION;
   pragma exception_init(ucs2_exception, -22831);
 
+  procedure set_buffer_amount(amount pls_integer);
+
   function lengthcc(buf clob) return number;
 
   function next_char(indx number, s in out nocopy json_src) return varchar2;
@@ -68,5 +70,3 @@ create or replace package pljson_parser as
   function get_version return varchar2;
 
 end pljson_parser;
-/
-show err
