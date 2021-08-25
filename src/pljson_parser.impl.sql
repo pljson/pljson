@@ -1,4 +1,4 @@
-create or replace package body common.pljson_parser as
+create or replace package body pljson_parser as
   /*
   Copyright (c) 2009 Jonas Krogsboell
 
@@ -925,3 +925,5 @@ create or replace package body common.pljson_parser as
   end get_version;
 
 end pljson_parser;
+/
+show err
