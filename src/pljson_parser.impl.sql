@@ -1,4 +1,4 @@
-create or replace package body pljson_parser as
+create or replace package body common.pljson_parser as
   /*
   Copyright (c) 2009 Jonas Krogsboell
 
@@ -22,10 +22,16 @@ create or replace package body pljson_parser as
   */
 
   decimalpoint varchar2(1 char) := '.';
-  /* 400
-  1. perfomance optimal value (such as any of 200 - 500) for length of part s_clob in set_src_array
-  2. 4000 byte limitation in select "substr(s.src, level, 1)" in set_src_array */
-  buffer_amount number := 400;
+  -- 1. perfomance optimal value (such as any of 200 - 500) for length of part s_clob in set_src_array
+  -- 2. 4000 byte limitation in select "substr(s.src, level, 1)" in set_src_array
+  buffer_amount number := 200;
+
+  procedure set_buffer_amount(amount pls_integer) as
+  begin
+    if amount > 0 and amount <= 4000 then
+      buffer_amount := amount;
+    end if;
+  end;
 
   procedure set_src_array(s in out nocopy json_src) as
   begin
@@ -919,5 +925,3 @@ create or replace package body pljson_parser as
   end get_version;
 
 end pljson_parser;
-/
-show err
