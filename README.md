@@ -9,16 +9,27 @@
 **PL/JSON** provides packages and APIs for dealing with JSON formatted data within PL/SQL code.
 General information about JSON is available at http://www.json.org.
 
-## Latest release 3.5.2 (2021-03-06)
+## Latest release 3.6.0 (2021-12-09)
+
+### What's new
+This release contains a small but important improvement.
+
+It allows use of "\<any character named field\>" (quoted field name) in a path
+and does not accept anymore spaces in field names or field names starting with digit.
+(this is not yet accepted in ```json_table``` but this is a planned next step)
+
+Path expressions are now compatible with Oracle Basic SQL/JSON Path Expression Syntax
+but excluding the optional filter expression and the optional function step at end.
+
+more details in [Updated definition of json path expression syntax accepted by PL/JSON](#updated-definition-of-json-path-expression-syntax-accepted-by-PLJSON)
 
 ## This is version 3
 You should move to version 3. It's cleaner and faster.
-(note: that it fails the test for helper package and I will work on this)
 
 The main difference with version 2 is in that now there is an object type for each json element.
 The types are
 
-| | |
+|type|use|
 |:---|:---|
 |**pljson** | for json object|
 |**pljson_list** | for json array|
@@ -42,7 +53,7 @@ Old code uses a lot pljson_value() constructors while new code has no such const
 but instead has specific constructors for string, number, etc.
 and so code compatibility could not be maintained even if the name of pljson_value was kept.
 
-PLJSON evolved from version 1 using sys.anydata and worked with early Oracle releases
+PL/JSON evolved from version 1 using sys.anydata and worked with early Oracle releases
 to version 2 where sys.anydata was removed and an object oriented design was used but
 the object design wasn't the most appropriate one and mirrored the objects of version 1 so that
 there was almost 100% compatibility with version 1 code.
@@ -52,7 +63,7 @@ The api changes for version 3 are few, mainly
 2. remove the need to call the 'to_json_value()' method
 3. optionally use many new helpful methods for easier coding
 
-Both PLJSON version 3 and version 2 will be maintained together for quite a long time
+Both PL/JSON version 3 and version 2 will be maintained together for quite a long time
 and there will be effort that there is as much common code as possible between the two versions
 but new features and improvements will be delivered first to version 3.
 
@@ -228,7 +239,7 @@ returns
 
 ##### and many other (automatic support for Double numbers or Oracle numbers, base64 encode/decode, XML to json, etc.)
 
-### Notes about PLJSON path operations
+### Notes about PL/JSON path operations
 
 - never raise an exception (null is returned instead)
 - arrays are 1-indexed
@@ -237,6 +248,36 @@ returns
 - 7 get types are supported: string, number, bool, null, json, json_list and date
 - spaces inside [ ] are not important, but are important otherwise
 - keys made with non-standard javascript characters must be enclosed in double quotes
+
+### Updated definition of json path expression syntax accepted by PL/JSON
+    
+- a path may optionally begin with $ indicating the JSON object to be matched (root)
+  then it's followed by 0 or more path steps
+  each step can be an object step or an array step, depending on whether the context item represents a JSON object or a JSON array
+
+- an object step is a period (.), sometimes read as "dot", followed by an object field name (object property name)
+a field name must start with an uppercase or lowercase letter A to Z and contain only such letters or decimal digits (0-9),
+or else it must be enclosed in double quotation marks (")
+OR
+a left bracket ([) followed by a a field name enclosed in single (') or double (") quotes, followed by a right bracket (])
+
+- an array step is a left bracket ([) followed by a single numeric index, followed by a right bracket (])
+array indexing is one-based (1, 2, 3,...)
+
+  examples:
+    $.store.book[0].title, $['store']['book'][0]['title']
+
+in latest update (since 3.6.0)
+- an object step, beginning with dot (.), now accepts name within double quotes (")
+- no longer accepts name beginning with, ending with and including spaces eg. 'd.  a name  .data'
+
+- in past, after a dot (.) the field name could start with space or number
+  and include or end with any number of spaces
+  now this is not allowed, unquoted field names must begin with an alpha character or _
+  and contain only alphanumeric characters
+
+- path expressions are now compatible with Oracle Basic SQL/JSON Path Expression Syntax
+  but excluding the optional filter expression and the optional function step at end
 
 ## Install
 
@@ -279,15 +320,13 @@ and I will also keep updating this README for more information.
 + **src/**  source code in PL/SQL, it is accessed by the install and uninstall scripts
 + **examples/** useful examples to learn how to use pljson
 + **testsuite/** a set of testsuites to verify installation, just run **testall.sql**
-+ **testsuite-utplsql/** the same set of testsuites but utilizing the utplsql framework (which you must install separately), just run ut_testall.sql
++ **testsuite-utplsql/** the same set of testsuites but utilizing the utplsql framework (which you must install separately), just run **utplsql_testall.sql**
 
 ## Support
 To report bugs, suggest improvements, or ask questions, please create a new issue.
 
 ## Contributing
-
 Please follow the [contributing guidelines](CONTRIBUTING.md) to submit fixes or new features.
 
 ## License
-
 [MIT License](LICENSE)

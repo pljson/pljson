@@ -179,6 +179,41 @@ create or replace package body pljson_ext as
   end encodeBase64Blob2Clob;
 
   --Json Path parser
+  /* E.I.Sarmas (github.com/dsnz)   2021-12-01   minor path enhancement and more correct enforcement of paths accepted */
+  /*
+  
+    updated definition of json path expression syntax accepted by PLJSON
+    
+    - a path may optionally begin with $ indicating the JSON object to be matched (root)
+      then it's followed by 0 or more path steps
+      each step can be an object step or an array step, depending on whether the context item represents a JSON object or a JSON array
+    
+    - an object step is a period (.), sometimes read as "dot", followed by an object field name (object property name)
+    a field name must start with an uppercase or lowercase letter A to Z and contain only such letters or decimal digits (0-9),
+    or else it must be enclosed in double quotation marks (")
+    OR
+    a left bracket ([) followed by a a field name enclosed in single (') or double (") quotes, followed by a right bracket (])
+    
+    - an array step is a left bracket ([) followed by a single numeric index, followed by a right bracket (])
+    array indexing is one-based (1, 2, 3,...)
+
+    examples:
+      $.store.book[0].title
+      $['store']['book'][0]['title']
+    
+    in latest update
+    - an object step, beginning with dot (.), now accepts name within double quotes (")
+    - no longer accepts name beginning with, ending with and including spaces eg. 'd.  a name  .data'
+    
+    - in past, after a dot (.) the field name could start with space or number
+      and include or end with any number of spaces
+      now this is not allowed, unquoted field names must begin with an alpha character or _
+      and contain only alphanumeric characters
+    
+    - path expressions are now compatible with Oracle Basic SQL/JSON Path Expression Syntax
+      but excluding the optional filter expression and the optional function step at end
+      
+  */
   function parsePath(json_path varchar2, base number default 1) return pljson_list as
     build_path varchar2(32767) := '[';
     buf varchar2(4);
@@ -199,32 +234,66 @@ create or replace package body pljson_ext as
     procedure skipws as begin while (buf in (chr(9), chr(10), chr(13), ' ')) loop next_char; end loop; end;
 
   begin
-    next_char();
+    -- dbms_output.put_line('parse: ' || json_path);
+    
+    -- handle null path and optional '$' at beginning
+    if json_path is null or substr(json_path, 1, 1) = '$' then
+      indx := 2;
+      next_char();
+    else
+      if substr(json_path, 1, 1) = '[' then
+        next_char();
+      else
+        buf := '.';
+      end if;
+    end if;
+    
     while (buf is not null) loop
+      -- dbms_output.put_line(build_path || ' + ' || buf);
+      
       if (buf = '.') then
         next_char();
         if (buf is null) then raise_application_error(-20110, 'JSON Path parse error: . is not a valid json_path end'); end if;
-        if (not regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) then
-          raise_application_error(-20110, 'JSON Path parse error: alpha-numeric character or space expected at position '||indx);
+        /* E.I.Sarmas (github.com/dsnz)   2021-10-31   removed space or number as acceptable character */
+        if (not regexp_like(buf, '^["[:alpha:]\_]+', 'c') ) then
+          -- dbms_output.put_line(build_path || ' + ' || buf);
+          raise_application_error(-20110, 'JSON Path parse error: alpha or _ character expected at position '||indx);
         end if;
 
         if (build_path != '[') then build_path := build_path || ','; end if;
         build_path := build_path || '"';
-        while (regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) loop
-          build_path := build_path || buf;
+        /* E.I.Sarmas (github.com/dsnz)   2021-10-31   accept name with any characters quoted within "" after . */
+        if buf = '"' then
           next_char();
-        end loop;
+          while buf is not null and buf != '"' loop
+            build_path := build_path || buf;
+            next_char();
+          end loop;
+          if buf is null then
+            raise_application_error(-20110, 'JSON Path parse error: premature json_path end, missing ending "');
+          end if;
+          next_char();
+        else
+          /* E.I.Sarmas (github.com/dsnz)   2021-10-31   removed space as acceptable character */
+          while (regexp_like(buf, '^[[:alnum:]\_]+', 'c') ) loop
+            build_path := build_path || buf;
+            next_char();
+          end loop;
+        end if;
         build_path := build_path || '"';
+        
       elsif (buf = '[') then
         next_char();
         skipws();
         if (buf is null) then raise_application_error(-20110, 'JSON Path parse error: [ is not a valid json_path end'); end if;
+        -- array step
         if (buf in ('1','2','3','4','5','6','7','8','9') or (buf = '0' and base = 0)) then
           if (build_path != '[') then build_path := build_path || ','; end if;
           while (buf in ('0','1','2','3','4','5','6','7','8','9')) loop
             build_path := build_path || buf;
             next_char();
           end loop;
+        -- object step using [] syntax
         elsif (regexp_like(buf, '^(\"|\'')', 'c')) then
           endstring := buf;
           if (build_path != '[') then build_path := build_path || ','; end if;
@@ -244,13 +313,15 @@ create or replace package body pljson_ext as
           build_path := build_path || '"';
           next_char();
         else
-          raise_application_error(-20110, 'JSON Path parse error: expected a string or an positive integer at '||indx);
+          raise_application_error(-20110, 'JSON Path parse error: expected a string or a positive integer at '||indx);
         end if;
         skipws();
         if (buf is null) then raise_application_error(-20110, 'JSON Path parse error: premature json_path end'); end if;
         if (buf != ']') then raise_application_error(-20110, 'JSON Path parse error: no array ending found. found: '|| buf); end if;
         next_char();
         skipws();
+        
+      /* E.I.Sarmas (github.com/dsnz)   2021-10-31   obsolete, repeats code after ".", handled by assuming a dummy "." at start
       elsif (build_path = '[') then
         if (not regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) then
           raise_application_error(-20110, 'JSON Path parse error: alpha-numeric character or space expected at position '||indx);
@@ -261,6 +332,7 @@ create or replace package body pljson_ext as
           next_char();
         end loop;
         build_path := build_path || '"';
+      */
       else
         raise_application_error(-20110, 'JSON Path parse error: expected . or [ found '|| buf || ' at position '|| indx);
       end if;
@@ -269,7 +341,8 @@ create or replace package body pljson_ext as
 
     build_path := build_path || ']';
     build_path := replace(replace(replace(replace(replace(build_path, chr(9), '\t'), chr(10), '\n'), chr(13), '\f'), chr(8), '\b'), chr(14), '\r');
-
+    -- dbms_output.put_line('parse= ' || build_path);
+    
     ret := pljson_list(build_path);
     if (base != 1) then
       --fix base 0 to base 1
@@ -297,7 +370,7 @@ create or replace package body pljson_ext as
     if (path.count = 0) then
       return obj;
     end if;
-    
+
     for i in 1 .. path.count loop
       path_segments.extend;
       if (path.get(i).is_number()) then
@@ -306,7 +379,7 @@ create or replace package body pljson_ext as
         path_segments(path_segments.count) := pljson_path_segment(null, path.get(i).get_string());
       end if;
     end loop;
-    
+
     obj.get_internal_path(path_segments, 1, ret);
     return ret;
   exception
@@ -441,7 +514,7 @@ create or replace package body pljson_ext as
     when jext_exception then raise;
     when others then return null;
   end get_json_element_original;
-  
+
   function get_json_element(obj pljson, v_path varchar2, base number default 1) return pljson_element as
     path pljson_list;
   begin
@@ -685,14 +758,14 @@ create or replace package body pljson_ext as
     end loop;
 
   end put_internal_original;
-  
+
   procedure put_internal(obj in out nocopy pljson, v_path varchar2, elem pljson_element, base number) as
     path pljson_list;
   begin
     path := pljson_ext.parsePath(v_path, base);
     put_internal_preparsed(obj, path, elem);
   end put_internal;
-  
+
   /* JSON pre-parsed path putters */
   procedure put(obj in out nocopy pljson, path pljson_list, elem varchar2) as
   begin

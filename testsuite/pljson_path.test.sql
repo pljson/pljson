@@ -40,29 +40,48 @@ begin
     pljson_ut.assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][3]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''a[2][3]''),0) = 2.718281828459e210d');
   end;
   
-  -- get with mixed structures
-  pljson_ut.testcase('Test get with mixed structures');
+  /* E.I.Sarmas (github.com/dsnz)   2021-12-01   test entire path syntax */
+  -- get with mixed structures and entire path syntax
+  pljson_ut.testcase('Test get with mixed structures and entire path syntax');
   declare
     obj pljson;
   begin
-    obj := pljson('{"a": [1,[{"a":{"i":[{"A":2}, 2.718281828459e210]}},15] ] }');
+    obj := pljson('{"a": [1,[{"!@#$%^&*()-_+=[]{}:;<>,.?/|\\":{"i":[{"A":2}, 2.718281828459e210]}},15] ] }');
     --obj.print;
-    pljson_ut.assertTrue(pljson_ext.get_json_element(obj, 'a').is_array, 'pljson_ext.get_json_element(obj, ''a'').is_array');
+    pljson_ut.assertTrue(pljson_ext.get_json_element(obj, '$.a').is_array, 'pljson_ext.get_json_element(obj, ''a'').is_array');
     pljson_ut.assertTrue(pljson_ext.get_json_list(obj, 'a') is not null, 'pljson_ext.get_json_list(obj, ''a'') is not null');
     pljson_ut.assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][2]'),0) = 15, 'nvl(pljson_ext.get_number(obj, ''a[2][2]''),0) = 15');
-    pljson_ut.assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][1].a.i[1].A'),0) = 2, 'nvl(pljson_ext.get_number(obj, ''a[2][1].a.i[1].A''),0) = 2');
+    pljson_ut.assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][1]."!@#$%^&*()-_+=[]{}:;<>,.?/|\\".i[1].A'),0) = 2, 'nvl(pljson_ext.get_number(obj, ''a[2][1]."!@#$%^&*()-_+=[]{}:;<>,.?/|\\".i[1].A''),0) = 2');
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
-    pljson_ut.assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][1].a.i[2]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''a[2][1].a.i[2]''),0) = 2.718281828459e210d');
+    pljson_ut.assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][1]["!@#$%^&*()-_+=[]{}:;<>,.?/|\\"].i[2]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''a[2][1]["!@#$%^&*()-_+=[]{}:;<>,.?/|\\"].i[2]''),0) = 2.718281828459e210d');
   end;
   
+  /* E.I.Sarmas (github.com/dsnz)   2021-12-01   test spaces and leading digits no longer allowed in field names */
   -- get with spaces
   pljson_ut.testcase('Test get with spaces');
   declare
     obj pljson;
+    path_error exception;
+    pragma exception_init(path_error, -20110);
+    test_name varchar2(100);
   begin
-    obj := pljson('{" a ": true, "b     ":{" s  ":[{" 3 ":7913}]}}');
-    pljson_ut.assertTrue(pljson_ext.get_json_element(obj, ' a ').get_bool, 'pljson_ext.get_json_element(obj, '' a '').get_bool');
-    pljson_ut.assertTrue(nvl(pljson_ext.get_number(obj, 'b     . s  [  1   ]. 3 '),0)=7913, 'nvl(pljson_ext.get_number(obj, ''b     . s  [  1   ]. 3 ''),0)=7913');
+    obj := pljson('{" a ": true, "9b     ":{" s  ":[{" 3 ":7913}]}}');
+    begin
+      test_name := 'pljson_ext.get_json_element(obj, '' a '').get_bool';
+      pljson_ut.assertTrue(pljson_ext.get_json_element(obj, ' a ').get_bool, 'pljson_ext.get_json_element(obj, '' a '').get_bool');
+      pljson_ut.fail(test_name);
+    exception
+      when path_error then
+        pljson_ut.pass(test_name);
+    end;
+    begin
+      test_name := 'nvl(pljson_ext.get_number(obj, ''9b     . s  [  1   ]. 3 ''),0)=7913';
+      pljson_ut.assertTrue(nvl(pljson_ext.get_number(obj, '9b     . s  [  1   ]. 3 '),0)=7913, 'nvl(pljson_ext.get_number(obj, ''9b     . s  [  1   ]. 3 ''),0)=7913');
+      pljson_ut.fail(test_name);
+    exception
+      when path_error then
+        pljson_ut.pass(test_name);
+    end;
   end;
   
   -- get all types
@@ -230,14 +249,15 @@ begin
     end;
   end;
   
+  /* E.I.Sarmas (github.com/dsnz)   2021-12-01   test modified with new acceptable syntax */
   -- remove simple
   pljson_ut.testcase('Test remove simple');
   declare
-    obj pljson := pljson('{"2":[1,2,3]}');
+    obj pljson := pljson('{"a2":[1,2,3]}');
   begin
-    pljson_ext.remove(obj, '2[2]');
-    pljson_ut.assertTrue(nvl(pljson_ext.get_number(obj, '2[2]'),0) = 3, 'nvl(pljson_ext.get_number(obj, ''2[2]''),0) = 3');
-    pljson_ext.remove(obj, '2');
+    pljson_ext.remove(obj, 'a2[2]');
+    pljson_ut.assertTrue(nvl(pljson_ext.get_number(obj, 'a2[2]'),0) = 3, 'nvl(pljson_ext.get_number(obj, ''a2[2]''),0) = 3');
+    pljson_ext.remove(obj, 'a2');
     pljson_ut.assertTrue(obj.count = 0, 'obj.count = 0');
   end;
   

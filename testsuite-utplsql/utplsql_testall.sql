@@ -38,7 +38,7 @@ PROMPT Installing tests
 @@utplsql_pljson_simple_test.sql
 @@utplsql_pljson_ext_test.sql
 @@utplsql_pljson_path_test.sql
-REM @@utplsql_pljson_helper_test.sql
+@@utplsql_pljson_helper_test.sql
 @@utplsql_pljson_unicode_test.sql
 @@utplsql_pljson_base64_test.sql
 @@utplsql_pljson_table_test.sql
@@ -53,7 +53,7 @@ drop package utplsql_pljson_list_test;
 drop package utplsql_pljson_simple_test;
 drop package utplsql_pljson_ext_test;
 drop package utplsql_pljson_path_test;
-REM drop package utplsql_pljson_helper_test;
+drop package utplsql_pljson_helper_test;
 drop package utplsql_pljson_unicode_test;
 drop package utplsql_pljson_base64_test;
 drop package utplsql_pljson_table_test;
