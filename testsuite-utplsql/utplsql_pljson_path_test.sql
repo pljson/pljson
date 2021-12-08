@@ -10,8 +10,8 @@ create or replace package utplsql_pljson_path_test is
   --%test(Test get with arrays)  
   procedure test_get_arrays;
   
-  --%test(Test get with mixed structures)  
-  procedure test_get_mixed;
+  --%test(Test get with mixed structures and entire path syntax)
+  procedure test_get_mixed_syntax;
   
   --%test(Test get with spaces) 
   procedure test_get_spaces;
@@ -129,27 +129,46 @@ create or replace package body utplsql_pljson_path_test is
     assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][3]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''a[2][3]''),0) = 2.718281828459e210d');
   end;
   
-  -- get with mixed structures
-  procedure test_get_mixed is
+  /* E.I.Sarmas (github.com/dsnz)   2021-12-01   test entire path syntax */
+  -- get with mixed structures and entire path syntax
+  procedure test_get_mixed_syntax is
     obj pljson;
   begin
-    obj := pljson('{"a": [1,[{"a":{"i":[{"A":2}, 2.718281828459e210]}},15] ] }');
+    obj := pljson('{"a": [1,[{"!@#$%^&*()-_+=[]{}:;<>,.?/|\\":{"i":[{"A":2}, 2.718281828459e210]}},15] ] }');
     --obj.print;
-    assertTrue(pljson_ext.get_json_element(obj, 'a').is_array, 'pljson_ext.get_json_element(obj, ''a'').is_array');
+    assertTrue(pljson_ext.get_json_element(obj, '$.a').is_array, 'pljson_ext.get_json_element(obj, ''a'').is_array');
     assertTrue(pljson_ext.get_json_list(obj, 'a') is not null, 'pljson_ext.get_json_list(obj, ''a'') is not null');
     assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][2]'),0) = 15, 'nvl(pljson_ext.get_number(obj, ''a[2][2]''),0) = 15');
-    assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][1].a.i[1].A'),0) = 2, 'nvl(pljson_ext.get_number(obj, ''a[2][1].a.i[1].A''),0) = 2');
+    assertTrue(nvl(pljson_ext.get_number(obj, 'a[2][1]."!@#$%^&*()-_+=[]{}:;<>,.?/|\\".i[1].A'),0) = 2, 'nvl(pljson_ext.get_number(obj, ''a[2][1]."!@#$%^&*()-_+=[]{}:;<>,.?/|\\".i[1].A''),0) = 2');
     /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
-    assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][1].a.i[2]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''a[2][1].a.i[2]''),0) = 2.718281828459e210d');
+    assertTrue(nvl(pljson_ext.get_double(obj, 'a[2][1]["!@#$%^&*()-_+=[]{}:;<>,.?/|\\"].i[2]'),0) = 2.718281828459e210d, 'nvl(pljson_ext.get_double(obj, ''a[2][1]["!@#$%^&*()-_+=[]{}:;<>,.?/|\\"].i[2]''),0) = 2.718281828459e210d');
   end;
   
+  /* E.I.Sarmas (github.com/dsnz)   2021-12-01   test spaces and leading digits no longer allowed in field names */
   -- get with spaces
   procedure test_get_spaces is
     obj pljson;
+    path_error exception;
+    pragma exception_init(path_error, -20110);
+    test_name varchar2(100);
   begin
-    obj := pljson('{" a ": true, "b     ":{" s  ":[{" 3 ":7913}]}}');
-    assertTrue(pljson_ext.get_json_element(obj, ' a ').get_bool, 'pljson_ext.get_json_element(obj, '' a '').get_bool');
-    assertTrue(nvl(pljson_ext.get_number(obj, 'b     . s  [  1   ]. 3 '),0)=7913, 'nvl(pljson_ext.get_number(obj, ''b     . s  [  1   ]. 3 ''),0)=7913');
+    begin
+      test_name := 'pljson_ext.get_json_element(obj, '' a '').get_bool';
+      assertTrue(pljson_ext.get_json_element(obj, ' a ').get_bool, 'pljson_ext.get_json_element(obj, '' a '').get_bool');
+      fail(test_name);
+    exception
+      when path_error then
+        pass(test_name);
+    end;
+    begin
+      test_name := 'nvl(pljson_ext.get_number(obj, ''9b     . s  [  1   ]. 3 ''),0)=7913';
+      assertTrue(nvl(pljson_ext.get_number(obj, '9b     . s  [  1   ]. 3 '),0)=7913, 'nvl(pljson_ext.get_number(obj, ''9b     . s  [  1   ]. 3 ''),0)=7913');
+      fail(test_name);
+    exception
+      when path_error then
+        pass(test_name);
+    end;
+
   end;
   
   -- get all types
@@ -310,13 +329,14 @@ create or replace package body utplsql_pljson_path_test is
     end;
   end;
   
+  /* E.I.Sarmas (github.com/dsnz)   2021-12-01   test modified with new acceptable syntax */
   -- remove simple
   procedure test_remove_simple is
-    obj pljson := pljson('{"2":[1,2,3]}');
+    obj pljson := pljson('{"a2":[1,2,3]}');
   begin
-    pljson_ext.remove(obj, '2[2]');
-    assertTrue(nvl(pljson_ext.get_number(obj, '2[2]'),0) = 3, 'nvl(pljson_ext.get_number(obj, ''2[2]''),0) = 3');
-    pljson_ext.remove(obj, '2');
+    pljson_ext.remove(obj, 'a2[2]');
+    assertTrue(nvl(pljson_ext.get_number(obj, 'a2[2]'),0) = 3, 'nvl(pljson_ext.get_number(obj, ''a2[2]''),0) = 3');
+    pljson_ext.remove(obj, 'a2');
     assertTrue(obj.count = 0, 'obj.count = 0');
   end;
    

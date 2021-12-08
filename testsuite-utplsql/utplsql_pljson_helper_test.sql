@@ -43,12 +43,6 @@ create or replace package utplsql_pljson_helper_test is
   --%test(Test equals(pljson_null, pljson_null))
   procedure test_equals_null_null;
   
-  --%test(Test equals(pljson, pljson))
-  procedure test_equals_pljson_pljson;
-  
-  --%test(Test equals(pljson_list, pljson_list))
-  procedure test_equals_list_list;
-  
   --%test(Test equals(pljson_number number))
   procedure test_equals_number_number;
   
@@ -59,7 +53,7 @@ create or replace package utplsql_pljson_helper_test is
   procedure test_equals_string_varchar2;
   
   --%test(Test equals(pljson_string, varchar2) - empty string value)
-  procedure test_equals_string_varchar2_nil;
+  procedure test_equals_string_nullstr;
   
   --%test(Test equals(pljson_bool, boolean))
   procedure test_equals_bool_boolean;
@@ -74,13 +68,10 @@ create or replace package utplsql_pljson_helper_test is
   procedure test_equals_pljson_no_order;
   
   --%test(Test equals(pljson_list, pljson_list))
-  procedure test_equals_list_list_order;
+  procedure test_equals_list_order;
   
   --%test(Test equals(pljson_list, pljson_list) - order sensitive)
-  procedure test_equals_list_list_no_order;
-  
-  --%test(Test contains(pljson, pljson_element))
-  procedure test_contains_element;
+  procedure test_equals_list_no_order;
   
   --%test(Test contains(pljson, pljson))
   procedure test_contains_pljson;
@@ -107,7 +98,7 @@ create or replace package utplsql_pljson_helper_test is
   procedure test_contains_clob;
   
   --%test(Test contains(pljson_list, pljson_number))
-  procedure test_contains_list_number_element;
+  procedure test_contains_list_number;
   
   --%test(Test contains(pljson_list, pljson))
   procedure test_contains_list_pljson;
@@ -119,7 +110,7 @@ create or replace package utplsql_pljson_helper_test is
   procedure test_contains_list_list_exact;
   
   --%test(Test contains(pljson_list, number))
-  procedure test_contains_list_number;
+  procedure test_contains_list_oranumber;
   
   --%test(Test contains(pljson_list, binary_double))
   procedure test_contains_list_double;
@@ -294,29 +285,16 @@ create or replace package body utplsql_pljson_helper_test is
     assertTrue(obj.get('b').get_number = 2, 'obj.get(''b'').get_number = 2');
   end;
   
-  -- equals(pljson_element, pljson_element)
-  procedure test_equals_element_element is
+  -- equals(pljson_string, pljson_string)
+  procedure test_equals_string_string is
   begin
     assertTrue(pljson_helper.equals(pljson_string(''), pljson_string('')), 'pljson_helper.equals(pljson_string(''''), pljson_string(''''))');
-    assertTrue(pljson_helper.equals(pljson('{"a":1,"b":2}'), pljson('{"a":1,"b":2}')), 'pljson_helper.equals(pljson(''{"a":1,"b":2}''), pljson(''{"a":1,"b":2}''))');
   end;
   
   -- equals(pljson_null, pljson_null)
   procedure test_equals_null_null is
   begin
     assertTrue(pljson_helper.equals(pljson_null(), pljson_null()), 'pljson_helper.equals(pljson_null(), pljson_null())');
-  end;
-  
-  -- equals(pljson, pljson)
-  procedure test_equals_pljson_pljson is
-  begin
-    assertTrue(pljson_helper.equals(pljson('{"a":1,"b":2}'), pljson('{"a":1,"b":2}')), 'pljson_helper.equals(pljson(''{"a":1,"b":2}''), pljson(''{"a":1,"b":2}''))');
-  end;
-  
-  -- equals(pljson_list, pljson_list)
-  procedure test_equals_list_list is
-  begin
-    assertTrue(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,2,3]')), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,2,3]''))');
   end;
   
   -- equals(pljson_number, number)
@@ -339,7 +317,7 @@ create or replace package body utplsql_pljson_helper_test is
   end;
   
   -- equals(pljson_string, varchar2) - empty string value
-  procedure test_equals_string_varchar2_nil is
+  procedure test_equals_string_nullstr is
   begin
     assertTrue(pljson_helper.equals(pljson_string(''), ''), 'pljson_helper.equals(pljson_string(''''), '''')');
   end;
@@ -375,14 +353,14 @@ create or replace package body utplsql_pljson_helper_test is
   end;
   
   -- equals(pljson_list, pljson_list)
-  procedure test_equals_list_list_order is
+  procedure test_equals_list_order is
   begin
     assertTrue(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,2,3]')), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,2,3]''))');
     assertFalse(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,2]')), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,2]''))');
   end;
   
   -- equals(pljson_list, pljson_list) - order sensitive
-  procedure test_equals_list_list_no_order is
+  procedure test_equals_list_no_order is
   begin
     assertFalse(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,3,2]')), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,3,2]''))');
     assertFalse(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,3,2]'), true), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,3,2]''), true)');
@@ -446,7 +424,7 @@ create or replace package body utplsql_pljson_helper_test is
   end;
   
   -- contains(pljson_list, pljson_number)
-  procedure test_contains_list_number_element is
+  procedure test_contains_list_number is
   begin
     assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,5],{"a":6}]'), pljson_number(3)), 'pljson_helper.contains(pljson_list(''[1,2,3,"xyz",[4,5],{"a":6}]''), pljson_number(3))');
   end;
@@ -474,7 +452,7 @@ create or replace package body utplsql_pljson_helper_test is
   end;
   
   -- contains(pljson_list, number)
-  procedure test_contains_list_number is
+  procedure test_contains_list_oranumber is
   begin
     assertTrue(pljson_helper.contains(pljson_list('[1,2,3,"xyz",[4,5],{"a":6}]'), 3), 'pljson_helper.contains(pljson_list(''[1,2,3,"xyz",[4,5],{"a":6}]''), 3)');
     assertFalse(pljson_helper.contains(pljson_list('[1,2,7,"xyz",[4,5],{"a":6}]'), 3), 'pljson_helper.contains(pljson_list(''[1,2,7,"xyz",[4,5],{"a":6}]''), 3)');

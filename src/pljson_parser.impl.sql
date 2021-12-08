@@ -767,7 +767,7 @@ create or replace package body pljson_parser as
     indx pls_integer := 1;
     jsrc json_src;
   begin
-    update_decimalpoint();
+    --update_decimalpoint();
     jsrc := prepareVarchar2(str);
     tokens := lexer(jsrc);
     if (tokens(indx).type_name = '{') then
@@ -789,7 +789,7 @@ create or replace package body pljson_parser as
     indx pls_integer := 1;
     jsrc json_src;
   begin
-    update_decimalpoint();
+    --update_decimalpoint();
     jsrc := prepareVarchar2(str);
     tokens := lexer(jsrc);
     if (tokens(indx).type_name = '[') then
@@ -811,7 +811,7 @@ create or replace package body pljson_parser as
     indx pls_integer := 1;
     jsrc json_src;
   begin
-    update_decimalpoint();
+    --update_decimalpoint();
     jsrc := prepareClob(str);
     tokens := lexer(jsrc);
     if (tokens(indx).type_name = '[') then
@@ -833,7 +833,7 @@ create or replace package body pljson_parser as
     indx pls_integer := 1;
     jsrc json_src;
   begin
-    update_decimalpoint();
+    --update_decimalpoint();
     --dbms_output.put_line('Using clob');
     jsrc := prepareClob(str);
     tokens := lexer(jsrc);
@@ -857,7 +857,7 @@ create or replace package body pljson_parser as
     indx pls_integer := 1;
     jsrc json_src;
   begin
-    update_decimalpoint();
+    --update_decimalpoint();
     jsrc := prepareVarchar2(str);
     tokens := lexer(jsrc);
     tokens(tokens.count+1).type_name := ']';
@@ -875,7 +875,7 @@ create or replace package body pljson_parser as
     indx pls_integer := 1;
     jsrc json_src;
   begin
-    update_decimalpoint();
+    --update_decimalpoint();
     jsrc := prepareClob(str);
     tokens := lexer(jsrc);
     tokens(tokens.count+1).type_name := ']';
@@ -924,6 +924,8 @@ create or replace package body pljson_parser as
     return 'PL/JSON {{PLJSON_VERSION}}';
   end get_version;
 
+begin
+  update_decimalpoint();
 end pljson_parser;
 /
 show err

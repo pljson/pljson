@@ -138,29 +138,16 @@ begin
     pljson_ut.assertTrue(obj.get('b').get_number = 2, 'obj.get(''b'').get_number = 2');
   end;
   
-  -- equals(pljson_element, pljson_element)
-  pljson_ut.testcase('Test equals(pljson_element, pljson_element)');
+  -- equals(pljson_string, pljson_string)
+  pljson_ut.testcase('Test equals(pljson_string, pljson_string)');
   begin
     pljson_ut.assertTrue(pljson_helper.equals(pljson_string(''), pljson_string('')), 'pljson_helper.equals(pljson_string(''''), pljson_string(''''))');
-    pljson_ut.assertTrue(pljson_helper.equals(pljson('{"a":1,"b":2}'), pljson('{"a":1,"b":2}')), 'pljson_helper.equals(pljson(''{"a":1,"b":2}''), pljson(''{"a":1,"b":2}''))');
   end;
   
   -- equals(pljson_null, pljson_null)
   pljson_ut.testcase('Test equals(pljson_null, pljson_null)');
   begin
     pljson_ut.assertTrue(pljson_helper.equals(pljson_null(), pljson_null()), 'pljson_helper.equals(pljson_null(), pljson_null())');
-  end;
-  
-  -- equals(pljson, pljson)
-  pljson_ut.testcase('Test equals(pljson, pljson)');
-  begin
-    pljson_ut.assertTrue(pljson_helper.equals(pljson('{"a":1,"b":2}'), pljson('{"a":1,"b":2}')), 'pljson_helper.equals(pljson(''{"a":1,"b":2}''), pljson(''{"a":1,"b":2}''))');
-  end;
-  
-  -- equals(pljson_list, pljson_list)
-  pljson_ut.testcase('Test equals(pljson_value, pljson_list)');
-  begin
-    pljson_ut.assertTrue(pljson_helper.equals(pljson_list('[1,2,3]'), pljson_list('[1,2,3]')), 'pljson_helper.equals(pljson_list(''[1,2,3]''), pljson_list(''[1,2,3]''))');
   end;
   
   -- equals(pljson_number, number)
