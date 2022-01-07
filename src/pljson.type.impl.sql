@@ -6,7 +6,7 @@ create or replace type body pljson as
     self.json_data := pljson_element_array();
     self.typeval := 1;
     self.check_for_duplicate := 1;
-    
+
     --self.object_id := pljson_object_cache.next_id;
     return;
   end;
@@ -56,7 +56,7 @@ create or replace type body pljson as
         new_pair := True;
       end if;
     end loop;
-    
+
     --self.object_id := pljson_object_cache.next_id;
     return;
   end;
@@ -82,7 +82,7 @@ create or replace type body pljson as
       end if;
       self.json_data(i).mapindx := i;
     end loop;
-    
+
     --self.object_id := pljson_object_cache.next_id;
     return;
   end;
@@ -254,85 +254,64 @@ create or replace type body pljson as
   member function get_string(pair_name varchar2) return varchar2 as
     elem pljson_element := get(pair_name);
   begin
-    /*
     if elem is not null and elem is of (pljson_string) then
       return elem.get_string();
     end if;
     return null;
-    */
-    return elem.get_string();
   end;
 
   member function get_clob(pair_name varchar2) return clob as
     elem pljson_element := get(pair_name);
   begin
-    /*
     if elem is not null and elem is of (pljson_string) then
       return elem.get_clob();
     end if;
     return null;
-    */
-    return elem.get_clob();
   end;
 
   member function get_number(pair_name varchar2) return number as
     elem pljson_element := get(pair_name);
   begin
-    /*
     if elem is not null and elem is of (pljson_number) then
       return elem.get_number();
     end if;
     return null;
-    */
-    return elem.get_number();
   end;
 
   member function get_double(pair_name varchar2) return binary_double as
     elem pljson_element := get(pair_name);
   begin
-    /*
     if elem is not null and elem is of (pljson_number) then
       return elem.get_double();
     end if;
     return null;
-    */
-    return elem.get_double();
   end;
 
   member function get_bool(pair_name varchar2) return boolean as
     elem pljson_element := get(pair_name);
   begin
-    /*
     if elem is not null and elem is of (pljson_bool) then
       return elem.get_bool();
     end if;
     return null;
-    */
-    return elem.get_bool();
   end;
 
   member function get_pljson(pair_name varchar2) return pljson as
     elem pljson_element := get(pair_name);
   begin
-    /*
     if elem is not null and elem is of (pljson) then
       return treat(elem as pljson);
     end if;
     return null;
-    */
-    return treat(elem as pljson);
   end;
 
   member function get_pljson_list(pair_name varchar2) return pljson_list as
     elem pljson_element := get(pair_name);
   begin
-    /*
     if elem is not null and elem is of (pljson_list) then
       return treat(elem as pljson_list);
     end if;
     return null;
-    */
-    return treat(elem as pljson_list);
   end;
 
   overriding member function get(position pls_integer) return pljson_element as
@@ -474,7 +453,7 @@ create or replace type body pljson as
   overriding member procedure get_internal_path(self in pljson, path pljson_path, path_position pls_integer, ret out nocopy pljson_element) as
     indx pls_integer := path(path_position).indx;
   begin
-    
+
     if (indx is null) then
       indx := self.json_data.first;
       loop
@@ -488,10 +467,10 @@ create or replace type body pljson as
           else
             ret := self.json_data(indx);
           end if;
-          
+
           exit;
         end if;
-        
+
         indx := self.json_data.next(indx);
       end loop;
     else
