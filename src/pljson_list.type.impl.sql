@@ -259,73 +259,61 @@ create or replace type body pljson_list as
   member function get_string(position pls_integer) return varchar2 as
     elem pljson_value := get(position);
   begin
-    /*
-    if elem is not null and elem is of (pljson_string) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 3 then
       return elem.get_string();
     end if;
     return null;
-    */
-    return elem.get_string();
   end;
 
   member function get_clob(position pls_integer) return clob as
     elem pljson_value := get(position);
   begin
-    /*
-    if elem is not null and elem is of (pljson_string) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 3 then
       return elem.get_clob();
     end if;
     return null;
-    */
-    return elem.get_clob();
   end;
 
   member function get_number(position pls_integer) return number as
     elem pljson_value := get(position);
   begin
-    /*
-    if elem is not null and elem is of (pljson_number) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 4 then
       return elem.get_number();
     end if;
     return null;
-    */
-    return elem.get_number();
   end;
 
   member function get_double(position pls_integer) return binary_double as
     elem pljson_value := get(position);
   begin
-    /*
-    if elem is not null and elem is of (pljson_number) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 4 then
       return elem.get_double();
     end if;
     return null;
-    */
-    return elem.get_double();
   end;
 
   member function get_bool(position pls_integer) return boolean as
     elem pljson_value := get(position);
   begin
-    /*
-    if elem is not null and elem is of (pljson_bool) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 5 then
       return elem.get_bool();
     end if;
     return null;
-    */
-    return elem.get_bool();
   end;
 
   member function get_pljson_list(position pls_integer) return pljson_list as
     elem pljson_value := get(position);
   begin
-    /*
-    if elem is not null and elem is of (pljson_list) then
-      return treat(elem as pljson_list);
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 2 then
+      return treat(elem.object_or_array as pljson_list);
     end if;
     return null;
-    */
-    return treat(elem.object_or_array as pljson_list);
   end;
 
   member function head return pljson_value as

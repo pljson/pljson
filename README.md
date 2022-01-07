@@ -3,7 +3,7 @@
 **PL/JSON** provides packages and APIs for dealing with JSON formatted data within PL/SQL code.
 General information about JSON is available at http://www.json.org.
 
-## Latest release 2.5.3 (2021-03-06)
+## Latest release 2.5.4 (2022-01-07)
 
 ## This is version 2.0 (maintenance only)
 ## You are advised to use version 3.0 (see below)

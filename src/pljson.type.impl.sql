@@ -252,85 +252,71 @@ create or replace type body pljson as
   member function get_string(pair_name varchar2) return varchar2 as
     elem pljson_value := get(pair_name);
   begin
-    /*
-    if elem is not null and elem is of (pljson_string) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 3 then
       return elem.get_string();
     end if;
     return null;
-    */
-    return elem.get_string();
   end;
 
   member function get_clob(pair_name varchar2) return clob as
     elem pljson_value := get(pair_name);
   begin
-    /*
-    if elem is not null and elem is of (pljson_string) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 3 then
       return elem.get_clob();
     end if;
     return null;
-    */
-    return elem.get_clob();
   end;
 
   member function get_number(pair_name varchar2) return number as
     elem pljson_value := get(pair_name);
   begin
-    /*
-    if elem is not null and elem is of (pljson_number) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 4 then
       return elem.get_number();
     end if;
     return null;
-    */
-    return elem.get_number();
   end;
 
   member function get_double(pair_name varchar2) return binary_double as
     elem pljson_value := get(pair_name);
   begin
-    /*
-    if elem is not null and elem is of (pljson_number) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 4 then
       return elem.get_double();
     end if;
     return null;
-    */
-    return elem.get_double();
   end;
 
   member function get_bool(pair_name varchar2) return boolean as
     elem pljson_value := get(pair_name);
   begin
-    /*
-    if elem is not null and elem is of (pljson_bool) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 5 then
       return elem.get_bool();
     end if;
     return null;
-    */
-    return elem.get_bool();
   end;
 
   member function get_pljson(pair_name varchar2) return pljson as
     elem pljson_value := get(pair_name);
   begin
-    /*
-    if elem is not null and elem is of (pljson) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 1 then
       return treat(elem.object_or_array as pljson);
     end if;
     return null;
-    */
-    return treat(elem.object_or_array as pljson);
   end;
 
   member function get_pljson_list(pair_name varchar2) return pljson_list as
     elem pljson_value := get(pair_name);
   begin
-    /*
-    if elem is not null and elem is of (pljson_list) then
+    /* 1 = object, 2 = array, 3 = string, 4 = number, 5 = bool, 6 = null */
+    if elem is not null and elem.typeval = 2 then
       return treat(elem.object_or_array as pljson_list);
     end if;
     return null;
-    */
-    return treat(elem.object_or_array as pljson_list);
   end;
 
   member function get(position pls_integer) return pljson_value as
