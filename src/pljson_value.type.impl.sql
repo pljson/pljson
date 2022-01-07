@@ -157,6 +157,7 @@ create or replace type body pljson_value as
         return self.str;
       end if;
     end if;
+    return null;
   end get_clob;
 
   member function get_number return number as
@@ -345,4 +346,4 @@ create or replace type body pljson_value as
 
 end;
 /
-sho err
+show err
