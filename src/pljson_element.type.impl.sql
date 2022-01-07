@@ -100,10 +100,12 @@ create or replace type body pljson_element as
   begin
     raise_application_error(-20012, 'count() method is not supported by object of type:'  || get_type());
   end;
+
   member function get(pair_name varchar2) return pljson_element as
   begin
     raise_application_error(-20020, 'get(name) method is not supported by object of type:'  || get_type());
   end;
+
   member function get(position pls_integer) return pljson_element as
   begin
     raise_application_error(-20021, 'get(position) method is not supported by object of type:'  || get_type());
