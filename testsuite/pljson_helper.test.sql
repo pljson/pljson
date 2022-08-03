@@ -3,7 +3,7 @@
  * Test of pljson_helper addon package
  **/
 
-set serveroutput on format wrapped
+set serveroutput on size 20000 format wrapped
 
 declare
   

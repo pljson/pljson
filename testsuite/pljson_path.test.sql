@@ -3,7 +3,7 @@
  * Test of JSON Path imple. in JSON_Ext by Jonas Krogsboell
  **/
 
-set serveroutput on format wrapped
+set serveroutput on size 20000 format wrapped
 
 begin
   

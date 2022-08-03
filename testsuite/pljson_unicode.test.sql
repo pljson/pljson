@@ -9,7 +9,7 @@
 
 PROMPT did you run with NLS_LANG='AMERICAN_AMERICA.AL32UTF8' ?
 
-set serveroutput on format wrapped
+set serveroutput on size 20000 format wrapped
 
 declare
   test_json pljson;

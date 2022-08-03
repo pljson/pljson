@@ -185,6 +185,7 @@ create or replace package body pljson_ext as
     endstring varchar2(1);
     indx number := 1;
     ret pljson_list;
+    c_regexp constant varchar2(32) := '^[[:alnum:]\_ |-]+';
 
     procedure next_char as
     begin
@@ -204,13 +205,13 @@ create or replace package body pljson_ext as
       if (buf = '.') then
         next_char();
         if (buf is null) then raise_application_error(-20110, 'JSON Path parse error: . is not a valid json_path end'); end if;
-        if (not regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) then
+        if (not regexp_like(buf, c_regexp, 'c') ) then
           raise_application_error(-20110, 'JSON Path parse error: alpha-numeric character or space expected at position '||indx);
         end if;
 
         if (build_path != '[') then build_path := build_path || ','; end if;
         build_path := build_path || '"';
-        while (regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) loop
+        while (regexp_like(buf, c_regexp, 'c') ) loop
           build_path := build_path || buf;
           next_char();
         end loop;
@@ -252,11 +253,11 @@ create or replace package body pljson_ext as
         next_char();
         skipws();
       elsif (build_path = '[') then
-        if (not regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) then
+        if (not regexp_like(buf, c_regexp, 'c') ) then
           raise_application_error(-20110, 'JSON Path parse error: alpha-numeric character or space expected at position '||indx);
         end if;
         build_path := build_path || '"';
-        while (regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) loop
+        while (regexp_like(buf, c_regexp, 'c') ) loop
           build_path := build_path || buf;
           next_char();
         end loop;

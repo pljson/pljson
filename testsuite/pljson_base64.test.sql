@@ -6,7 +6,7 @@
  *
  **/
 
-set serveroutput on format wrapped
+set serveroutput on size 20000 format wrapped
 set linesize 66
 
 declare
