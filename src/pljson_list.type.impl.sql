@@ -29,7 +29,6 @@ create or replace type body pljson_list as
   begin
     pljson_ext.blob2clob(str, c_str, charset);
     self := pljson_parser.parse_list(c_str);
-    dbms_lob.freetemporary(c_str);
     --self.typeval := 2;
     return;
   end;

@@ -218,7 +218,6 @@ create or replace package body pljson_helper as
     end if;
 
     /*
-    my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
     p_v1.get_string(my_clob);
     */
@@ -243,10 +242,10 @@ create or replace package body pljson_helper as
         return equals(p_v1, p_v2.get_string);
       else
         declare
-          my_clob clob; res boolean;
+          my_clob clob;
+          res boolean;
         begin
           /*
-          my_clob := empty_clob();
           dbms_lob.createtemporary(my_clob, true);
           p_v2.get_string(my_clob);
           */

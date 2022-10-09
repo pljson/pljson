@@ -32,7 +32,6 @@ create or replace type body pljson as
   begin
     pljson_ext.blob2clob(str, c_str, charset);
     self := pljson_parser.parser(c_str);
-    dbms_lob.freetemporary(c_str);
     --self.typeval := 1;
     self.check_for_duplicate := 1;
     return;
