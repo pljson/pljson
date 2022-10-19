@@ -167,7 +167,7 @@ create or replace package body pljson_printer as
 
 
   /* clob methods begin */
-  
+
   procedure add_to_clob(buf_lob in out nocopy clob, buf_str in out nocopy varchar2, str varchar2) as
   begin
     -- if (length(str) > 5000 - length(buf_str)) then
@@ -376,11 +376,11 @@ create or replace package body pljson_printer as
         add_to_clob(buf, buf_str, 'null');
       /* array */
       when 2 then
-        pretty_print_list(pljson_list(json_part), spaces, buf, line_length);
+        pretty_print_list(pljson_list(json_part), spaces, buf, line_length, erase_clob);
         return;
       /* object */
       when 1 then
-        pretty_print(pljson(json_part), spaces, buf, line_length);
+        pretty_print(pljson(json_part), spaces, buf, line_length, erase_clob);
         return;
       else
         add_to_clob(buf, buf_str, 'unknown type:' || json_part.get_type);
@@ -392,7 +392,7 @@ create or replace package body pljson_printer as
 
 
   /* varchar2 methods begin */
-  
+
   procedure add_buf (buf in out nocopy varchar2, str in varchar2) as
   begin
     if (lengthb(str)>32767-lengthb(buf)) then
@@ -653,7 +653,8 @@ create or replace package body pljson_printer as
     if (jsonp is not null) then dbms_output.put_line(')'); end if;*/
   end;
 
-/*  procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as
+/*
+procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null) as
     prev number := 1;
     indx number := 1;
     size_of_nl number := length2(delim);
