@@ -138,7 +138,6 @@ create or replace type body pljson_element as
   member procedure print(self in pljson_element, spaces boolean default true, chars_per_line number default 8192, jsonp varchar2 default null) as --32512 is the real maximum in sqldeveloper
     my_clob clob;
   begin
-    my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
     pljson_printer.pretty_print_any(self, spaces, my_clob, case when (chars_per_line>32512) then 32512 else chars_per_line end);
     pljson_printer.dbms_output_clob(my_clob, pljson_printer.newline_char, jsonp);
@@ -148,7 +147,6 @@ create or replace type body pljson_element as
   member procedure htp(self in pljson_element, spaces boolean default false, chars_per_line number default 0, jsonp varchar2 default null) as
     my_clob clob;
   begin
-    my_clob := empty_clob();
     dbms_lob.createtemporary(my_clob, true);
     pljson_printer.pretty_print_any(self, spaces, my_clob, chars_per_line);
     pljson_printer.htp_output_clob(my_clob, jsonp);

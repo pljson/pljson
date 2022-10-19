@@ -151,7 +151,7 @@ create or replace package body pljson_ext as
   is
     r_clob clob;
     /* E.I.Sarmas (github.com/dsnz)   2017-12-07   NOTE: must be multiple of 48 !!! */
-    c_step pls_integer := 12000;
+    c_step number := 12000;
     c_buf varchar2(32767);
   begin
     if p_blob is not null then
@@ -181,38 +181,38 @@ create or replace package body pljson_ext as
   --Json Path parser
   /* E.I.Sarmas (github.com/dsnz)   2021-12-01   minor path enhancement and more correct enforcement of paths accepted */
   /*
-  
+
     updated definition of json path expression syntax accepted by PLJSON
-    
+
     - a path may optionally begin with $ indicating the JSON object to be matched (root)
       then it's followed by 0 or more path steps
       each step can be an object step or an array step, depending on whether the context item represents a JSON object or a JSON array
-    
+
     - an object step is a period (.), sometimes read as "dot", followed by an object field name (object property name)
     a field name must start with an uppercase or lowercase letter A to Z and contain only such letters or decimal digits (0-9),
     or else it must be enclosed in double quotation marks (")
     OR
     a left bracket ([) followed by a a field name enclosed in single (') or double (") quotes, followed by a right bracket (])
-    
+
     - an array step is a left bracket ([) followed by a single numeric index, followed by a right bracket (])
     array indexing is one-based (1, 2, 3,...)
 
     examples:
       $.store.book[0].title
       $['store']['book'][0]['title']
-    
+
     in latest update
     - an object step, beginning with dot (.), now accepts name within double quotes (")
     - no longer accepts name beginning with, ending with and including spaces eg. 'd.  a name  .data'
-    
+
     - in past, after a dot (.) the field name could start with space or number
       and include or end with any number of spaces
       now this is not allowed, unquoted field names must begin with an alpha character or _
       and contain only alphanumeric characters
-    
+
     - path expressions are now compatible with Oracle Basic SQL/JSON Path Expression Syntax
       but excluding the optional filter expression and the optional function step at end
-      
+
   */
   function parsePath(json_path varchar2, base number default 1) return pljson_list as
     build_path varchar2(32767) := '[';
@@ -235,7 +235,7 @@ create or replace package body pljson_ext as
 
   begin
     -- dbms_output.put_line('parse: ' || json_path);
-    
+
     -- handle null path and optional '$' at beginning
     if json_path is null or substr(json_path, 1, 1) = '$' then
       indx := 2;
@@ -247,10 +247,10 @@ create or replace package body pljson_ext as
         buf := '.';
       end if;
     end if;
-    
+
     while (buf is not null) loop
       -- dbms_output.put_line(build_path || ' + ' || buf);
-      
+
       if (buf = '.') then
         next_char();
         if (buf is null) then raise_application_error(-20110, 'JSON Path parse error: . is not a valid json_path end'); end if;
@@ -281,7 +281,7 @@ create or replace package body pljson_ext as
           end loop;
         end if;
         build_path := build_path || '"';
-        
+
       elsif (buf = '[') then
         next_char();
         skipws();
@@ -320,7 +320,7 @@ create or replace package body pljson_ext as
         if (buf != ']') then raise_application_error(-20110, 'JSON Path parse error: no array ending found. found: '|| buf); end if;
         next_char();
         skipws();
-        
+
       /* E.I.Sarmas (github.com/dsnz)   2021-10-31   obsolete, repeats code after ".", handled by assuming a dummy "." at start
       elsif (build_path = '[') then
         if (not regexp_like(buf, '^[[:alnum:]\_ ]+', 'c') ) then
@@ -342,7 +342,7 @@ create or replace package body pljson_ext as
     build_path := build_path || ']';
     build_path := replace(replace(replace(replace(replace(build_path, chr(9), '\t'), chr(10), '\n'), chr(13), '\f'), chr(8), '\b'), chr(14), '\r');
     -- dbms_output.put_line('parse= ' || build_path);
-    
+
     ret := pljson_list(build_path);
     if (base != 1) then
       --fix base 0 to base 1
@@ -956,44 +956,44 @@ create or replace package body pljson_ext as
 
   function base64(binarydata blob) return pljson_list as
     obj pljson_list := pljson_list();
-    c clob := empty_clob();
+    c clob;
 
-    v_clob_offset NUMBER := 1;
-    v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
-    v_amount PLS_INTEGER;
+    v_clob_offset number := 1;
+    v_lang_context number := dbms_lob.DEFAULT_LANG_CTX;
+    v_amount number;
   begin
-    dbms_lob.createtemporary(c, false, dbms_lob.call);
+    --dbms_lob.createtemporary(c, false, dbms_lob.call);
     c := encodeBase64Blob2Clob(binarydata);
-    v_amount := DBMS_LOB.GETLENGTH(c);
+    v_amount := dbms_lob.getlength(c);
     v_clob_offset := 1;
-    --dbms_output.put_line('V amount: '||v_amount);
+    --dbms_output.put_line('v_amount: '||v_amount);
     while (v_clob_offset < v_amount) loop
       --dbms_output.put_line(v_offset);
       --temp := ;
       --dbms_output.put_line('size: '||length(temp));
-      obj.append(dbms_lob.SUBSTR(c, 4000, v_clob_offset));
+      obj.append(dbms_lob.substr(c, 4000, v_clob_offset));
       v_clob_offset := v_clob_offset + 4000;
     end loop;
     dbms_lob.freetemporary(c);
-  --dbms_output.put_line(obj.count);
-  --dbms_output.put_line(obj.get_last().to_char);
+    --dbms_output.put_line(obj.count);
+    --dbms_output.put_line(obj.get_last().to_char);
     return obj;
 
   end base64;
 
   function base64(l pljson_list) return blob as
-    c clob := empty_clob();
+    c clob;
     b_ret blob;
 
-    v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
---    v_amount PLS_INTEGER;
+    v_lang_context number := dbms_lob.DEFAULT_LANG_CTX;
+    -- v_amount number;
   begin
     dbms_lob.createtemporary(c, false, dbms_lob.call);
     for i in 1 .. l.count loop
       dbms_lob.append(c, l.get(i).get_string());
     end loop;
---    v_amount := DBMS_LOB.GETLENGTH(c);
---    dbms_output.put_line('L C'||v_amount);
+    -- v_amount := dbms_lob.getlength(c);
+    -- dbms_output.put_line('L C'||v_amount);
     b_ret := decodeBase64Clob2Blob(c);
     dbms_lob.freetemporary(c);
     return b_ret;
@@ -1002,44 +1002,43 @@ create or replace package body pljson_ext as
   function encode(binarydata blob) return pljson_string as
     obj pljson_string;
     c clob;
-    v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
+    v_lang_context number := dbms_lob.DEFAULT_LANG_CTX;
   begin
     dbms_lob.createtemporary(c, false, dbms_lob.call);
     c := encodeBase64Blob2Clob(binarydata);
     obj := pljson_string(c);
 
-  --dbms_output.put_line(obj.count);
-  --dbms_output.put_line(obj.get_last().to_char);
-    /*dbms_lob.freetemporary(c);*/
+    --dbms_output.put_line(obj.count);
+    --dbms_output.put_line(obj.get_last().to_char);
+    /* dbms_lob.freetemporary(c); */
     return obj;
   end encode;
 
   function decode(v pljson_string) return blob as
-    --c clob := empty_clob();
     c clob;
     b_ret blob;
 
-    v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
---    v_amount PLS_INTEGER;
+    v_lang_context number := dbms_lob.DEFAULT_LANG_CTX;
+    -- v_amount number;
   begin
     /*
     dbms_lob.createtemporary(c, false, dbms_lob.call);
     v.get_string(c);
     */
     c := v.get_clob();
---    v_amount := DBMS_LOB.GETLENGTH(c);
---    dbms_output.put_line('L C'||v_amount);
+    -- v_amount := dbms_lob.getlength(c);
+    -- dbms_output.put_line('L C'||v_amount);
     b_ret := decodeBase64Clob2Blob(c);
-    /*dbms_lob.freetemporary(c);*/
+    /* dbms_lob.freetemporary(c); */
     return b_ret;
 
   end decode;
 
   procedure blob2clob(b blob, c out clob, charset varchar2 default 'UTF8') as
-    v_dest_offset integer := 1;
-    v_src_offset integer := 1;
-    v_lang_context integer := 0;
-    v_warning integer := 0;
+    v_dest_offset number := 1;
+    v_src_offset number := 1;
+    v_lang_context number := dbms_lob.DEFAULT_LANG_CTX;
+    v_warning number := dbms_lob.NO_WARNING;
   begin
     dbms_lob.createtemporary(c, false, dbms_lob.call);
     dbms_lob.converttoclob(
