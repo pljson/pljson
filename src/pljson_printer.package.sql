@@ -374,11 +374,11 @@ create or replace package body pljson_printer as
         add_to_clob(buf, buf_str, 'null');
       /* array */
       when 2 then
-        pretty_print_list(pljson_list(json_part), spaces, buf, line_length);
+        pretty_print_list(pljson_list(json_part), spaces, buf, line_length, erase_clob);
         return;
       /* object */
       when 1 then
-        pretty_print(pljson(json_part), spaces, buf, line_length);
+        pretty_print(pljson(json_part), spaces, buf, line_length, erase_clob);
         return;
       else
         add_to_clob(buf, buf_str, 'unknown type:' || json_part.get_type);
