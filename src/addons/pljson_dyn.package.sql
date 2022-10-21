@@ -28,7 +28,10 @@ create or replace package pljson_dyn authid current_user as
   include_arrays         boolean not null := true;  -- pljson_varray or pljson_narray
 
   /* list with objects */
-  function executeList(stmt varchar2, bindvar pljson default null, cur_num number default null, bindvardateformats pljson default null) return pljson_list;
+  function executeList(stmt varchar2, bindvar pljson default null, cur_num number default null,
+    bindvardateformats pljson default null,
+    columndateformats  pljson default null
+  ) return pljson_list;
 
   /* object with lists */
   function executeObject(stmt varchar2, bindvar pljson default null, cur_num number default null) return pljson;
@@ -75,36 +78,44 @@ create or replace package body pljson_dyn as
 
   procedure bind_json(l_cur number, bindvar pljson, bindvardateformats pljson default null) as
     keylist pljson_list := bindvar.get_keys();
+    key_str   varchar2(32767);
+    bind_elem pljson_element;
+    dateformat_str varchar2(32767);
   begin
     for i in 1 .. keylist.count loop
-      if (bindvar.get(i).is_number()) then
-        dbms_sql.bind_variable(l_cur, ':'||keylist.get(i).get_string(), bindvar.get(i).get_number());
-      elsif (bindvar.get(i).is_array()) then
+      key_str   := keylist.get_string(i);
+      bind_elem := bindvar.get(i);
+      if (bind_elem.is_number()) then
+        dbms_sql.bind_variable(l_cur, ':'||key_str, bind_elem.get_number());
+      elsif (bind_elem.is_array()) then
         declare
           v_bind dbms_sql.varchar2_table;
-          v_arr  pljson_list := pljson_list(bindvar.get(i));
+          v_arr  pljson_list := pljson_list(bind_elem);
         begin
           for j in 1 .. v_arr.count loop
             v_bind(j) := v_arr.get(j).value_of();
           end loop;
-          dbms_sql.bind_array(l_cur, ':'||keylist.get(i).get_string(), v_bind);
+          dbms_sql.bind_array(l_cur, ':'||key_str, v_bind);
         end;
       else
-        if bindvardateformats is not null then
-            if bindvardateformats.exist(keylist.get(i).get_string()) then
-                dbms_sql.bind_variable(l_cur, ':'||keylist.get(i).get_string(), to_date(bindvar.get(i).value_of(), bindvardateformats.get(keylist.get(i).get_string()).get_string() ));
-            else
-                dbms_sql.bind_variable(l_cur, ':'||keylist.get(i).get_string(), bindvar.get(i).value_of());
-            end if;
+        dateformat_str := null;
+        if (bindvardateformats is not null) then
+          dateformat_str := bindvardateformats.get_string(key_str);
+        end if;
+        if (dateformat_str is not null) then
+          dbms_sql.bind_variable(l_cur, ':'||key_str, to_date(bind_elem.value_of(), dateformat_str));
         else
-            dbms_sql.bind_variable(l_cur, ':'||keylist.get(i).get_string(), bindvar.get(i).value_of());
+          dbms_sql.bind_variable(l_cur, ':'||key_str, bind_elem.value_of());
         end if;
       end if;
     end loop;
   end bind_json;
 
   /* list with objects */
-  function executeList(stmt varchar2, bindvar pljson, cur_num number, bindvardateformats pljson default null) return pljson_list as
+  function executeList(stmt varchar2, bindvar pljson, cur_num number,
+    bindvardateformats pljson default null,
+    columndateformats  pljson default null
+  ) return pljson_list as
     l_cur number;
     l_dtbl dbms_sql.desc_tab3;
     l_cnt number;
@@ -119,13 +130,16 @@ create or replace package body pljson_dyn as
     col_type number;
     read_varray pljson_varray;
     read_narray pljson_narray;
+    dateformat_str varchar2(32767);
   begin
     if (cur_num is not null) then
       l_cur := cur_num;
     else
       l_cur := dbms_sql.open_cursor;
       dbms_sql.parse(l_cur, stmt, dbms_sql.native);
-      if (bindvar is not null) then bind_json(l_cur, bindvar, bindvardateformats); end if;
+      if (bindvar is not null) then
+        bind_json(l_cur, bindvar, bindvardateformats);
+      end if;
     end if;
     /* E.I.Sarmas (github.com/dsnz)   2018-05-01   handling of varray, narray in select */
     dbms_sql.describe_columns3(l_cur, l_cnt, l_dtbl);
@@ -183,7 +197,17 @@ create or replace package body pljson_dyn as
         when l_dtbl(i).col_type = 12 then -- date
           if (include_dates) then
             dbms_sql.column_value(l_cur, i, read_date);
-            inner_obj.put(l_dtbl(i).col_name, pljson_ext.to_json_string(read_date));
+            /* proposed by boriborm */
+            --dbms_output.put_line(l_dtbl(i).col_name || ' ' || read_date);
+            dateformat_str := null;
+            if (columndateformats is not null) then
+              dateformat_str := columndateformats.get_string(l_dtbl(i).col_name);
+            end if;
+            if (dateformat_str is not null) then
+              inner_obj.put(l_dtbl(i).col_name, to_char(read_date, dateformat_str));
+            else
+              inner_obj.put(l_dtbl(i).col_name, pljson_ext.to_json_string(read_date));
+            end if;
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'date ' ||l_dtbl(i).col_type);
         when l_dtbl(i).col_type = 112 then --clob
@@ -212,7 +236,7 @@ create or replace package body pljson_dyn as
             dbms_sql.column_value(l_cur, i, read_narray);
             inner_obj.put(l_dtbl(i).col_name, pljson_list(read_narray));
           end if;
-          
+
         else null; --discard other types
         end case;
       end loop;
@@ -226,7 +250,7 @@ create or replace package body pljson_dyn as
   /* object with lists */
   function executeObject(stmt varchar2, bindvar pljson, cur_num number) return pljson as
     l_cur number;
-    l_dtbl dbms_sql.desc_tab;
+    l_dtbl dbms_sql.desc_tab3;
     l_cnt number;
     l_status number;
     l_val varchar2(4000);
@@ -247,7 +271,7 @@ create or replace package body pljson_dyn as
       dbms_sql.parse(l_cur, stmt, dbms_sql.native);
       if (bindvar is not null) then bind_json(l_cur, bindvar); end if;
     end if;
-    dbms_sql.describe_columns(l_cur, l_cnt, l_dtbl);
+    dbms_sql.describe_columns3(l_cur, l_cnt, l_dtbl);
     for i in 1..l_cnt loop
       col_type := l_dtbl(i).col_type;
       if (col_type = 12) then
