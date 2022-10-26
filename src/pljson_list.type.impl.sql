@@ -122,12 +122,20 @@ create or replace type body pljson_list as
 
   member procedure append(self in out nocopy pljson_list, elem varchar2, position pls_integer default null) as
   begin
-    append(pljson_string(elem), position);
+    if (elem is null and pljson_parser.empty_string_as_null) then
+      append(pljson_null(), position);
+    else
+      append(pljson_string(elem), position);
+    end if;
   end;
 
   member procedure append(self in out nocopy pljson_list, elem clob, position pls_integer default null) as
   begin
-    append(pljson_string(elem), position);
+    if (elem is null) then
+      append(pljson_null(), position);
+    else
+      append(pljson_string(elem), position);
+    end if;
   end;
 
   member procedure append(self in out nocopy pljson_list, elem number, position pls_integer default null) as
@@ -188,12 +196,20 @@ create or replace type body pljson_list as
 
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem varchar2) as
   begin
-    replace(position, pljson_string(elem));
+    if (elem is null and pljson_parser.empty_string_as_null) then
+      replace(position, pljson_null());
+    else
+      replace(position, pljson_string(elem));
+    end if;
   end;
 
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem clob) as
   begin
-    replace(position, pljson_string(elem));
+    if (elem is null) then
+      replace(position, pljson_null());
+    else
+      replace(position, pljson_string(elem));
+    end if;
   end;
 
   member procedure replace(self in out nocopy pljson_list, position pls_integer, elem number) as
@@ -384,7 +400,11 @@ create or replace type body pljson_list as
     end loop;
 
     objlist := pljson(self);
-    pljson_ext.put(objlist, json_path, elem, base);
+    if (elem is null and pljson_parser.empty_string_as_null) then
+      pljson_ext.put(objlist, json_path, pljson_null(), base);
+    else
+      pljson_ext.put(objlist, json_path, elem, base);
+    end if;
     self := objlist.get_values;
   end path_put;
 
@@ -397,7 +417,11 @@ create or replace type body pljson_list as
     end loop;
 
     objlist := pljson(self);
-    pljson_ext.put(objlist, json_path, elem, base);
+    if (elem is null) then
+      pljson_ext.put(objlist, json_path, pljson_null(), base);
+    else
+      pljson_ext.put(objlist, json_path, elem, base);
+    end if;
     self := objlist.get_values;
   end path_put;
 

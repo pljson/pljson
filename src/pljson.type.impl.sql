@@ -178,12 +178,20 @@ create or replace type body pljson as
 
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value varchar2, position pls_integer default null) as
   begin
-    put(pair_name, pljson_string(pair_value), position);
+    if (pair_value is null and pljson_parser.empty_string_as_null) then
+      put(pair_name, pljson_null(), position);
+    else
+      put(pair_name, pljson_string(pair_value), position);
+    end if;
   end;
 
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value clob, position pls_integer default null) as
   begin
-    put(pair_name, pljson_string(pair_value), position);
+    if (pair_value is null) then
+      put(pair_name, pljson_null(), position);
+    else
+      put(pair_name, pljson_string(pair_value), position);
+    end if;
   end;
 
   member procedure put(self in out nocopy pljson, pair_name varchar2, pair_value number, position pls_integer default null) as
@@ -367,12 +375,20 @@ create or replace type body pljson as
 
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem varchar2, base number default 1) as
   begin
-    pljson_ext.put(self, json_path, elem, base);
+    if (elem is null and pljson_parser.empty_string_as_null) then
+      pljson_ext.put(self, json_path, pljson_null(), base);
+    else
+      pljson_ext.put(self, json_path, elem, base);
+    end if;
   end path_put;
 
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem clob, base number default 1) as
   begin
-    pljson_ext.put(self, json_path, elem, base);
+    if (elem is null) then
+      pljson_ext.put(self, json_path, pljson_null(), base);
+    else
+      pljson_ext.put(self, json_path, elem, base);
+    end if;
   end path_put;
 
   member procedure path_put(self in out nocopy pljson, json_path varchar2, elem number, base number default 1) as

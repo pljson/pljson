@@ -36,6 +36,7 @@ create or replace package pljson_parser as
   type json_src is record (len number, offset number, offset_chars number, src varchar2(32767), s_clob clob, src_len number, src_array pljson_varray);
 
   json_strict boolean not null := false;
+  empty_string_as_null boolean not null := false;
 
   ucs2_exception EXCEPTION;
   pragma exception_init(ucs2_exception, -22831);
