@@ -77,10 +77,11 @@ create or replace package body pljson_dyn as
 */
 
   procedure bind_json(l_cur number, bindvar pljson, bindvardateformats pljson default null) as
-    keylist pljson_list := bindvar.get_keys();
-    key_str   varchar2(32767);
-    bind_elem pljson_element;
-    dateformat_str varchar2(32767);
+    keylist         pljson_list := bindvar.get_keys();
+    key_str         varchar2(32767);
+    bind_elem       pljson_element;
+    dateformat_str  varchar2(32767);
+    bind_elem1      pljson_element;
   begin
     for i in 1 .. keylist.count loop
       key_str   := keylist.get_string(i);
@@ -93,7 +94,12 @@ create or replace package body pljson_dyn as
           v_arr  pljson_list := pljson_list(bind_elem);
         begin
           for j in 1 .. v_arr.count loop
-            v_bind(j) := v_arr.get(j).value_of();
+            bind_elem1 := v_arr.get(j);
+            if (bind_elem1 is of (pljson_null)) then
+              v_bind(j) := '';
+            else
+              v_bind(j) := bind_elem1.value_of();
+            end if;
           end loop;
           dbms_sql.bind_array(l_cur, ':'||key_str, v_bind);
         end;
@@ -105,7 +111,11 @@ create or replace package body pljson_dyn as
         if (dateformat_str is not null) then
           dbms_sql.bind_variable(l_cur, ':'||key_str, to_date(bind_elem.value_of(), dateformat_str));
         else
-          dbms_sql.bind_variable(l_cur, ':'||key_str, bind_elem.value_of());
+          if (bind_elem is of (pljson_null)) then
+            dbms_sql.bind_variable(l_cur, ':'||key_str, '');
+          else
+            dbms_sql.bind_variable(l_cur, ':'||key_str, bind_elem.value_of());
+          end if;
         end if;
       end if;
     end loop;
