@@ -24,14 +24,15 @@ create or replace package pljson_printer as
   ascii_output boolean    not null := true;
   empty_string_as_null boolean not null := false;
   escape_solidus boolean  not null := false;
-  
+  unescaped_string_delim varchar2(10 char) := '/**/';
+
   function pretty_print(obj pljson, spaces boolean default true, line_length number default 0) return varchar2;
   function pretty_print_list(obj pljson_list, spaces boolean default true, line_length number default 0) return varchar2;
   function pretty_print_any(json_part pljson_element, spaces boolean default true, line_length number default 0) return varchar2;
   procedure pretty_print(obj pljson, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
   procedure pretty_print_list(obj pljson_list, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
   procedure pretty_print_any(json_part pljson_element, spaces boolean default true, buf in out nocopy clob, line_length number default 0, erase_clob boolean default true);
-  
+
   procedure dbms_output_clob(my_clob clob, delim varchar2, jsonp varchar2 default null);
   procedure htp_output_clob(my_clob clob, jsonp varchar2 default null);
   -- made public just for testing/profiling...
@@ -151,6 +152,17 @@ create or replace package body pljson_printer as
     return i;
   end;
 
+  function string_delim(elem pljson_string) return varchar2 as
+  begin
+    return
+      case when elem.num = 1 then '"'
+      else
+        case when elem.unescaped_string_delim_p = 1 then elem.unescaped_string_delim
+        else pljson_printer.unescaped_string_delim
+        end
+      end;
+  end;
+  
   function getCommaSep(spaces boolean) return varchar2 as
   begin
     if (spaces) then return ', '; else return ','; end if;
@@ -197,7 +209,7 @@ create or replace package body pljson_printer as
     if empty_string_as_null and elem.extended_str is null and elem.str is null then
       add_to_clob(buf, buf_str, 'null');
     else
-      add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
+      add_to_clob(buf, buf_str, string_delim(elem));
       if (elem.extended_str is not null) then --clob implementation
         while (offset <= dbms_lob.getlength(elem.extended_str)) loop
           dbms_lob.read(elem.extended_str, amount, offset, v_str);
@@ -219,7 +231,7 @@ create or replace package body pljson_printer as
           add_to_clob(buf, buf_str, elem.str);
         end if;
       end if;
-      add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
+      add_to_clob(buf, buf_str, string_delim(elem));
     end if;
   end;
 
@@ -410,7 +422,7 @@ create or replace package body pljson_printer as
     if empty_string_as_null and elem.extended_str is null and elem.str is null then
       add_buf(buf, 'null');
     else
-      add_buf(buf, case when elem.num = 1 then '"' else '/**/' end);
+      add_buf(buf, string_delim(elem));
       if (elem.extended_str is not null) then --clob implementation
         while (offset <= dbms_lob.getlength(elem.extended_str)) loop
           dbms_lob.read(elem.extended_str, amount, offset, v_str);
@@ -432,7 +444,7 @@ create or replace package body pljson_printer as
           add_buf(buf, elem.str);
         end if;
       end if;
-      add_buf(buf, case when elem.num = 1 then '"' else '/**/' end);
+      add_buf(buf, string_delim(elem));
     end if;
   end;
 
