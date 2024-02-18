@@ -130,7 +130,7 @@ begin
   
   -- object
   pljson_ut.testcase('Test object');
-  assertFail('{ "a" ','Object suddently ends');
+  assertFail('{ "a" ','Object suddenly ends');
   assertFail('{ "a" "lala" }','missing :');
   assertFail('{ "a" :','missing value');
   assertFail('{ "a" : true, }','another pair expected');
