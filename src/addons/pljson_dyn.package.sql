@@ -145,7 +145,8 @@ create or replace package body pljson_dyn as
     read_varray pljson_varray;
     read_narray pljson_narray;
     dateformat_str varchar2(32767);
-    esc_p boolean;
+    str_esc_p boolean;
+    str_name varchar2(32767);
   begin
     if (cur_num is not null) then
       l_cur := cur_num;
@@ -218,14 +219,16 @@ create or replace package body pljson_dyn as
               inner_obj.put(l_dtbl(i).col_name, pljson_null()); --null
             end if;
           else
-            esc_p := true;
-            if (l_dtbl(i).col_name like '{}%') then
-              esc_p := false;
+            str_esc_p := true;
+            str_name :=  l_dtbl(i).col_name;
+            if (str_name like '{}%') then
+              str_esc_p := false;
+              str_name := substr(str_name, 3);
             end if;
             -- in the following call,
             --   not esc_p will be true when esc_p is false and at the same time
             --   unescaped_string_delim assumed to have default value ''
-            inner_obj.put(l_dtbl(i).col_name, pljson_string(l_val, esc => esc_p, unescaped_string_delim_p => not esc_p));
+            inner_obj.put(str_name, pljson_string(l_val, esc => str_esc_p, unescaped_string_delim_p => not str_esc_p));
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'varchar2' ||l_dtbl(i).col_type);
         --handling number types
@@ -260,14 +263,16 @@ create or replace package body pljson_dyn as
                 inner_obj.put(l_dtbl(i).col_name, pljson_null());
               end if;
             else
-              esc_p := true;
-              if (l_dtbl(i).col_name like '{}%') then
-                esc_p := false;
+              str_esc_p := true;
+              str_name :=  l_dtbl(i).col_name;
+              if (str_name like '{}%') then
+                str_esc_p := false;
+                str_name := substr(str_name, 3);
               end if;
               -- in the following call,
               --   not esc_p will be true when esc_p is false and at the same time
               --   unescaped_string_delim assumed to have default value ''
-              inner_obj.put(l_dtbl(i).col_name, pljson_string(read_clob, esc => esc_p, unescaped_string_delim_p => not esc_p));
+              inner_obj.put(str_name, pljson_string(read_clob, esc => str_esc_p, unescaped_string_delim_p => not str_esc_p));
             end if;
           end if;
         when l_dtbl(i).col_type = 113 then --blob
@@ -302,7 +307,7 @@ create or replace package body pljson_dyn as
       inner_obj.check_for_duplicate := 1;
       outer_list.append(inner_obj);
     end loop;
-    
+
     dbms_sql.close_cursor(l_cur);
     return outer_list;
   end executeList;
@@ -330,7 +335,8 @@ create or replace package body pljson_dyn as
     read_varray pljson_varray;
     read_narray pljson_narray;
     dateformat_str varchar2(32767);
-    esc_p boolean;
+    str_esc_p boolean;
+    str_name varchar2(32767);
   begin
     if (cur_num is not null) then
       l_cur := cur_num;
@@ -405,14 +411,16 @@ create or replace package body pljson_dyn as
               data_list.append(pljson_null()); --null
             end if;
           else
-            esc_p := true;
-            if (l_dtbl(i).col_name like '{}%') then
-              esc_p := false;
+            str_esc_p := true;
+            str_name :=  l_dtbl(i).col_name;
+            if (str_name like '{}%') then
+              str_esc_p := false;
+              str_name := substr(str_name, 3);
             end if;
             -- in the following call,
             --   not esc_p will be true when esc_p is false and at the same time
             --   unescaped_string_delim assumed to have default value ''
-            data_list.append(pljson_string(l_val, esc => esc_p, unescaped_string_delim_p => not esc_p));
+            data_list.append(pljson_string(l_val, esc => str_esc_p, unescaped_string_delim_p => not str_esc_p));
           end if;
           --dbms_output.put_line(l_dtbl(i).col_name||' --> '||l_val||'varchar2' ||l_dtbl(i).col_type);
         --handling number types
@@ -446,14 +454,16 @@ create or replace package body pljson_dyn as
                 data_list.append(pljson_null());
               end if;
             else
-              esc_p := true;
-              if (l_dtbl(i).col_name like '{}%') then
-                esc_p := false;
+              str_esc_p := true;
+              str_name :=  l_dtbl(i).col_name;
+              if (str_name like '{}%') then
+                str_esc_p := false;
+                str_name := substr(str_name, 3);
               end if;
               -- in the following call,
               --   not esc_p will be true when esc_p is false and at the same time
               --   unescaped_string_delim assumed to have default value ''
-              data_list.append(pljson_string(read_clob, esc => esc_p, unescaped_string_delim_p => not esc_p));
+              data_list.append(pljson_string(read_clob, esc => str_esc_p, unescaped_string_delim_p => not str_esc_p));
             end if;
           end if;
         when l_dtbl(i).col_type = 113 then --blob
@@ -487,7 +497,7 @@ create or replace package body pljson_dyn as
       end loop;
       inner_list_data.append(data_list);
     end loop;
-    
+
     outer_obj.put('names', inner_list_names);
     outer_obj.put('data', inner_list_data);
     dbms_sql.close_cursor(l_cur);
