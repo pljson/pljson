@@ -9,11 +9,12 @@
 **PL/JSON** provides packages and APIs for dealing with JSON formatted data within PL/SQL code.
 General information about JSON is available at http://www.json.org.
 
-## Latest release 3.7.0 (2024-02-18)
+## Latest release 3.7.1 (2024-03-06)
 
 ### What's new
 Now **pljson_dyn** has the Oracle ORDS feature that when a column alias starts with **{}**
 then the column is assumed to be a json string and it's not escaped so that is merges seamlessly within the surrounding JSON
+(the initial **{}** is removed from the result element name)
 
 This release contains a small but important improvement.
 
